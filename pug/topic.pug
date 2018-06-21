@@ -1,0 +1,140 @@
+extends layout.pug
+
+block content
+    h1.content-title
+        i.material-icons list
+        | Tópicos
+        a.btn-success.btn-sm.pull-right(href='#modal-new')
+            .material-icons add
+            | Criar novo tópico
+    article.box
+        .box-body
+            .table
+                table
+                    thead
+                        tr
+                            th Nome
+                    tbody
+                        tr(v-for='topic in topics' :class='!topic.active ? "text-muted" : ""')
+                            td {{ topic.name }}
+                            td.text-right
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(title='Esconder tópico' v-if='topic.active' :href='"#modal-visibility-"+topic.id')
+                                    .material-icons visibility_off
+                                    span.d-none.d-md-inline  Esconder
+                                a.btn-success.btn-sm.tooltip.tooltip-end(title='Mostrar tópico' v-if='!topic.active' :href='"#modal-visibility-"+topic.id')
+                                    .material-icons visibility
+                                    span.d-none.d-md-inline  Mostrar
+                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-"+topic.id' title='Editar tópico e suas opções de resposta')
+                                    .material-icons edit
+                                    span.d-none.d-md-inline  Editar
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-"+topic.id' title='Remover tópico')
+                                    .material-icons delete
+                                    span.d-none.d-md-inline  Remover
+    div.modal#modal-new
+        .modal-header Criar novo tópico
+        .modal-body
+            .row.justify-content-center
+                .col-sm-11
+                    form.mark-required
+                        br
+                        .input
+                            input(required placeholder='Ex.: Tarefas de casa')
+                            label Nome
+                        hr
+                        .h4 Opções de resposta
+                        table.table
+                            thead
+                                tr
+                                    th Nome
+                                    th Valor (0-100)
+                            tbody
+                                tr
+                                    td
+                                        .input
+                                            input(required style='margin: 0px' placeholder='Ex.: Excelente')
+                                    td
+                                        .input
+                                            input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100')
+                                    td.text-right(style='margin-top: -2px')
+                                        button.btn-danger.tooltip.tooltip-end(title='Esconder opção de resposta' style='margin: 0px 2px' disabled)
+                                            .material-icons visibility_off
+                                            span.d-none.d-md-inline  Esconder
+                                        button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px' disabled)
+                                            .material-icons delete
+                                            span.d-none.d-md-inline  Remover
+                        .text-center
+                            button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico')
+                                .material-icons add
+                                | Criar nova opção
+                        br
+                        br
+                        a.btn-danger(href='#') #[.material-icons close]  Cancelar
+                        a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                        br
+    a.modal-close(href='#')
+
+    div(v-for='topic in topics')
+        div.modal(:id='"modal-" + topic.id')
+            .modal-header Editar tópico
+            .modal-body
+                .row.justify-content-center
+                    .col-sm-11
+                        form.mark-required
+                            br
+                            .input
+                                input(required :value='topic.name' placeholder='Ex.: Tarefas de casa')
+                                label Nome
+                            hr
+                            .h4 Opções de resposta
+                            table.table
+                                thead
+                                    tr
+                                        th Nome
+                                        th Valor (0-100)
+                                tbody
+                                    tr(v-for='option in topic.options')
+                                        td
+                                            .input
+                                                input(required :value='option.name' style='margin: 0px')
+                                        td
+                                            .input
+                                                input(required :value='option.value' type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100')
+                                        td.text-right.no-wrap(style='margin-top: -2px')
+                                            button.btn-success.tooltip.tooltip-end(title='Mostrar opção de resposta' v-if='!option.active' style='margin: 0px 2px')
+                                                .material-icons visibility
+                                                span.d-none.d-md-inline  Mostrar
+                                            button.btn-danger.tooltip.tooltip-end(title='Esconder opção de resposta' v-if='option.active' style='margin: 0px 2px')
+                                                .material-icons visibility_off
+                                                span.d-none.d-md-inline  Esconder
+                                            button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px')
+                                                .material-icons delete
+                                                span.d-none.d-md-inline  Remover
+                            .text-center
+                                button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico')
+                                    .material-icons add
+                                    | Criar nova opção
+                            br
+                            br
+                            a.btn-danger(href='#') #[.material-icons close]  Cancelar
+                            a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                            br
+        a.modal-close(href='#')
+
+        div.modal.modal-xs(:id='"modal-visibility-" + topic.id' :class='topic.active ? "modal-danger" : "modal-success"')
+            .modal-header {{ topic.active ? 'Esconder' : 'Mostrar' }} tópico
+            .modal-body
+                p Tem certeza que deseja {{ topic.active ? 'esconder' : 'mostrar' }} este tópico na criação dos conselhos de classe?
+            .modal-footer
+                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
+                a.btn-danger.btn-sm.pull-right(href='#' v-if='topic.active') #[.material-icons visibility_off]  Esconder
+                a.btn-success.btn-sm.pull-right(href='#' v-if='!topic.active') #[.material-icons visibility]  Mostrar
+        a.modal-close(href='#')
+
+        div.modal.modal-xs.modal-danger(:id='"modal-delete-" + topic.id')
+            .modal-header Remover tópico
+            .modal-body
+                p Tem certeza que deseja remover este tópico?
+            .modal-footer
+                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
+                a.btn-danger.btn-sm.pull-right(href='#') #[.material-icons delete]  Remover
+        a.modal-close(href='#')

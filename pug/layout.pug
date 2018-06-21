@@ -1,0 +1,84 @@
+doctype html
+html
+    head
+        meta(charset='utf-8')
+        meta(http-equiv='X-UA-Compatible' content='IE=edge')
+        meta(name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1')
+        meta(name='theme-color' content='#3c8dbc')
+        meta(name='msapplication-TileColor' content='#3c8dbc')
+        meta(name='msapplication-navbutton-color' content='#3c8dbc')
+        meta(name='apple-mobile-web-app-capable' content='yes')
+        meta(name='apple-mobile-web-app-status-bar-style' content='black-translucent')
+        title Conselho
+        link(rel='stylesheet' href='node_modules/lite-admin/dist/style.css')
+        link(rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons')
+
+        script(src='node_modules/vue/dist/vue.js')
+    body
+        form#form-valid-support-helper
+            input(required)
+        #app
+            header.header
+                a.header-button.main-button(href='index.html') Conselho
+                a.header-button.menu-toggle.material-icons(href='#menu') menu
+                .header-pane
+                    button.header-button.material-icons(type='button') notifications
+                        span.header-button-label-red(v-if='notifications.length > 0') {{ notifications.length }}
+                    .header-pane-popup
+                        .header-pane-body
+                            div.text-center.text-muted(v-if='notifications.length === 0')
+                                br
+                                p Nenhuma notificação.
+                                br
+                            div(v-for="(notification, index) in notifications")
+                                a.no-link(href='#')
+                                    .header-notification-title {{ notification.title }}
+                                    .header-notification-description {{ notification.description }}
+                                        .text-muted {{ notification.date }}
+                                hr.margin-h-15(v-if="index+1 < notifications.length")
+                .header-pane
+                    button.header-button(type='button') {{ user.name }}
+                    .header-pane-popup
+                        .header-pane-body.text-center.bg-primary.text-white
+                            br
+                            .text-80
+                                i.material-icons.user-icon account_circle
+                            .text-20 {{ user.name }}
+                            br
+                            br
+                        .header-pane-footer
+                            a.btn-default.btn-sm(href='user.html') Usuário
+                            a.btn-default.btn-sm.pull-right(href='#') Sair
+            div.container
+                nav.menu#menu
+                    a.menu-close.header-button.material-icons(href='#') menu
+                    a.menu-link(href='index.html')
+                        i.material-icons home
+                        | Início
+                    a.menu-link(href='council.html' :class='pathname.endsWith("council.html") ? "menu-active" : ""')
+                        i.material-icons bar_chart
+                        | Conselhos de Classe
+                    a.menu-link(href='topic.html' :class='pathname.endsWith("topic.html") ? "menu-active" : ""')
+                        i.material-icons list
+                        | Tópicos
+                    a.menu-link(href='evaluate.html' :class='pathname.endsWith("evaluate.html") ? "menu-active" : ""')
+                        i.material-icons edit
+                        | Primeiro Trimestre de 2018
+                    a.menu-link(href='grade.html' :class='pathname.endsWith("grade.html") ? "menu-active" : ""')
+                        i.material-icons people
+                        | Turmas
+                    a.menu-link(href='student.html' :class='pathname.endsWith("student.html") ? "menu-active" : ""')
+                        i.material-icons person
+                        | Alunos
+                    a.menu-link(href='subject.html' :class='pathname.endsWith("subject.html") ? "menu-active" : ""')
+                        i.material-icons book
+                        | Matérias
+                    a.menu-link(href='role_type.html' :class='pathname.endsWith("role_type.html") ? "menu-active" : ""')
+                        i.material-icons account_box
+                        | Tipos de Usuários
+                    a.menu-link(href='role.html' :class='pathname.endsWith("role.html") ? "menu-active" : ""')
+                        i.material-icons supervisor_account
+                        | Usuários
+                main.content.mark-required
+                    block content
+        script(src='js/main.js')

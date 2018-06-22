@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0d31f278-ba12-4287-bdbd-cdc7e3d39759" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pug/topic.pug" beforeDir="false" afterPath="$PROJECT_DIR$/pug/topic.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/topic.html" beforeDir="false" afterPath="$PROJECT_DIR$/topic.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -37,19 +40,15 @@
       <file leaf-file-name="topic.pug" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pug/topic.pug">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="337">
-              <caret line="101" column="58" lean-forward="true" selection-start-line="101" selection-start-column="58" selection-end-line="101" selection-end-column="58" />
+            <state relative-caret-position="97">
+              <caret line="7" column="31" lean-forward="true" selection-start-line="7" selection-start-column="31" selection-end-line="7" selection-end-column="31" />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitignore">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="19" selection-start-column="19" selection-end-column="19" />
-            </state>
-          </provider>
+          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file leaf-file-name="layout.pug" pinned="false" current-in-tab="false">
@@ -104,10 +103,10 @@
         <option value="$PROJECT_DIR$/pug/subject.pug" />
         <option value="$PROJECT_DIR$/pug/user.pug" />
         <option value="$PROJECT_DIR$/pug/council_list.pug" />
-        <option value="$PROJECT_DIR$/pug/topic.pug" />
         <option value="$PROJECT_DIR$/js/main.js" />
         <option value="$PROJECT_DIR$/pug/layout.pug" />
         <option value="$PROJECT_DIR$/pug/council.pug" />
+        <option value="$PROJECT_DIR$/pug/topic.pug" />
         <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
@@ -184,12 +183,12 @@
       <workItem from="1529578049263" duration="35000" />
       <workItem from="1529578265686" duration="32000" />
       <workItem from="1529600550194" duration="1271000" />
-      <workItem from="1529681051587" duration="537000" />
+      <workItem from="1529681051587" duration="744000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24666000" />
+    <option name="totallyTimeSpent" value="24873000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="707" y="25" width="659" height="743" extended-state="4" />
@@ -351,6 +350,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="173">
           <caret column="85786" selection-start-column="85786" selection-end-column="85786" />
+          <folding>
+            <element signature="e#55642#55799#2" expanded="true" />
+            <element signature="e#62966#63163#2" expanded="true" />
+            <element signature="e#63985#64182#2" expanded="true" />
+            <element signature="e#65058#65255#2" expanded="true" />
+            <element signature="e#66097#66294#2" expanded="true" />
+            <element signature="e#67073#67270#2" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -523,17 +530,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pug/topic.pug">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="337">
-          <caret line="101" column="58" lean-forward="true" selection-start-line="101" selection-start-column="58" selection-end-line="101" selection-end-column="58" />
+        <state relative-caret-position="97">
+          <caret line="7" column="31" lean-forward="true" selection-start-line="7" selection-start-column="31" selection-end-line="7" selection-end-column="31" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="19" selection-start-column="19" selection-end-column="19" />
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
   </component>
 </project>

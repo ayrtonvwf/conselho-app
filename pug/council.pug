@@ -48,10 +48,14 @@ block content
                             .col-sm-6.col-md-4.input
                                 input(type='date' required)
                                 label Data inicial
+                                    |
+                                    |
                                     .material-icons.tooltip(data-tooltip='Primeiro dia disponível para avaliação') help
                             .col-sm-6.col-md-4.input
                                 input(type='date' required)
                                 label Data final
+                                    |
+                                    |
                                     .material-icons.tooltip(data-tooltip='Último dia disponível para avaliação') help
                         br
                         a.btn-danger(href='#') #[.material-icons close]  Cancelar
@@ -81,12 +85,17 @@ block content
                                 .col-md-4.input
                                     input(required :value='council.name' :placeholder='"Ex.: "+ (~~((new Date().getMonth() + 1)/4)+1)+"° trimestre "+ new Date().getFullYear()')
                                     label Nome
-                                .col-sm-6.col-md-4.input.tooltip.tooltip-bottom(data-tooltip='Primeiro dia disponível para avaliação')
+                                .col-sm-6.col-md-4.input
                                     input(type='date' required :value='council.start_date' placeholder='Primeiro dia disponível para avaliação')
                                     label Data inicial
+                                        |
+                                        |
+                                        .material-icons.tooltip(data-tooltip='Primeiro dia disponível para avaliação') help
                                 .col-sm-6.col-md-4.input
                                     input(type='date' required :value='council.end_date' placeholder='Primeiro dia disponível para avaliação')
                                     label Data final
+                                        |
+                                        |
                                         .material-icons.tooltip(data-tooltip='Último dia disponível para avaliação') help
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar

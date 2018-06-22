@@ -61,9 +61,6 @@ html
                     a.menu-link(href='topic.html' :class='pathname.endsWith("topic.html") ? "menu-active" : ""')
                         i.material-icons list
                         | Tópicos
-                    a.menu-link(href='evaluate.html' :class='pathname.endsWith("evaluate.html") ? "menu-active" : ""')
-                        i.material-icons edit
-                        | Primeiro Trimestre de 2018
                     a.menu-link(href='grade.html' :class='pathname.endsWith("grade.html") ? "menu-active" : ""')
                         i.material-icons people
                         | Turmas
@@ -79,6 +76,9 @@ html
                     a.menu-link(href='role.html' :class='pathname.endsWith("role.html") ? "menu-active" : ""')
                         i.material-icons supervisor_account
                         | Usuários
+                    a.menu-link(:href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id == council.id ? "menu-active" : ""' v-for='council in councils' v-if='new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date() && council.active')
+                        i.material-icons edit
+                        | {{ council.name }}
                 main.content.mark-required
                     block content
         script(src='js/main.js')

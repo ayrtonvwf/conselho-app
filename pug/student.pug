@@ -55,6 +55,17 @@ block content
                                 input(required :value='student.name' placeholder='Ex.: João da Silva')
                                 label Nome
                             br
+                            table.table
+                                thead
+                                    tr
+                                        th Turma
+                                        th Período
+                                        th Número
+                                tbody
+                                    tr(v-for='student_grade in student.grades')
+                                        td {{ grades.find(function(grade) { return grade.id == student_grade.grade_id }).name }}
+                                        td {{ new Date(student_grade.start_date).toLocaleDateString('pt-BR') }} - {{ new Date(student_grade.end_date).toLocaleDateString('pt-BR') }}
+                                        td {{ student_grade.number }}
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
                             a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
                             br

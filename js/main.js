@@ -84,19 +84,94 @@ var data = {
     students: [ // student grades, student observations
         {
             id: 1,
-            name: 'Ayrton Fidelis'
+            name: 'Ayrton Fidelis',
+            grades: [
+                {
+                    id: 1,
+                    number: 5,
+                    start_date: '2017-01-01',
+                    end_date: '2017-12-31',
+                    grade_id: 1
+                }, {
+                    id: 2,
+                    number: 4,
+                    start_date: '2018-01-01',
+                    end_date: '2018-12-31',
+                    grade_id: 3
+                }
+            ]
         }, {
             id: 2,
-            name: 'John Doe'
+            name: 'John Doe',
+            grades: [
+                {
+                    id: 3,
+                    number: 19,
+                    start_date: '2017-01-01',
+                    end_date: '2017-12-31',
+                    grade_id: 1
+                }, {
+                    id: 4,
+                    number: 17,
+                    start_date: '2018-01-01',
+                    end_date: '2018-12-31',
+                    grade_id: 3
+                }
+            ]
         }, {
             id: 3,
-            name: 'João José'
+            name: 'João José',
+            grades: [
+                {
+                    id: 5,
+                    number: 19,
+                    start_date: '2017-01-01',
+                    end_date: '2017-12-31',
+                    grade_id: 2
+                }, {
+                    id: 6,
+                    number: 17,
+                    start_date: '2018-01-01',
+                    end_date: '2018-12-31',
+                    grade_id: 3
+                }
+            ]
         }, {
             id: 4,
-            name: 'Maria José'
+            name: 'Maria José',
+            grades: [
+                {
+                    id: 7,
+                    number: 24,
+                    start_date: '2017-01-01',
+                    end_date: '2017-12-31',
+                    grade_id: 1
+                }, {
+                    id: 8,
+                    number: 22,
+                    start_date: '2018-01-01',
+                    end_date: '2018-12-31',
+                    grade_id: 4
+                }
+            ]
         }, {
             id: 5,
-            name: 'Galvão Bueno'
+            name: 'Galvão Bueno',
+            grades: [
+                {
+                    id: 9,
+                    number: 15,
+                    start_date: '2017-01-01',
+                    end_date: '2017-12-31',
+                    grade_id: 2
+                }, {
+                    id: 10,
+                    number: 13,
+                    start_date: '2018-01-01',
+                    end_date: '2018-12-31',
+                    grade_id: 4
+                }
+            ]
         }
     ],
     subjects: [],

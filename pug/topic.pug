@@ -17,7 +17,7 @@ block content
                     tbody
                         tr(v-for='topic in topics' :class='!topic.active ? "text-muted" : ""')
                             td {{ topic.name }}
-                            td.text-right
+                            td.text-right.no-wrap
                                 a.btn-danger.btn-sm.tooltip.tooltip-end(title='Esconder tópico' v-if='topic.active' :href='"#modal-visibility-"+topic.id')
                                     .material-icons visibility_off
                                     span.d-none.d-md-inline  Esconder
@@ -55,7 +55,7 @@ block content
                                     td
                                         .input
                                             input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100')
-                                    td.text-right(style='margin-top: -2px')
+                                    td.text-right.no-wrap(style='margin-top: -2px')
                                         button.btn-danger.tooltip.tooltip-end(title='Esconder opção de resposta' style='margin: 0px 2px' disabled)
                                             .material-icons visibility_off
                                             span.d-none.d-md-inline  Esconder

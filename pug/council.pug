@@ -1,12 +1,15 @@
 extends layout.pug
 
 block content
-    h1.content-title
-        i.material-icons bar_chart
-        | Conselhos de Classe
-        a.btn-success.btn-sm.pull-right(href='#modal-new')
-            .material-icons add
-            |  Criar novo conselho
+    .row
+        .col-auto
+            h1.content-title
+                i.material-icons bar_chart
+                | Conselhos de Classe
+        .col.text-right
+            a.btn-success.btn-sm.no-wrap(href='#modal-new')
+                .material-icons add
+                |  Criar novo conselho
     article.box
         .box-body
             .table

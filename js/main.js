@@ -81,7 +81,24 @@ var data = {
     roles: [],
     role_types: [], // role type permissions
     school: {},
-    students: [], // student grades, student observations
+    students: [ // student grades, student observations
+        {
+            id: 1,
+            name: 'Ayrton Fidelis'
+        }, {
+            id: 2,
+            name: 'John Doe'
+        }, {
+            id: 3,
+            name: 'João José'
+        }, {
+            id: 4,
+            name: 'Maria José'
+        }, {
+            id: 5,
+            name: 'Galvão Bueno'
+        }
+    ],
     subjects: [],
     teachers: [],
     teacher_requests: [],

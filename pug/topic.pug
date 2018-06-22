@@ -1,12 +1,15 @@
 extends layout.pug
 
 block content
-    h1.content-title
-        i.material-icons list
-        | Tópicos
-        a.btn-success.btn-sm.pull-right(href='#modal-new')
-            .material-icons add
-            | Criar novo tópico
+    .row
+        .col-auto
+            h1.content-title
+                i.material-icons list
+                | Tópicos
+        .col.text-right
+            a.btn-success.btn-sm.no-wrap(href='#modal-new')
+                .material-icons add
+                | Criar novo tópico
     article.box
         .box-body
             .table
@@ -15,7 +18,7 @@ block content
                         tr
                             th Nome
                     tbody
-                        tr(v-for='topic in topics' :class='!topic.active ? "text-muted" : ""')
+                        tr(v-for='topic in topics')
                             td {{ topic.name }}
                             td.text-right.no-wrap
                                 a.btn-danger.btn-sm.tooltip.tooltip-end(title='Esconder tópico' v-if='topic.active' :href='"#modal-visibility-"+topic.id')

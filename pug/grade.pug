@@ -1,12 +1,15 @@
 extends layout.pug
 
 block content
-    h1.content-title
-        i.material-icons people
-        | Turma
-        a.btn-success.btn-sm.pull-right(href='#modal-new')
-            .material-icons add
-            |  Criar nova turma
+    .row
+        .col-auto
+            h1.content-title
+                i.material-icons people
+                | Turma
+        .col.text-right
+            a.btn-success.btn-sm.no-wra(href='#modal-new')
+                .material-icons add
+                |  Criar nova turma
     article.box
         .box-body
             .table

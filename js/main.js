@@ -174,7 +174,45 @@ var data = {
             ]
         }
     ],
-    subjects: [],
+    subjects: [
+        {
+            id: 1,
+            name: 'Matemática',
+            active: true
+        }, {
+            id: 2,
+            name: 'Português',
+            active: true
+        }, {
+            id: 3,
+            name: 'Biologia',
+            active: true
+        }, {
+            id: 4,
+            name: 'Sociologia',
+            active: true
+        }, {
+            id: 5,
+            name: 'Filosofia',
+            active: true
+        }, {
+            id: 6,
+            name: 'Programação',
+            active: true
+        }, {
+            id: 7,
+            name: 'TGA',
+            active: true
+        }, {
+            id: 8,
+            name: 'Literatura',
+            active: true
+        }, {
+            id: 9,
+            name: 'Ciências',
+            active: false
+        }
+    ],
     teachers: [],
     teacher_requests: [],
     topics: [

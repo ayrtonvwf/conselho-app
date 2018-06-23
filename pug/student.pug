@@ -34,9 +34,31 @@ block content
                 .col-sm-11
                     form.mark-required
                         br
-                        .input
-                            input(required placeholder='Ex.: João da Silva')
-                            label Nome
+                        .row
+                            .input.col-sm-6
+                                input(required placeholder='Ex.: João da Silva')
+                                label Nome
+                            .input.col-sm-6
+                                select(required)
+                                    option(value='' selected disabled hidden) Informe a turma
+                                    option(v-for='grade in grades' :value='grade.id') {{ grade.name }}
+                                label Turma
+                        .row
+                            .input.col-sm-4
+                                input(type='number' min='1' required placeholder='Ex.: 1')
+                                label Número da chamada
+                            .input.col-sm-4
+                                input(type='date' required)
+                                label Data de início
+                                    |
+                                    |
+                                    .material-icons.tooltip(data-tooltip!='Identifica alunos que começaram no meio do ano.&#xa;Pode ser o primeiro dia do ano para alunos regulares') info
+                            .input.col-sm-4
+                                input(type='date' required)
+                                label Data final
+                                    |
+                                    |
+                                    .material-icons.tooltip(data-tooltip!='Identifica quando deve-se atualizar os alunos aprovados/reprovados.&#xa;Pode ser o último dia do ano para alunos regulares') info
                         br
                         a.btn-danger(href='#') #[.material-icons close]  Cancelar
                         a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar

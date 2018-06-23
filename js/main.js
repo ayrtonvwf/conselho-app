@@ -79,7 +79,21 @@ var data = {
     medical_reports: [], // medical report subjects
     permissions: [],
     roles: [],
-    role_types: [], // role type permissions
+    role_types: [
+        {
+            id: 1,
+            name: 'Professor'
+        }, {
+            id: 2,
+            name: 'Supervisor'
+        }, {
+            id: 3,
+            name: 'Secretária'
+        }, {
+            id: 4,
+            name: 'Pedagoga'
+        }
+    ], // role type permissions
     school: {},
     students: [ // student grades, student observations
         {

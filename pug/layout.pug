@@ -13,7 +13,10 @@ html
         link(rel='stylesheet' href='node_modules/lite-admin/dist/style.css')
         link(rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons')
 
+        // in production change to vue.min.js
         script(src='node_modules/vue/dist/vue.js')
+        script(src='node_modules/dexie/dist/dexie.min.js')
+        script(src='node_modules/dexie-relationships/dist/index.min.js')
     body
         form#form-valid-support-helper
             input(required)
@@ -21,7 +24,7 @@ html
             header.header
                 a.header-button.main-button(href='index.html') Conselho
                 a.header-button.menu-toggle.material-icons(href='#menu') menu
-                .header-pane
+                // .header-pane
                     button.header-button.material-icons(type='button') notifications
                         span.header-button-label-red(v-if='notifications.length > 0') {{ notifications.length }}
                     .header-pane-popup

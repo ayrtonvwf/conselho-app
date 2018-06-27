@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dexie": "^2.0.4",
+    "dexie-relationships": "^1.2.10",
     "lite-admin": "git+https://github.com/ayrtonvwf/lite-admin.git",
     "vue": "^2.5.16"
   }

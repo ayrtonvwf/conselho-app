@@ -1,473 +1,38 @@
 var data = {
     pathname: document.location.pathname,
     token: {
-        value: '',
+        value: '68fba17762ba2728abedd746b5b5e9112f5d41ac65fc50f906eef3c543467cd4',
         expires_at: ''
     },
     user: {
         id: 1,
         name: 'Ayrton Fidelis'
     },
-    notifications: [
-        {
-            title: "Trim the grass",
-            description: "John Doe",
-            date: "today"
-        }, {
-            title: "Clean the kitchen",
-            description: "Ayrton Fidelis",
-            date: "yesterday"
-        }
-    ],
-    councils: [
-        {
-            id: 1,
-            active: true,
-            name: '3° Trimestre 2018',
-            start_date: '2018-08-01',
-            end_date: '2018-09-01'
-        }, {
-            id: 2,
-            active: true,
-            name: '2° Trimestre 2018',
-            start_date: '2018-06-01',
-            end_date: '2018-07-01'
-        }, {
-            id: 3,
-            active: false,
-            name: '2° Trimestre 2018',
-            start_date: '2018-06-01',
-            end_date: '2018-07-01'
-        }, {
-            id: 4,
-            active: false,
-            name: '2° Trimestre 2017',
-            start_date: '2017-08-01',
-            end_date: '2017-09-01'
-        }, {
-            id: 5,
-            active: false,
-            name: '1° Trimestre 2017',
-            start_date: '2017-04-01',
-            end_date: '2017-05-01'
-        }
-    ], // council grades, council topics
+
+    councils: [],
+    council_grades: [],
+    council_topics: [],
     evaluations: [],
-    grades: [
-        {
-            id: 1,
-            name: '1° ano A',
-            level: 1,
-            active: true
-        }, {
-            id: 2,
-            name: '1° ano B',
-            level: 1,
-            active: true
-        }, {
-            id: 3,
-            name: '2° ano A',
-            level: 2,
-            active: true
-        }, {
-            id: 4,
-            name: '2° ano B',
-            level: 2,
-            active: false
-        }
-    ], // grade subjects, grade observations
-    medical_reports: [], // medical report subjects
-    permissions: [],
-    roles: [],
-    role_types: [
-        {
-            id: 1,
-            name: 'Professor'
-        }, {
-            id: 2,
-            name: 'Supervisor'
-        }, {
-            id: 3,
-            name: 'Secretária'
-        }, {
-            id: 4,
-            name: 'Pedagoga'
-        }
-    ], // role type permissions
-    school: {},
-    students: [ // student grades, student observations
-        {
-            id: 1,
-            name: 'Ayrton Fidelis',
-            grades: [
-                {
-                    id: 1,
-                    number: 5,
-                    start_date: '2017-01-01',
-                    end_date: '2017-12-31',
-                    grade_id: 1
-                }, {
-                    id: 2,
-                    number: 4,
-                    start_date: '2018-01-01',
-                    end_date: '2018-12-31',
-                    grade_id: 3
-                }
-            ]
-        }, {
-            id: 2,
-            name: 'John Doe',
-            grades: [
-                {
-                    id: 3,
-                    number: 19,
-                    start_date: '2017-01-01',
-                    end_date: '2017-12-31',
-                    grade_id: 1
-                }, {
-                    id: 4,
-                    number: 17,
-                    start_date: '2018-01-01',
-                    end_date: '2018-12-31',
-                    grade_id: 3
-                }
-            ]
-        }, {
-            id: 3,
-            name: 'João José',
-            grades: [
-                {
-                    id: 5,
-                    number: 19,
-                    start_date: '2017-01-01',
-                    end_date: '2017-12-31',
-                    grade_id: 2
-                }, {
-                    id: 6,
-                    number: 17,
-                    start_date: '2018-01-01',
-                    end_date: '2018-12-31',
-                    grade_id: 3
-                }
-            ]
-        }, {
-            id: 4,
-            name: 'Maria José',
-            grades: [
-                {
-                    id: 7,
-                    number: 24,
-                    start_date: '2017-01-01',
-                    end_date: '2017-12-31',
-                    grade_id: 1
-                }, {
-                    id: 8,
-                    number: 22,
-                    start_date: '2018-01-01',
-                    end_date: '2018-12-31',
-                    grade_id: 4
-                }
-            ]
-        }, {
-            id: 5,
-            name: 'Galvão Bueno',
-            grades: [
-                {
-                    id: 9,
-                    number: 15,
-                    start_date: '2017-01-01',
-                    end_date: '2017-12-31',
-                    grade_id: 2
-                }, {
-                    id: 10,
-                    number: 13,
-                    start_date: '2018-01-01',
-                    end_date: '2018-12-31',
-                    grade_id: 4
-                }
-            ]
-        }
-    ],
-    subjects: [
-        {
-            id: 1,
-            name: 'Matemática',
-            active: true
-        }, {
-            id: 2,
-            name: 'Português',
-            active: true
-        }, {
-            id: 3,
-            name: 'Biologia',
-            active: true
-        }, {
-            id: 4,
-            name: 'Sociologia',
-            active: true
-        }, {
-            id: 5,
-            name: 'Filosofia',
-            active: true
-        }, {
-            id: 6,
-            name: 'Programação',
-            active: true
-        }, {
-            id: 7,
-            name: 'TGA',
-            active: true
-        }, {
-            id: 8,
-            name: 'Literatura',
-            active: true
-        }, {
-            id: 9,
-            name: 'Ciências',
-            active: false
-        }
-    ],
-    teachers: [],
-    teacher_requests: [],
-    topics: [
-        {
-            id: 1,
-            active: true,
-            name: 'Facilidade de aprendizado',
-            default: 2,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Acima da média',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Regular',
-                    value: 50
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Abaixo da média',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 2,
-            active: true,
-            name: 'Tarefas de casa',
-            default: 2,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Sempre no prazo',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Algumas vezes atraza',
-                    value: 75
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Atraza mas faz',
-                    value: 50
-                }, {
-                    id: 4,
-                    active: true,
-                    name: 'Algumas vezes faz, outras não',
-                    value: 25
-                }, {
-                    id: 5,
-                    active: true,
-                    name: 'Geralmente não faz',
-                    value: 0
-                }, {
-                    id: 6,
-                    active: false,
-                    name: 'Nunca faz',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 3,
-            active: true,
-            name: 'Atividades de sala',
-            default: 1,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Sempre faz',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Algumas vezes faz, outras não',
-                    value: 66
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Não faz mas não atrapalha',
-                    value: 33
-                }, {
-                    id: 4,
-                    active: true,
-                    name: 'Não faz e atrapalha',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 4,
-            active: true,
-            name: 'Frequência',
-            default: 2,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Sempre está presente',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Falta poucas vezes',
-                    value: 66
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Falta bastate',
-                    value: 33
-                }, {
-                    id: 4,
-                    active: true,
-                    name: 'Nunca está presente',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 5,
-            active: true,
-            name: 'Disciplina',
-            default: 1,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Excelente',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Boa',
-                    value: 66
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Pode melhorar',
-                    value: 33
-                }, {
-                    id: 4,
-                    active: true,
-                    name: 'Ruim',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 6,
-            active: true,
-            name: 'Provas',
-            default: 1,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Realizou todas',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Não realizou alguma',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 7,
-            active: true,
-            name: 'Material',
-            default: 1,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Sempre traz',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Algumas vezes traz, outras não',
-                    value: 50
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Geralmente não traz',
-                    value: 0
-                }
-            ]
-        },
-        {
-            id: 9,
-            active: false,
-            name: 'Conversa',
-            default: 2,
-            options: [
-                {
-                    id: 1,
-                    active: true,
-                    name: 'Quieto',
-                    value: 100
-                }, {
-                    id: 2,
-                    active: true,
-                    name: 'Conversa pouco',
-                    value: 66
-                }, {
-                    id: 3,
-                    active: true,
-                    name: 'Conversa bastate',
-                    value: 33
-                }, {
-                    id: 4,
-                    active: true,
-                    name: 'Conversa demais',
-                    value: 0
-                }
-            ]
-        }
-    ], // topic options
-    users: [
-        {
-            id: 1,
-            name: 'Ayrton Fidelis'
-        }, {
-            id: 2,
-            name: 'John Doe'
-        }
-    ]
+    grades: [],
+    grade_subjects: [],
+    grade_observations: [],
+    medical_reports: [],
+    medical_report_subjects: [],
+    role_types: [],
+    role_type_permissions: [],
+    schools: [],
+    students: [],
+    student_grades: [],
+    subjects: [],
+    topics: [],
+    topic_options: [],
+    users: []
 }
 
 if (document.location.pathname.endsWith('evaluate.html')) {
     let current_council_id = new URL(document.location.href).searchParams.get('id')
     data.current_council = data.councils.find(function(council) {
-        return council.id == current_council_id;
+        return council.id == current_council_id
     })
 }
 
@@ -475,3 +40,169 @@ var app = new Vue({
     el: '#app',
     data: data
 })
+
+var db = new Dexie('conselho', {addons: [dexieRelationships]})
+db.version(1).stores({
+    councils: 'id, name, active, start_date, end_date',
+    council_grades: 'id, council_id -> councils.id, grade_id -> grades.id',
+    council_topics: 'id, council_id -> councils.id, topic_id -> topics.id',
+    evaluations: 'id, council_id -> councils.id, user_id -> users.id, student_id -> students.id, grade_id -> grades.id, subject_id -> subjects.id, topic_id -> topics.id, topic_option_id -> topic_options.id',
+    grades: 'id, name, level, active',
+    grade_subjects: 'id, grade_id -> grades.id, subject_id -> subjects.id',
+    grade_observations: 'id, grade_id -> grades.id, council_id -> councils.id, user_id -> users.id, subject_id -> subjects.id, observation',
+    medical_reports: 'id, student_id -> students.id',
+    medical_report_subjects: 'id, medical_report_id -> medical_reports.id, subject_id -> subjects.id',
+    role_types: 'id, name',
+    role_type_permissions: 'id, role_type_id -> role_types.id, permission_id -> permissions.id',
+    schools: 'id, name',
+    students: 'id, name',
+    student_grades: 'id, number, start_date, end_date, grade_id -> grades.id, student_id -> students.id',
+    subjects: 'id, name, active',
+    topics: 'id, active, name, topic_option_id -> topic_options.id',
+    topic_options: 'id, active, name, value',
+    users: 'id, name, &email'
+
+})
+
+db.tables.forEach((table) => {
+    let table_name = table.name
+    db[table_name].toArray().then((items) => {
+        app._data[table_name].push(...items)
+    })
+})
+
+function seed() {
+    return db.transaction('rw', db.councils, db.council_grades, db.council_topics, db.evaluations, db.grades,
+        db.grade_subjects, db.grade_observations, db.medical_reports, db.medical_report_subjects, db.role_types,
+        db.role_type_permissions, db.schools, db.students, db.student_grades, db.subjects, db.topics, db.topic_options, db.users, () => {
+            api_fetch('council').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.councils.bulkAdd(data.results);
+            })
+            api_fetch('council_grade').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.council_grades.bulkAdd(data.results);
+            })
+            api_fetch('council_topic').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.council_topics.bulkAdd(data.results);
+            })
+            api_fetch('evaluation').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.evaluations.bulkAdd(data.results);
+            })
+            api_fetch('grade').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.grades.bulkAdd(data.results);
+            })
+            api_fetch('grade_subject').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.grade_subjects.bulkAdd(data.results);
+            })
+            api_fetch('grade_observation').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.grade_observations.bulkAdd(data.results);
+            })
+            api_fetch('medical_report').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.medical_reports.bulkAdd(data.results);
+            })
+            api_fetch('medical_report_subject').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.medical_report_subjects.bulkAdd(data.results);
+            })
+            api_fetch('role_type').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.role_types.bulkAdd(data.results);
+            })
+            api_fetch('role_type_permission').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.role_type_permissions.bulkAdd(data.results);
+            })
+            api_fetch('school').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.schools.bulkAdd(data.results);
+            })
+            api_fetch('student').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.students.bulkAdd(data.results);
+            })
+            api_fetch('student_grade').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.student_grades.bulkAdd(data.results);
+            })
+            api_fetch('subject').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.subjects.bulkAdd(data.results);
+            })
+            api_fetch('topic').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.topics.bulkAdd(data.results);
+            })
+            api_fetch('topic_option').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.topic_options.bulkAdd(data.results);
+            })
+            api_fetch('user').then((response) => {
+                return response.json()
+            }).then((data) => {
+                db.users.bulkAdd(data.results);
+            })
+        })
+}
+
+var login = {
+    id: 3,
+    name: 'John Doe',
+    email: 'john.doe@email.com',
+    password: 'johndoe'
+}
+
+function api_fetch(path, method, body, headers) {
+    if (method === undefined) {
+        method = 'GET'
+    }
+
+    if (body === undefined || body === null || method === 'GET') {
+        body = undefined
+    } else {
+        body = JSON.stringify(body)
+    }
+
+    if (headers === undefined) {
+        headers = {}
+    }
+
+    headers = new Headers(headers)
+    headers.set('Timezone', '-03:00')
+    headers.set('Accept', 'application/json; charset=UTF-8')
+    headers.set('Content-Type', 'application/json')
+    headers.set('Token', '35b8f07e9c53e59e7697aba208f86dec314f9f3e9fe286b169d19b39b74bb94f')
+
+    let url = 'https://conselho-api.infomec.net.br/'+path
+    let options = {
+        headers: headers,
+        method: method,
+        mode: 'cors',
+        body: body
+    }
+
+    return fetch(url, options)
+}

@@ -8,6 +8,7 @@ var data = {
         id: 1,
         name: 'Ayrton Fidelis'
     },
+    notification: {},
 
     councils: [],
     council_grades: [],
@@ -18,6 +19,7 @@ var data = {
     grade_observations: [],
     medical_reports: [],
     medical_report_subjects: [],
+    permissions: [],
     role_types: [],
     role_type_permissions: [],
     schools: [],
@@ -43,129 +45,68 @@ var app = new Vue({
 
 var db = new Dexie('conselho', {addons: [dexieRelationships]})
 db.version(1).stores({
-    councils: 'id, name, active, start_date, end_date',
-    council_grades: 'id, council_id -> councils.id, grade_id -> grades.id',
-    council_topics: 'id, council_id -> councils.id, topic_id -> topics.id',
-    evaluations: 'id, council_id -> councils.id, user_id -> users.id, student_id -> students.id, grade_id -> grades.id, subject_id -> subjects.id, topic_id -> topics.id, topic_option_id -> topic_options.id',
-    grades: 'id, name, level, active',
-    grade_subjects: 'id, grade_id -> grades.id, subject_id -> subjects.id',
-    grade_observations: 'id, grade_id -> grades.id, council_id -> councils.id, user_id -> users.id, subject_id -> subjects.id, observation',
-    medical_reports: 'id, student_id -> students.id',
-    medical_report_subjects: 'id, medical_report_id -> medical_reports.id, subject_id -> subjects.id',
-    role_types: 'id, name',
-    role_type_permissions: 'id, role_type_id -> role_types.id, permission_id -> permissions.id',
-    schools: 'id, name',
-    students: 'id, name',
-    student_grades: 'id, number, start_date, end_date, grade_id -> grades.id, student_id -> students.id',
-    subjects: 'id, name, active',
-    topics: 'id, active, name, topic_option_id -> topic_options.id',
-    topic_options: 'id, active, name, value',
-    users: 'id, name, &email'
+    councils: 'id, name, active, start_date, end_date, created_at, updated_at',
+    council_grades: 'id, council_id -> councils.id, grade_id -> grades.id, created_at, updated_at',
+    council_topics: 'id, council_id -> councils.id, topic_id -> topics.id, created_at, updated_at',
+    evaluations: 'id, council_id -> councils.id, user_id -> users.id, student_id -> students.id, grade_id -> grades.id, subject_id -> subjects.id, topic_id -> topics.id, topic_option_id -> topic_options.id, created_at, updated_at',
+    grades: 'id, name, level, active, created_at, updated_at',
+    grade_subjects: 'id, grade_id -> grades.id, subject_id -> subjects.id, created_at, updated_at',
+    grade_observations: 'id, grade_id -> grades.id, council_id -> councils.id, user_id -> users.id, subject_id -> subjects.id, observation, created_at, updated_at',
+    medical_reports: 'id, student_id -> students.id, created_at, updated_at',
+    medical_report_subjects: 'id, medical_report_id -> medical_reports.id, subject_id -> subjects.id, created_at, updated_at',
+    permissions: 'id, name, reference, created_at, updated_at',
+    role_types: 'id, name, created_at, updated_at',
+    role_type_permissions: 'id, role_type_id -> role_types.id, permission_id -> permissions.id, created_at, updated_at',
+    schools: 'id, name, created_at, updated_at',
+    students: 'id, name, created_at, updated_at',
+    student_grades: 'id, number, start_date, end_date, grade_id -> grades.id, student_id -> students.id, created_at, updated_at',
+    subjects: 'id, name, active, created_at, updated_at',
+    topics: 'id, active, name, topic_option_id -> topic_options.id, created_at, updated_at',
+    topic_options: 'id, active, name, value, created_at, updated_at',
+    users: 'id, name, &email, created_at, updated_at'
 
 })
 
 db.tables.forEach((table) => {
     let table_name = table.name
-    db[table_name].toArray().then((items) => {
-        app._data[table_name].push(...items)
-    })
+    update_view_data(table_name)
 })
 
-function seed() {
-    return db.transaction('rw', db.councils, db.council_grades, db.council_topics, db.evaluations, db.grades,
-        db.grade_subjects, db.grade_observations, db.medical_reports, db.medical_report_subjects, db.role_types,
-        db.role_type_permissions, db.schools, db.students, db.student_grades, db.subjects, db.topics, db.topic_options, db.users, () => {
-            api_fetch('council').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.councils.bulkAdd(data.results);
-            })
-            api_fetch('council_grade').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.council_grades.bulkAdd(data.results);
-            })
-            api_fetch('council_topic').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.council_topics.bulkAdd(data.results);
-            })
-            api_fetch('evaluation').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.evaluations.bulkAdd(data.results);
-            })
-            api_fetch('grade').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.grades.bulkAdd(data.results);
-            })
-            api_fetch('grade_subject').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.grade_subjects.bulkAdd(data.results);
-            })
-            api_fetch('grade_observation').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.grade_observations.bulkAdd(data.results);
-            })
-            api_fetch('medical_report').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.medical_reports.bulkAdd(data.results);
-            })
-            api_fetch('medical_report_subject').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.medical_report_subjects.bulkAdd(data.results);
-            })
-            api_fetch('role_type').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.role_types.bulkAdd(data.results);
-            })
-            api_fetch('role_type_permission').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.role_type_permissions.bulkAdd(data.results);
-            })
-            api_fetch('school').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.schools.bulkAdd(data.results);
-            })
-            api_fetch('student').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.students.bulkAdd(data.results);
-            })
-            api_fetch('student_grade').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.student_grades.bulkAdd(data.results);
-            })
-            api_fetch('subject').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.subjects.bulkAdd(data.results);
-            })
-            api_fetch('topic').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.topics.bulkAdd(data.results);
-            })
-            api_fetch('topic_option').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.topic_options.bulkAdd(data.results);
-            })
-            api_fetch('user').then((response) => {
-                return response.json()
-            }).then((data) => {
-                db.users.bulkAdd(data.results);
-            })
+function update_view_data(resource) {
+    if (resource === undefined) {
+        let tables = db.tables.forEach((table) => {
+            return update_view_data(table.name)
         })
+    } else {
+        return db[resource].toArray().then((items) => {
+            app._data[resource] = []
+            app._data[resource].push(...items)
+        })
+    }
+}
+
+function seed() {
+    let promises = []
+
+    db.tables.forEach((table) => {
+        let table_name = table.name
+        let path = table_name.slice(0, -1)
+
+        let promise = api_fetch(path).then((response) => {
+            // get data from api
+            return response.json()
+        }).then((data) => {
+            // put data into db
+            return db[table_name].bulkPut(data.results)
+        })
+
+        promises.push(promise)
+    })
+
+    return Promise.all(promises).then(() => {
+        // when all data is updated into the db, update the view
+        update_view_data()
+    })
 }
 
 var login = {
@@ -180,9 +121,10 @@ function api_fetch(path, method, body, headers) {
         method = 'GET'
     }
 
-    if (body === undefined || body === null || method === 'GET') {
-        body = undefined
+    if (method === 'GET' || method === 'DELETE') {
+        body === undefined
     } else {
+        body.school_id = 1
         body = JSON.stringify(body)
     }
 
@@ -194,9 +136,9 @@ function api_fetch(path, method, body, headers) {
     headers.set('Timezone', '-03:00')
     headers.set('Accept', 'application/json; charset=UTF-8')
     headers.set('Content-Type', 'application/json')
-    headers.set('Token', '35b8f07e9c53e59e7697aba208f86dec314f9f3e9fe286b169d19b39b74bb94f')
+    headers.set('Token', '7dcf24993c3a1087b12ecc8f383bc318280b417398ee040d620720fc1b8b0e21')
 
-    let url = 'https://conselho-api.infomec.net.br/'+path
+    let url = 'http://localhost/conselho-server/'+path
     let options = {
         headers: headers,
         method: method,
@@ -204,5 +146,129 @@ function api_fetch(path, method, body, headers) {
         body: body
     }
 
-    return fetch(url, options)
+    return fetch(url, options).then((response) => {
+        if (!response.ok) {
+            throw response
+        }
+        return response
+    })
+}
+
+function form_submit(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let resource = form.dataset.resource
+    let form_data = new FormData(form)
+    var data = {}
+    form_data.forEach(function(value, field) {
+        data[field] = value
+    })
+
+    form.querySelectorAll('[type=checkbox]').forEach((checkbox) => {
+        data[checkbox.name] = checkbox.checked
+    })
+
+    save_resource(resource, data).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function delete_resource(resource_name, id) {
+    document.location.hash = '' // closes modal
+
+    return api_fetch(resource_name+'/'+id, 'DELETE').then((response) => {
+        return db[resource_name+'s'].where({id: ''+id}).delete()
+    }).then(() => {
+        update_view_data(resource_name+'s')
+        notify('Sucesso!', 'Excluído com sucesso', 'success')
+    }).catch(() => {
+        notify('Erro!', 'Não foi possível excluir', 'danger')
+    })
+}
+
+function save_resource(resource_name, data) {
+    var path = resource_name
+    var method = 'POST'
+
+    if (data.id !== undefined) {
+        path += '/'+data.id
+        method = 'PATCH'
+    }
+
+    return api_fetch(path, method, data).then(function(response) {
+        return response.json()
+    }).then(function(json) {
+        if (json.created_at !== undefined) {
+            data.id = json.id
+            data.created_at = json.created_at
+            data.updated_at = json.created_at
+        } else {
+            data.updated_at = json.updated_at
+        }
+        return db[resource_name+'s'].put(data).then(() => {
+            return update_view_data(resource_name+'s')
+        })
+    })
+}
+
+function notify(title, message, style, time) {
+    if (time === undefined) {
+        time = 5000
+    }
+
+    if (style === undefined) {
+        style = 'info'
+    }
+
+    var icon
+    if (style === 'success') {
+        icon = 'check'
+    } else if (style === 'danger') {
+        icon = 'close'
+    } else if (style === 'warning') {
+        icon = 'warning'
+    } else if (style === 'info' || style === 'primary') {
+        icon = 'info'
+    }
+
+    let timestamp = Date.now().toString()
+
+    document.getElementById('no-notification').checked = true
+
+    // it there's already a notification, delay to transition
+    let start_delay = Object.keys(app.notification).length > 0 ? 500 : 0
+
+    setTimeout(() => {
+        app.notification = {
+            style: style,
+            icon: icon,
+            title: title,
+            message: message,
+            timestamp: timestamp
+        }
+
+        document.getElementById('notification-shown').checked = true
+
+        setTimeout(() => {
+            if (app.notification.timestamp !== timestamp) {
+                return
+            }
+
+            document.getElementById('no-notification').checked = true
+
+            setTimeout(() => { // delay to transition
+                if (app.notification.timestamp !== timestamp) {
+                    return
+                }
+
+                app.notification = {}
+            }, 500)
+        }, time)
+    }, start_delay)
 }

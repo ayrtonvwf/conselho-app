@@ -17,7 +17,7 @@ html
         script(src='node_modules/vue/dist/vue.js')
         script(src='node_modules/dexie/dist/dexie.min.js')
         script(src='node_modules/dexie-relationships/dist/index.min.js')
-    body
+    body.mark-required
         form#form-valid-support-helper
             input(required)
         #app
@@ -84,4 +84,12 @@ html
                         | {{ council.name }}
                 main.content.mark-required
                     block content
+            input(type='radio' name='notification-toggle' class='notification-toggle notification-start-hidden' checked)
+            input(type='radio' name='notification-toggle' class='notification-toggle' id='no-notification')
+            input(type='radio' name='notification-toggle' class='notification-toggle' id='notification-shown')
+            .notification(:class='"notification-"+notification.style' v-if='Object.keys(notification).length > 0')
+                label(for='no-notification' class='notification-dismiss material-icons') close
+                .notification-icon.material-icons(v-if='notification.icon !== undefined') {{ notification.icon }}
+                .notification-title {{ notification.title }}
+                | {{ notification.message }}
         script(src='js/main.js')

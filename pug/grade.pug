@@ -20,13 +20,8 @@ block content
                     tbody
                         tr(v-for='grade in grades')
                             td {{ grade.name }}
+                                span.text-muted(v-if='!grade.active')  invisível
                             td.text-right.no-wrap
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-"+grade.id' title='Esconder turma' v-if='grade.active')
-                                    .material-icons visibility_off
-                                    span.d-none.d-md-inline  Esconder
-                                a.btn-success.btn-sm.tooltip.tooltip-end(:href='"#modal-"+grade.id' title='Mostrar turma' v-if='!grade.active')
-                                    .material-icons visibility
-                                    span.d-none.d-md-inline  Mostrar
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + grade.id' title='Editar informações da turma')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
@@ -38,55 +33,53 @@ block content
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form.mark-required
+                    form(action='#' data-resource='grade' data-success='Turma cadastrada com sucesso' data-error='Não foi possível cadastrar a turma' onsubmit='form_submit(event)')
+                        input(type='hidden' name='active' value='1')
                         br
                         .row
                             .col-sm-8.input
-                                input(required placeholder='Ex.: 1° Ano A')
+                                input(required placeholder='Ex.: 1° Ano A' name='name')
                                 label Nome
                             .col-sm-4.input
-                                input(type='number' required min='1' placeholder='Ex. 1° ano: 1')
+                                input(type='number' required min='1' placeholder='Ex. 1° ano: 1' name='level')
                                 label Nível
                                     |
                                     |
                                     .material-icons.tooltip.tooltip-left.tooltip-start(data-tooltip!='1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc') info
                         br
                         a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                        a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                        button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                         br
     a.modal-close(href='#')
 
     div(v-for='grade in grades')
-        div.modal.modal-xs(:id='"modal-" + grade.id' :class='grade.active ? "modal-danger" : "modal-success"')
-            .modal-header {{ grade.active ? 'Esconder' : 'Mostrar' }} turma
-            .modal-body
-                p Tem certeza que deseja {{ grade.active ? 'esconder' : 'mostrar' }} esta turma?
-            .modal-footer
-                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                a.btn-danger.btn-sm.pull-right(href='#' v-if='grade.active') #[.material-icons visibility_off]  Esconder
-                a.btn-success.btn-sm.pull-right(href='#' v-if='!grade.active') #[.material-icons visibility]  Mostrar
-        a.modal-close(href='#')
-
         div.modal(:id='"modal-edit-" + grade.id')
             .modal-header Editar turma
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
-                        form.mark-required
+                        form(action='#' data-resource='grade' data-success='Turma editada com sucesso' data-error='Não foi possível editar a turma' onsubmit='form_submit(event)')
+                            input(type='hidden' name='id' :value='grade.id')
                             br
                             .row
                                 .col-sm-8.input
-                                    input(required :value='grade.name' placeholder='Ex.: 1° Ano A')
+                                    input(required :value='grade.name' placeholder='Ex.: 1° Ano A' name='name')
                                     label Nome
                                 .col-sm-4.input
-                                    input(type='number' required :value='grade.level' min='1' placeholder='Ex.: 1')
+                                    input(type='number' required :value='grade.level' min='1' placeholder='Ex.: 1' name='level')
                                     label Nível
                                         |
                                         |
                                         .material-icons.tooltip.tooltip-left.tooltip-start(data-tooltip!='1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc') info
+                            .row
+                                .col-12.text-center
+                                    label
+                                        br
+                                        input(name='active' value='1' :checked='grade.active' type='checkbox')
+                                        | Visível
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                            a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                            button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                             br
         a.modal-close(href='#')
 
@@ -96,5 +89,5 @@ block content
                 p Tem certeza que deseja remover esta turma?
             .modal-footer
                 a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                a.btn-danger.btn-sm.pull-right(href='#') #[.material-icons delete]  Remover
+                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("grade", \'+grade.id+\')\'') #[.material-icons delete]  Remover
         a.modal-close(href='#')

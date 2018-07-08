@@ -1,9 +1,7 @@
 var data = {
+    paginate: ['subjects'],
     pathname: document.location.pathname,
-    token: {
-        value: '68fba17762ba2728abedd746b5b5e9112f5d41ac65fc50f906eef3c543467cd4',
-        expires_at: ''
-    },
+    token: {},
     user: {
         id: 1,
         name: 'Ayrton Fidelis'
@@ -29,6 +27,11 @@ var data = {
     topics: [],
     topic_options: [],
     users: []
+}
+
+let token = JSON.parse(localStorage.getItem('token'))
+if (!token || new Date(token.expires_at) < new Date()) {
+    location.href = 'login.html'
 }
 
 if (document.location.pathname.endsWith('evaluate.html')) {
@@ -136,7 +139,7 @@ function api_fetch(path, method, body, headers) {
     headers.set('Timezone', '-03:00')
     headers.set('Accept', 'application/json; charset=UTF-8')
     headers.set('Content-Type', 'application/json')
-    headers.set('Token', '7dcf24993c3a1087b12ecc8f383bc318280b417398ee040d620720fc1b8b0e21')
+    headers.set('Token', token.value)
 
     let url = 'http://localhost/conselho-server/'+path
     let options = {

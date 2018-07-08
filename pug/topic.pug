@@ -38,10 +38,10 @@ block content
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form.mark-required
+                    form(action='#' data-success='Tópico cadastrado com sucesso' data-error='Não foi possível cadastrar o tópico' onsubmit='submit_topic(event)')
                         br
                         .input
-                            input(required placeholder='Ex.: Tarefas de casa')
+                            input(required placeholder='Ex.: Tarefas de casa' name='name')
                             label Nome
                         hr
                         .h4 Opções de resposta
@@ -49,30 +49,30 @@ block content
                             thead
                                 tr
                                     th Nome
-                                    th Valor (0-100)
+                                    th.no-wrap Valor (0-100)
+                                    th.text-center Padrão
                             tbody
-                                tr
+                                tr(v-for='(question_option, i) in new_question_options')
                                     td
                                         .input
-                                            input(required style='margin: 0px' placeholder='Ex.: Excelente')
+                                            input(required style='margin: 0px' placeholder='Ex.: Excelente' v-model='question_option.name' name='option_name[]')
                                     td
                                         .input
-                                            input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100')
-                                    td.text-right.no-wrap(style='margin-top: -2px')
-                                        button.btn-danger.tooltip.tooltip-end(title='Esconder opção de resposta' style='margin: 0px 2px' disabled)
-                                            .material-icons visibility_off
-                                            span.d-none.d-md-inline  Esconder
-                                        button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px' disabled)
+                                            input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100' v-model='question_option.value' name='option_value[]')
+                                    td.text-center
+                                            input(type='radio' name='option_default' value='1' v-model='question_option.default')
+                                    td.text-right(style='margin-top: -2px')
+                                        button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px' :disabled='new_question_options.length <= 2' v-on:click='new_question_options.splice(i, 1)' type='button')
                                             .material-icons delete
                                             span.d-none.d-md-inline  Remover
                         .text-center
-                            button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico')
+                            button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico' type='button' v-on:click='new_question_options.push({})')
                                 .material-icons add
                                 | Criar nova opção
                         br
                         br
                         a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                        a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                        button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                         br
     a.modal-close(href='#')
 

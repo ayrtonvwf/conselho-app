@@ -7,6 +7,7 @@ var data = {
         name: 'Ayrton Fidelis'
     },
     notification: {},
+    new_question_options: [{}],
 
     councils: [],
     council_grades: [],
@@ -217,7 +218,7 @@ function save_resource(resource_name, data) {
         return db[resource_name+'s'].put(data).then(() => {
             return update_view_data(resource_name+'s')
         })
-    })
+    }).then(() => data)
 }
 
 function notify(title, message, style, time) {
@@ -274,4 +275,61 @@ function notify(title, message, style, time) {
             }, 500)
         }, time)
     }, start_delay)
+}
+
+function submit_topic(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let resource = 'topic'
+    var topic = {
+        name: form.querySelector('[name=name]').value,
+        active: true
+    }
+
+    let option_name_inputs = form.querySelectorAll('[name="option_name[]"]')
+    let option_names = [].map.call(option_name_inputs, input => input.value)
+
+    let option_value_inputs = form.querySelectorAll('[name="option_value[]"]')
+    let option_values = [].map.call(option_value_inputs, input => input.value)
+
+    let option_default_inputs = form.querySelectorAll('[name=option_default]')
+    let option_defaults = [].map.call(option_default_inputs, input => input.checked)
+    let default_option_index = option_defaults.indexOf(true)
+
+    var options = []
+    option_names.forEach((name, i) => {
+        options.push({
+            name: name,
+            value: option_values[i],
+            active: true
+        })
+    })
+
+    return save_resource('topic', topic).then(response => {
+        topic.id = response.id
+
+        var save_options = []
+
+        options.forEach((option) => {
+            option.topic_id = topic.id
+            save_options.push(save_resource('topic_option', option))
+        })
+
+        return Promise.all(save_options)
+    }).then(promises_response => {
+        if (default_option_index === -1) {
+            return;
+        }
+
+        topic.topic_option_id = promises_response[default_option_index].id
+        return save_resource('topic', topic)
+    }).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
 }

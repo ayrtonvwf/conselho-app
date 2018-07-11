@@ -361,3 +361,37 @@ function topic_update(event) {
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
+
+function grade_save(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let grade = {
+        name: form.querySelector('[name=name]').value,
+        level: form.querySelector('[name=level]').value,
+        active: true
+    }
+
+    let grade_subject_inputs = form.querySelectorAll('[name="grade_subject[]"]:checked')
+    let grade_subject_ids = [].map.call(grade_subject_inputs, input => input.value)
+
+    return save_resource('grade', grade).then(response => {
+        let save_grade_subjects = []
+
+        grade_subject_ids.forEach(subject_id => {
+            save_grade_subjects.push(save_resource('grade_subject', {
+                subject_id: subject_id,
+                grade_id: response.id
+            }))
+        })
+
+        return Promise.all(save_grade_subjects)
+    }).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}

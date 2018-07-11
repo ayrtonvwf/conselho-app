@@ -33,7 +33,7 @@ block content
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form(action='#' data-resource='grade' data-success='Turma cadastrada com sucesso' data-error='Não foi possível cadastrar a turma' onsubmit='form_submit(event)')
+                    form(action='#' data-resource='grade' data-success='Turma cadastrada com sucesso' data-error='Não foi possível cadastrar a turma' onsubmit='grade_save(event)')
                         input(type='hidden' name='active' value='1')
                         br
                         .row
@@ -46,6 +46,12 @@ block content
                                     |
                                     |
                                     .material-icons.tooltip.tooltip-left.tooltip-start(data-tooltip!='1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc') info
+                        br
+                        .row
+                            .col-6.col-md-4(v-for='subject in subjects' v-if='subject.active')
+                                label
+                                    input(type='checkbox' name='grade_subject[]' :value='subject.id')
+                                    |  {{ subject.name }}
                         br
                         a.btn-danger(href='#') #[.material-icons close]  Cancelar
                         button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
@@ -77,6 +83,11 @@ block content
                                         br
                                         input(name='active' value='1' :checked='grade.active' type='checkbox')
                                         | Visível
+                            br
+                            .row
+                                .col-6.col-md-4(v-for='subject in subjects' v-if='grade_subjects.find(grade_subject => grade_subject.grade_id === grade.id && grade_subject.subject_id === subject.id) !== undefined')
+                                    .material-icons check
+                                    |  {{ subject.name }}
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
                             button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar

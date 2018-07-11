@@ -395,3 +395,40 @@ function grade_save(event) {
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
+
+function student_save(event) {
+    event.preventDefault()
+
+    let form = event.target
+    let student = {
+        name: form.querySelector('[name=name]').value,
+        active: true
+    }
+
+    return save_resource('student', student).then(response => {
+        return save_resource('student_grade', {
+            student_id: response.id,
+            grade_id: form.querySelector('[name=grade_id]').value,
+            number: form.querySelector('[name=number]').value,
+            start_date: '2018-01-01',
+            end_date: '2018-12-31'
+        })
+    }).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function student_toggle(student_id) {
+    let student_grade = app._data.student_grades.find(student_grade => parseInt(student_grade.student_id) === student_id)
+    student_grade.end_date = new Date(student_grade.end_date) <= new Date() ? '2018-12-31' : new Date().toISOString().slice(0, 10)
+
+    return save_resource('student_grade', student_grade).then(() => {
+        notify('Sucesso!', '', 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', '', 'danger')
+    })
+}

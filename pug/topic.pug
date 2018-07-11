@@ -21,12 +21,6 @@ block content
                         tr(v-for='topic in topics')
                             td {{ topic.name }}
                             td.text-right.no-wrap
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(title='Esconder tópico' v-if='topic.active' :href='"#modal-visibility-"+topic.id')
-                                    .material-icons visibility_off
-                                    span.d-none.d-md-inline  Esconder
-                                a.btn-success.btn-sm.tooltip.tooltip-end(title='Mostrar tópico' v-if='!topic.active' :href='"#modal-visibility-"+topic.id')
-                                    .material-icons visibility
-                                    span.d-none.d-md-inline  Mostrar
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-"+topic.id' title='Editar tópico e suas opções de resposta')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
@@ -52,21 +46,21 @@ block content
                                     th.no-wrap Valor (0-100)
                                     th.text-center Padrão
                             tbody
-                                tr(v-for='(question_option, i) in new_question_options')
+                                tr(v-for='(topic_option, i) in new_topic_options')
                                     td
                                         .input
-                                            input(required style='margin: 0px' placeholder='Ex.: Excelente' v-model='question_option.name' name='option_name[]')
+                                            input(required style='margin: 0px' placeholder='Ex.: Excelente' v-model='topic_option.name' name='option_name[]')
                                     td
                                         .input
-                                            input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100' v-model='question_option.value' name='option_value[]')
+                                            input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100' v-model='topic_option.value' name='option_value[]')
                                     td.text-center
-                                            input(type='radio' name='option_default' value='1' v-model='question_option.default')
+                                            input(type='radio' name='option_default' value='1' v-model='topic_option.default')
                                     td.text-right(style='margin-top: -2px')
-                                        button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px' :disabled='new_question_options.length <= 2' v-on:click='new_question_options.splice(i, 1)' type='button')
+                                        button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px' :disabled='new_topic_options.length <= 2' v-on:click='new_topic_options.splice(i, 1)' type='button')
                                             .material-icons delete
                                             span.d-none.d-md-inline  Remover
                         .text-center
-                            button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico' type='button' v-on:click='new_question_options.push({})')
+                            button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico' type='button' v-on:click='new_topic_options.push({})')
                                 .material-icons add
                                 | Criar nova opção
                         br
@@ -82,11 +76,19 @@ block content
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
-                        form.mark-required
+                        form(action='#' data-success='Tópico editado com sucesso' data-error='Não foi possível editar o tópico' onsubmit='topic_update(event)')
+                            input(type='hidden' name='id' :value='topic.id')
                             br
-                            .input
-                                input(required :value='topic.name' placeholder='Ex.: Tarefas de casa')
-                                label Nome
+                            .row
+                                .col-8
+                                    .input
+                                        input(required :value='topic.name' placeholder='Ex.: Tarefas de casa' name='name')
+                                        label Nome
+                                .col-4
+                                    br
+                                    label
+                                        input(type='checkbox' name='active' value='1' :checked='topic.active')
+                                        |  Visível
                             hr
                             .h4 Opções de resposta
                             table.table
@@ -94,32 +96,26 @@ block content
                                     tr
                                         th Nome
                                         th Valor (0-100)
+                                        th.text-center Padrão
                                 tbody
-                                    tr(v-for='option in topic.options')
+                                    tr(v-for='topic_option in orderedTopicOptions(topic.id)')
+                                        td
+                                            input(type='hidden' name='option_id[]' :value='topic_option.id')
+                                            .input
+                                                input(required :value='topic_option.name' style='margin: 0px' placeholder='Ex.: Excelente' name='option_name[]')
                                         td
                                             .input
-                                                input(required :value='option.name' style='margin: 0px')
-                                        td
-                                            .input
-                                                input(required :value='option.value' type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100')
-                                        td.text-right.no-wrap(style='margin-top: -2px')
-                                            button.btn-success.tooltip.tooltip-end(title='Mostrar opção de resposta' v-if='!option.active' style='margin: 0px 2px')
-                                                .material-icons visibility
-                                                span.d-none.d-md-inline  Mostrar
-                                            button.btn-danger.tooltip.tooltip-end(title='Esconder opção de resposta' v-if='option.active' style='margin: 0px 2px')
-                                                .material-icons visibility_off
-                                                span.d-none.d-md-inline  Esconder
-                                            button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px')
-                                                .material-icons delete
-                                                span.d-none.d-md-inline  Remover
+                                                input(required :value='topic_option.value' type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100' name='option_value[]')
+                                        td.text-center
+                                            input(type='radio' name='option_default' value='1' :checked='topic.topic_option_id === topic_option.id')
                             .text-center
-                                button.btn-primary.tooltip(title='Criar uma nova opção de resposta para este tópico')
+                                button.btn-primary.tooltip(type='button' title='Criar uma nova opção de resposta para este tópico' v-on:click='topic_options.push({topic_id: topic.id})')
                                     .material-icons add
                                     | Criar nova opção
                             br
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                            a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                            button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                             br
         a.modal-close(href='#')
 
@@ -139,5 +135,5 @@ block content
                 p Tem certeza que deseja remover este tópico?
             .modal-footer
                 a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                a.btn-danger.btn-sm.pull-right(href='#') #[.material-icons delete]  Remover
+                button.btn-danger.btn-sm.pull-right(:onclick='"delete_resource(\'topic\', "+topic.id+")"') #[.material-icons delete]  Remover
         a.modal-close(href='#')

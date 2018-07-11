@@ -1,5 +1,4 @@
-var data = {
-    paginate: ['subjects'],
+let data = {
     pathname: document.location.pathname,
     token: {},
     user: {
@@ -7,7 +6,7 @@ var data = {
         name: 'Ayrton Fidelis'
     },
     notification: {},
-    new_question_options: [{}],
+    new_topic_options: [{}],
 
     councils: [],
     council_grades: [],
@@ -37,88 +36,71 @@ if (!token || new Date(token.expires_at) < new Date()) {
 
 if (document.location.pathname.endsWith('evaluate.html')) {
     let current_council_id = new URL(document.location.href).searchParams.get('id')
-    data.current_council = data.councils.find(function(council) {
-        return council.id == current_council_id
-    })
+    data.current_council = data.councils.find(council => council.id === current_council_id)
 }
 
-var app = new Vue({
+let app = new Vue({
     el: '#app',
-    data: data
-})
+    data: data,
+    methods: {
+        orderedTopicOptions(topic_id) {
+            let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
+            // order by value desc
+            return topic_options.sort((a, b) => {
+                a = parseInt(a.value)
+                b = parseInt(b.value)
 
-var db = new Dexie('conselho', {addons: [dexieRelationships]})
-db.version(1).stores({
-    councils: 'id, name, active, start_date, end_date, created_at, updated_at',
-    council_grades: 'id, council_id -> councils.id, grade_id -> grades.id, created_at, updated_at',
-    council_topics: 'id, council_id -> councils.id, topic_id -> topics.id, created_at, updated_at',
-    evaluations: 'id, council_id -> councils.id, user_id -> users.id, student_id -> students.id, grade_id -> grades.id, subject_id -> subjects.id, topic_id -> topics.id, topic_option_id -> topic_options.id, created_at, updated_at',
-    grades: 'id, name, level, active, created_at, updated_at',
-    grade_subjects: 'id, grade_id -> grades.id, subject_id -> subjects.id, created_at, updated_at',
-    grade_observations: 'id, grade_id -> grades.id, council_id -> councils.id, user_id -> users.id, subject_id -> subjects.id, observation, created_at, updated_at',
-    medical_reports: 'id, student_id -> students.id, created_at, updated_at',
-    medical_report_subjects: 'id, medical_report_id -> medical_reports.id, subject_id -> subjects.id, created_at, updated_at',
-    permissions: 'id, name, reference, created_at, updated_at',
-    role_types: 'id, name, created_at, updated_at',
-    role_type_permissions: 'id, role_type_id -> role_types.id, permission_id -> permissions.id, created_at, updated_at',
-    schools: 'id, name, created_at, updated_at',
-    students: 'id, name, created_at, updated_at',
-    student_grades: 'id, number, start_date, end_date, grade_id -> grades.id, student_id -> students.id, created_at, updated_at',
-    subjects: 'id, name, active, created_at, updated_at',
-    topics: 'id, active, name, topic_option_id -> topic_options.id, created_at, updated_at',
-    topic_options: 'id, active, name, value, created_at, updated_at',
-    users: 'id, name, &email, created_at, updated_at'
+                if (a > b) {
+                    return -1
+                }
 
-})
+                if (a < b) {
+                    return 1
+                }
 
-db.tables.forEach((table) => {
-    let table_name = table.name
-    update_view_data(table_name)
-})
-
-function update_view_data(resource) {
-    if (resource === undefined) {
-        let tables = db.tables.forEach((table) => {
-            return update_view_data(table.name)
-        })
-    } else {
-        return db[resource].toArray().then((items) => {
-            app._data[resource] = []
-            app._data[resource].push(...items)
-        })
+                return 0
+            })
+        }
     }
-}
+})
+
+let resources = [
+    'council',
+    'council_grade',
+    'council_topic',
+    'evaluation',
+    'grade',
+    'grade_subject',
+    'grade_observation',
+    'medical_report',
+    'medical_report_subject',
+    'permission',
+    'role_type',
+    'role_type_permission',
+    'school',
+    'student',
+    'student_grade',
+    'subject',
+    'topic',
+    'topic_option',
+    'user'
+]
 
 function seed() {
     let promises = []
 
-    db.tables.forEach((table) => {
-        let table_name = table.name
-        let path = table_name.slice(0, -1)
-
-        let promise = api_fetch(path).then((response) => {
-            // get data from api
-            return response.json()
-        }).then((data) => {
-            // put data into db
-            return db[table_name].bulkPut(data.results)
-        })
+    resources.forEach(resource => {
+        let promise = api_fetch(resource)
+            .then(response => response.json())
+            .then(data => app._data[resource+'s'] = data.results)
 
         promises.push(promise)
     })
 
-    return Promise.all(promises).then(() => {
-        // when all data is updated into the db, update the view
-        update_view_data()
-    })
+    return Promise.all(promises)
 }
 
-var login = {
-    id: 3,
-    name: 'John Doe',
-    email: 'john.doe@email.com',
-    password: 'johndoe'
-}
+seed()
 
 function api_fetch(path, method, body, headers) {
     if (method === undefined) {
@@ -126,7 +108,7 @@ function api_fetch(path, method, body, headers) {
     }
 
     if (method === 'GET' || method === 'DELETE') {
-        body === undefined
+        body = undefined
     } else {
         body.school_id = 1
         body = JSON.stringify(body)
@@ -142,7 +124,7 @@ function api_fetch(path, method, body, headers) {
     headers.set('Content-Type', 'application/json')
     headers.set('Token', token.value)
 
-    let url = 'http://localhost/conselho-server/'+path
+    let url = 'https://conselho-api.infomec.net.br/'+path
     let options = {
         headers: headers,
         method: method,
@@ -166,8 +148,8 @@ function form_submit(event) {
     let form = event.target
     let resource = form.dataset.resource
     let form_data = new FormData(form)
-    var data = {}
-    form_data.forEach(function(value, field) {
+    let data = {}
+    form_data.forEach((value, field) => {
         data[field] = value
     })
 
@@ -186,10 +168,9 @@ function form_submit(event) {
 function delete_resource(resource_name, id) {
     document.location.hash = '' // closes modal
 
-    return api_fetch(resource_name+'/'+id, 'DELETE').then((response) => {
-        return db[resource_name+'s'].where({id: ''+id}).delete()
+    return api_fetch(resource_name+'/'+id, 'DELETE').then(() => {
+        return seed()
     }).then(() => {
-        update_view_data(resource_name+'s')
         notify('Sucesso!', 'Excluído com sucesso', 'success')
     }).catch(() => {
         notify('Erro!', 'Não foi possível excluir', 'danger')
@@ -197,27 +178,21 @@ function delete_resource(resource_name, id) {
 }
 
 function save_resource(resource_name, data) {
-    var path = resource_name
-    var method = 'POST'
+    let path = resource_name
+    let method = 'POST'
 
-    if (data.id !== undefined) {
+    if (data.id) {
         path += '/'+data.id
         method = 'PATCH'
     }
 
-    return api_fetch(path, method, data).then(function(response) {
+    return api_fetch(path, method, data).then(response => {
         return response.json()
-    }).then(function(json) {
-        if (json.created_at !== undefined) {
+    }).then((json) => {
+        if (json.id !== undefined) {
             data.id = json.id
-            data.created_at = json.created_at
-            data.updated_at = json.created_at
-        } else {
-            data.updated_at = json.updated_at
         }
-        return db[resource_name+'s'].put(data).then(() => {
-            return update_view_data(resource_name+'s')
-        })
+        return seed()
     }).then(() => data)
 }
 
@@ -230,7 +205,7 @@ function notify(title, message, style, time) {
         style = 'info'
     }
 
-    var icon
+    let icon
     if (style === 'success') {
         icon = 'check'
     } else if (style === 'danger') {
@@ -283,8 +258,7 @@ function submit_topic(event) {
     document.location.hash = '' // closes the current modal
 
     let form = event.target
-    let resource = 'topic'
-    var topic = {
+    let topic = {
         name: form.querySelector('[name=name]').value,
         active: true
     }
@@ -299,7 +273,7 @@ function submit_topic(event) {
     let option_defaults = [].map.call(option_default_inputs, input => input.checked)
     let default_option_index = option_defaults.indexOf(true)
 
-    var options = []
+    let options = []
     option_names.forEach((name, i) => {
         options.push({
             name: name,
@@ -311,10 +285,10 @@ function submit_topic(event) {
     return save_resource('topic', topic).then(response => {
         topic.id = response.id
 
-        var save_options = []
+        let save_options = []
 
-        options.forEach((option) => {
-            option.topic_id = topic.id
+        options.forEach(option => {
+            option.topic_id = response.id
             save_options.push(save_resource('topic_option', option))
         })
 
@@ -326,6 +300,60 @@ function submit_topic(event) {
 
         topic.topic_option_id = promises_response[default_option_index].id
         return save_resource('topic', topic)
+    }).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function topic_update(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let topic = {
+        id: form.querySelector('[name=id]').value,
+        name: form.querySelector('[name=name]').value,
+        active: form.querySelector('[name=active]').checked
+    }
+
+    let option_id_inputs = form.querySelectorAll('[name="option_id[]"]')
+    let option_ids = [].map.call(option_id_inputs, input => input.value)
+
+    let option_name_inputs = form.querySelectorAll('[name="option_name[]"]')
+    let option_names = [].map.call(option_name_inputs, input => input.value)
+
+    let option_value_inputs = form.querySelectorAll('[name="option_value[]"]')
+    let option_values = [].map.call(option_value_inputs, input => input.value)
+
+    let option_default_inputs = form.querySelectorAll('[name=option_default]')
+    let option_defaults = [].map.call(option_default_inputs, input => input.checked)
+    let default_option_index = option_defaults.indexOf(true)
+
+    topic.topic_option_id = option_ids[default_option_index]
+
+    let options = []
+    option_names.forEach((name, i) => {
+        options.push({
+            id: option_ids[i],
+            name: name,
+            value: option_values[i],
+            active: true,
+            topic_id: topic.id
+        })
+    })
+
+    return save_resource('topic', topic).then(response => {
+        let save_options = []
+
+        options.forEach(option => {
+            save_options.push(save_resource('topic_option', option))
+        })
+
+        return Promise.all(save_options)
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch((error) => {

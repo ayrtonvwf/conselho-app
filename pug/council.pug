@@ -20,17 +20,11 @@ block content
                             th.d-none.d-sm-table-cell Período
                             th.d-none.d-lg-table-cell Status
                     tbody
-                        tr(v-for='council in councils' :class='new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date() ? "text-bold" : ""')
+                        tr(v-for='council in councils' :class='activeCouncil(council.id) ? "text-bold" : ""')
                             td {{ council.name }}
                             td.d-none.d-sm-table-cell {{ new Date(council.start_date).toLocaleDateString('pt-BR') }} - {{ new Date(council.end_date).toLocaleDateString('pt-BR') }}
                             td.d-none.d-lg-table-cell {{ new Date() > new Date(council.end_date) ? 'Finalizado' : (new Date() < new Date(council.start_date) ? 'Aguardando início' : (council.active ? 'Acontecendo' : 'Pausado')) }}
                             td.text-right.no-wrap
-                                a.btn-success.btn-sm.tooltip.tooltip-end(:href='"#modal-" + council.id' title='Permitir novamente as avaliações neste conselho' v-if='new Date() >= new Date(council.start_date) && new Date() <= new Date(council.end_date) && !council.active')
-                                    .material-icons play_arrow
-                                    span.d-none.d-md-inline  Liberar
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-" + council.id' title='Pausar as avaliações neste conselho' v-if='new Date() >= new Date(council.start_date) && new Date() <= new Date(council.end_date) && council.active')
-                                    .material-icons pause
-                                    span.d-none.d-md-inline  Pausar
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + council.id' title='Editar informações do conselho')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
@@ -42,41 +36,37 @@ block content
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form.mark-required
+                    form(action='#' data-success='Conselho de classe criado com sucesso' data-error='Não foi possível criar o conselho de classe' onsubmit='council_save(event)')
                         br
                         .row
                             .col-md-4.input
-                                input(required :placeholder='"Ex.: "+ (~~((new Date().getMonth() + 1)/4)+1)+"° trimestre "+ new Date().getFullYear()')
+                                input(required :placeholder='"Ex.: "+ (~~((new Date().getMonth() + 1)/4)+1)+"° trimestre "+ new Date().getFullYear()' name='name')
                                 label Nome
                             .col-sm-6.col-md-4.input
-                                input(type='date' required)
+                                input(type='date' required name='start_date')
                                 label Data inicial
                                     |
                                     |
                                     .material-icons.tooltip(data-tooltip='Primeiro dia disponível para avaliação') help
                             .col-sm-6.col-md-4.input
-                                input(type='date' required)
+                                input(type='date' required name='end_date')
                                 label Data final
                                     |
                                     |
                                     .material-icons.tooltip(data-tooltip='Último dia disponível para avaliação') help
                         br
+                        .row
+                            .col-6.col-md-4(v-for='topic in topics' v-if='topic.active')
+                                label
+                                    input(type='checkbox' name='council_topic[]' :value='topic.id')
+                                    |  {{ topic.name }}
+                        br
                         a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                        a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
+                        button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                         br
     a.modal-close(href='#')
 
     div(v-for='council in councils')
-        div.modal.modal-xs(v-if='new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()' :id='"modal-" + council.id' :class='council.active ? "modal-danger" : "modal-success"')
-            .modal-header {{ council.active ? 'Pausar' : 'Liberar' }} avaliações
-            .modal-body
-                p Tem certeza que deseja {{ council.active ? 'pausar' : 'liberar' }} as avaliações neste conselho de classe?
-            .modal-footer
-                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                a.btn-danger.btn-sm.pull-right(href='#' v-if='council.active') #[.material-icons pause]  Pausar
-                a.btn-success.btn-sm.pull-right(href='#' v-if='!council.active') #[.material-icons play_arrow]  Liberar
-        a.modal-close(href='#')
-
         div.modal(:id='"modal-edit-" + council.id')
             .modal-header Editar conselho de classe
             .modal-body
@@ -100,6 +90,11 @@ block content
                                         |
                                         |
                                         .material-icons.tooltip(data-tooltip='Último dia disponível para avaliação') help
+                            br
+                            .row
+                                .col-6.col-md-4(v-for='topic in topics' v-if='council_topics.find(council_topic => council_topic.council_id === council.id && council_topic.topic_id === topic.id) !== undefined')
+                                    .material-icons check
+                                    |  {{ topic.name }}
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
                             a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar

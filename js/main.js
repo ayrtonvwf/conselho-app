@@ -60,6 +60,10 @@ let app = new Vue({
 
                 return 0
             })
+        },
+        activeCouncil(council_id) {
+            let council = this.councils.find(council => council.id === council_id)
+            return new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()
         }
     }
 })
@@ -430,5 +434,48 @@ function student_toggle(student_id) {
     }).catch((error) => {
         console.log('Error:', error)
         notify('Erro!', '', 'danger')
+    })
+}
+
+function council_save(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let council = {
+        name: form.querySelector('[name=name]').value,
+        start_date: form.querySelector('[name=start_date]').value,
+        end_date: form.querySelector('[name=end_date]').value,
+        active: true
+    }
+
+    let council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
+    let council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
+
+    return save_resource('council', council).then(response => {
+        let save_council_topics = []
+
+        council_topic_ids.forEach(topic_id => {
+            save_council_topics.push(save_resource('council_topic', {
+                topic_id: topic_id,
+                council_id: response.id
+            }))
+        })
+
+        let save_council_grades = []
+
+        app._data.grades.forEach(grade => {
+            save_council_grades.push(save_resource('council_grade', {
+                grade_id: grade.id,
+                council_id: response.id
+            }))
+        })
+        return Promise.all(save_council_topics.concat(save_council_grades))
+    }).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
     })
 }

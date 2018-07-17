@@ -479,3 +479,25 @@ function council_save(event) {
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
+
+function council_update(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let council = {
+        id: form.querySelector('[name=id]').value,
+        name: form.querySelector('[name=name]').value,
+        start_date: form.querySelector('[name=start_date]').value,
+        end_date: form.querySelector('[name=end_date]').value,
+        active: true
+    }
+
+    return save_resource('council', council).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch((error) => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}

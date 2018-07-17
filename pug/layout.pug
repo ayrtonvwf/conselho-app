@@ -76,7 +76,7 @@ html
                     a.menu-link(:href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id == council.id ? "menu-active" : ""' v-for='council in councils' v-if='new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date() && council.active')
                         i.material-icons edit
                         | {{ council.name }}
-                main.content.mark-required
+                main.content.mark-required.selection-danger
                     block content
             input(type='radio' name='notification-toggle' class='notification-toggle notification-start-hidden' checked)
             input(type='radio' name='notification-toggle' class='notification-toggle' id='no-notification')

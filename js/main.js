@@ -1,10 +1,7 @@
 let data = {
     pathname: document.location.pathname,
     token: {},
-    user: {
-        id: 1,
-        name: 'Ayrton Fidelis'
-    },
+    user: {},
     notification: {},
     new_topic_options: [{}],
 
@@ -87,6 +84,17 @@ let app = new Vue({
             let permission = this.permissions.find(permission => permission.reference === 'evaluate')
 
             return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id)
+        },
+        userHasPermission(permission_reference) {
+            let role_type = this.role_type(this.user.id)
+
+            if (role_type.id === undefined) {
+                return false;
+            }
+
+            let permission = this.permissions.find(permission => permission.reference === permission_reference)
+
+            return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
         }
     }
 })
@@ -136,6 +144,7 @@ function seed() {
         resources.forEach(resource => {
             app_data[resource+'s'] = fetched_data[resource+'s']
         })
+        app_data.user = app_data.users.find(user => parseInt(user.id) === token.user_id)
         app._data = app_data
     })
 }

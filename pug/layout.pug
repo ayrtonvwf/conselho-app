@@ -15,8 +15,6 @@ html
 
         // in production change to vue.min.js
         script(src='node_modules/vue/dist/vue.js')
-        script(src='node_modules/dexie/dist/dexie.min.js')
-        script(src='node_modules/dexie-relationships/dist/index.min.js')
     body.mark-required
         form#form-valid-support-helper
             input(required)
@@ -24,21 +22,6 @@ html
             header.header
                 a.header-button.main-button(href='index.html') Conselho
                 a.header-button.menu-toggle.material-icons(href='#menu') menu
-                // .header-pane
-                    button.header-button.material-icons(type='button') notifications
-                        span.header-button-label-red(v-if='notifications.length > 0') {{ notifications.length }}
-                    .header-pane-popup
-                        .header-pane-body
-                            div.text-center.text-muted(v-if='notifications.length === 0')
-                                br
-                                p Nenhuma notificação.
-                                br
-                            div(v-for="(notification, index) in notifications")
-                                a.no-link(href='#')
-                                    .header-notification-title {{ notification.title }}
-                                    .header-notification-description {{ notification.description }}
-                                        .text-muted {{ notification.date }}
-                                hr.margin-h-15(v-if="index+1 < notifications.length")
                 .header-pane
                     button.header-button(type='button') {{ user.name }}
                     .header-pane-popup
@@ -58,22 +41,25 @@ html
                     a.menu-link(href='index.html')
                         i.material-icons home
                         | Início
-                    a.menu-link(href='subject.html' :class='pathname.endsWith("subject.html") ? "menu-active" : ""')
+                    a.menu-link(href='subject.html' :class='pathname.endsWith("subject.html") ? "menu-active" : ""' v-if='userHasPermission("subject")')
                         i.material-icons book
                         | Matérias
-                    a.menu-link(href='topic.html' :class='pathname.endsWith("topic.html") ? "menu-active" : ""')
+                    a.menu-link(href='topic.html' :class='pathname.endsWith("topic.html") ? "menu-active" : ""' v-if='userHasPermission("topic")')
                         i.material-icons list
                         | Tópicos
-                    a.menu-link(href='grade.html' :class='pathname.endsWith("grade.html") ? "menu-active" : ""')
+                    a.menu-link(href='grade.html' :class='pathname.endsWith("grade.html") ? "menu-active" : ""' v-if='userHasPermission("grade")')
                         i.material-icons people
                         | Turmas
-                    a.menu-link(href='council.html' :class='pathname.endsWith("council.html") ? "menu-active" : ""')
+                    a.menu-link(href='council.html' :class='pathname.endsWith("council.html") ? "menu-active" : ""' v-if='userHasPermission("council")')
                         i.material-icons bar_chart
                         | Conselhos de Classe
-                    a.menu-link(href='role.html' :class='pathname.endsWith("role.html") ? "menu-active" : ""')
+                    a.menu-link(href='role.html' :class='pathname.endsWith("role.html") ? "menu-active" : ""' v-if='userHasPermission("role")')
                         i.material-icons supervisor_account
                         | Usuários
-                    a.menu-link(:href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id == council.id ? "menu-active" : ""' v-for='council in councils' v-if='new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date() && council.active')
+                    a.menu-link(href='teacher.html' :class='pathname.endsWith("teacher.html") ? "menu-active" : ""' v-if='userHasPermission("evaluate")')
+                         i.material-icons people
+                         | Turmas
+                    a.menu-link(:href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id == council.id ? "menu-active" : ""' v-for='council in councils' v-if='userHasPermission("evaluate") && activeCouncil(council.id)')
                         i.material-icons edit
                         | {{ council.name }}
                 main.content.mark-required.selection-primary

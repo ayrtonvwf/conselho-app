@@ -1,0 +1,97 @@
+extends layout.pug
+
+block content
+    h1.content-title
+        i.material-icons people
+        | Turma
+    article.box
+        .box-body
+            form(action='#' onsubmit='form_submit(event)' data-success='Cadastrado com sucesso!' data-error='Não foi possível cadastrar' data-resource='teacher_request')
+                .row.justify-content-center
+                    .col-12.col-md-9
+                        .row.justify-content-center
+                            .input.col-6.col-sm-4
+                                select#grade_id(required name='grade_id')
+                                    option(value='' hidden selected disabled) Selecione
+                                    option(v-for='grade in grades' :value='grade.id') {{ grade.name }}
+                                label(for='grade_id') Turma
+                            .input.col-6.col-sm-4
+                                select#subject_id(required name='subject_id')
+                                    option(value='' hidden selected disabled) Selecione
+                                    option(v-for='subject in subjects' :value='subject.id') {{ subject.name }}
+                                label(for='subject_id') Matéria
+                            .col-12.col-sm-3
+                                br.d-none.d-sm-inline
+                                button.btn-success(type='submit')
+                                    .material-icons check
+                                    |  Salvar
+            .table
+                table
+                    thead
+                        tr
+                            th Turma
+                            th Matéria
+                    tbody
+                        tr(v-for='teacher_request in teacher_requests' v-if='teacher_request.user_id === user.id')
+                            td {{ grades.find(grade => grade.id === teacher_request.grade_id).name }}
+                            td {{ subjects.find(subject => subject.id === teacher_request.subject_id).name }}
+                            td.text-muted Aguardando aprovação
+                            td.text-right.no-wrap
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-teacher_request-"+teacher_request.id' title='Remover')
+                                    .material-icons delete
+                                    span.d-none.d-md-inline  Remover
+                        tr(v-for='teacher in teachers' v-if='teacher.user_id === user.id')
+                            td {{ grades.find(grade => grade.id === teacher.grade_id).name }}
+                            td {{ subjects.find(subject => subject.id === teacher.subject_id).name }}
+                            td.text-right.no-wrap
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-teacher-"+teacher.id' title='Remover')
+                                    .material-icons delete
+                                    span.d-none.d-md-inline  Remover
+    div.modal#modal-new
+        .modal-header Nova turma
+        .modal-body
+            .row.justify-content-center
+                .col-sm-11
+                    form(action='#' data-resource='grade' data-success='Turma cadastrada com sucesso' data-error='Não foi possível cadastrar a turma' onsubmit='grade_save(event)')
+                        input(type='hidden' name='active' value='1')
+                        br
+                        .row
+                            .col-sm-8.input
+                                input(required placeholder='Ex.: 1° Ano A' name='name')
+                                label Nome
+                            .col-sm-4.input
+                                input(type='number' required min='1' placeholder='Ex. 1° ano: 1' name='level')
+                                label Nível
+                                    |
+                                    |
+                                    .material-icons.tooltip.tooltip-left.tooltip-start(data-tooltip!='1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc') info
+                        br
+                        .row
+                            .col-6.col-md-4(v-for='subject in subjects' v-if='subject.active')
+                                label
+                                    input(type='checkbox' name='grade_subject[]' :value='subject.id')
+                                    |  {{ subject.name }}
+                        br
+                        a.btn-danger(href='#') #[.material-icons close]  Cancelar
+                        button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
+                        br
+    a.modal-close(href='#')
+
+    div(v-for='teacher in teachers')
+        div.modal.modal-xs.modal-danger(:id='"modal-delete-teacher-" + teacher.id')
+            .modal-header Remover professor
+            .modal-body
+                p Tem certeza que deseja remover este professor?
+            .modal-footer
+                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
+                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher", \'+teacher.id+\')\'') #[.material-icons delete]  Remover
+        a.modal-close(href='#')
+    div(v-for='teacher_request in teacher_requests')
+        div.modal.modal-xs.modal-danger(:id='"modal-delete-teacher_request-" + teacher_request.id')
+            .modal-header Remover professor
+            .modal-body
+                p Tem certeza que deseja remover este professor?
+            .modal-footer
+                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
+                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher_request", \'+teacher_request.id+\')\'') #[.material-icons delete]  Remover
+        a.modal-close(href='#')

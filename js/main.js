@@ -18,12 +18,15 @@ let data = {
     medical_reports: [],
     medical_report_subjects: [],
     permissions: [],
+    roles: [],
     role_types: [],
     role_type_permissions: [],
     schools: [],
     students: [],
     student_grades: [],
     subjects: [],
+    teachers: [],
+    teacher_requests: [],
     topics: [],
     topic_options: [],
     users: []
@@ -64,6 +67,26 @@ let app = new Vue({
         activeCouncil(council_id) {
             let council = this.councils.find(council => council.id === council_id)
             return new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()
+        },
+        role_type(user_id) {
+            let role = this.roles.find(role => role.user_id === user_id && parseInt(role.approved))
+
+            if (!role) {
+                return {}
+            }
+
+            return this.role_types.find(role_type => role_type.id === role.role_type_id)
+        },
+        userCanEvaluate(user_id) {
+            let role_type = this.role_type(user_id)
+
+            if (role_type.id === undefined) {
+                return false;
+            }
+
+            let permission = this.permissions.find(permission => permission.reference === 'evaluate')
+
+            return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id)
         }
     }
 })
@@ -79,12 +102,15 @@ let resources = [
     'medical_report',
     'medical_report_subject',
     'permission',
+    'role',
     'role_type',
     'role_type_permission',
     'school',
     'student',
     'student_grade',
     'subject',
+    'teacher',
+    'teacher_request',
     'topic',
     'topic_option',
     'user'
@@ -93,15 +119,25 @@ let resources = [
 function seed() {
     let promises = []
 
+    let fetched_data = {}
+
     resources.forEach(resource => {
         let promise = api_fetch(resource)
             .then(response => response.json())
-            .then(data => app._data[resource+'s'] = data.results)
+            .then(data => fetched_data[resource+'s'] = data.results)
+            // .then(data => app._data[resource+'s'] = data.results)
 
         promises.push(promise)
     })
 
-    return Promise.all(promises)
+
+    return Promise.all(promises).then(() => {
+        let app_data = app._data
+        resources.forEach(resource => {
+            app_data[resource+'s'] = fetched_data[resource+'s']
+        })
+        app._data = app_data
+    })
 }
 
 seed()
@@ -163,21 +199,29 @@ function form_submit(event) {
 
     save_resource(resource, data).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
 
-function delete_resource(resource_name, id) {
+function delete_resource(resource_name, id, notification) {
     document.location.hash = '' // closes modal
+
+    if (notification === undefined) {
+        notification = true
+    }
 
     return api_fetch(resource_name+'/'+id, 'DELETE').then(() => {
         return seed()
     }).then(() => {
-        notify('Sucesso!', 'Excluído com sucesso', 'success')
+        if (notification) {
+            notify('Sucesso!', 'Excluído com sucesso', 'success')
+        }
     }).catch(() => {
-        notify('Erro!', 'Não foi possível excluir', 'danger')
+        if (notification) {
+            notify('Erro!', 'Não foi possível excluir', 'danger')
+        }
     })
 }
 
@@ -306,7 +350,7 @@ function submit_topic(event) {
         return save_resource('topic', topic)
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -360,7 +404,7 @@ function topic_update(event) {
         return Promise.all(save_options)
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -394,7 +438,7 @@ function grade_save(event) {
         return Promise.all(save_grade_subjects)
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -419,7 +463,7 @@ function student_save(event) {
         })
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -431,7 +475,7 @@ function student_toggle(student_id) {
 
     return save_resource('student_grade', student_grade).then(() => {
         notify('Sucesso!', '', 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', '', 'danger')
     })
@@ -474,7 +518,7 @@ function council_save(event) {
         return Promise.all(save_council_topics.concat(save_council_grades))
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -496,8 +540,43 @@ function council_update(event) {
 
     return save_resource('council', council).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-    }).catch((error) => {
+    }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function logout() {
+    localStorage.removeItem('token')
+    location.href = 'login.html'
+}
+
+function accept_teacher_request(teacher_request_id) {
+    console.log(app._data.teacher_requests)
+    let teacher_request = app._data.teacher_requests.find(teacher_request => parseInt(teacher_request.id) === teacher_request_id)
+
+    let teacher = {
+        user_id: teacher_request.user_id,
+        grade_id: teacher_request.grade_id,
+        subject_id: teacher_request.subject_id,
+        start_date: '2018-01-01',
+        end_date: '2018-12-31'
+    }
+    api_fetch('teacher', 'POST', teacher).then(() => {
+        return delete_resource('teacher_request', teacher_request_id, false)
+    }).then(() => {
+        notify('Sucesso!', 'Professor aceitado com sucesso', 'success')
+    }).catch(error => {
+        console.log('Error:', error)
+        notify('Erro!', 'Não foi possível aceitar o professor', 'danger')
+    })
+}
+
+function deny_teacher_request(teacher_request_id) {
+    delete_resource('teacher_request', teacher_request_id, false).then(() => {
+        notify('Sucesso!', 'Professor negado com sucesso', 'success')
+    }).catch(error => {
+        console.log('Error:', error)
+        notify('Erro!', 'Não foi possível negar o professor', 'danger')
     })
 }

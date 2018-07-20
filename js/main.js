@@ -8,30 +8,37 @@ let data = {
 
     current_grade_id: '',
     current_subject_id: '',
-
-    councils: [],
-    council_grades: [],
-    council_topics: [],
-    evaluations: [],
-    grades: [],
-    grade_subjects: [],
-    grade_observations: [],
-    medical_reports: [],
-    medical_report_subjects: [],
-    permissions: [],
-    roles: [],
-    role_types: [],
-    role_type_permissions: [],
-    schools: [],
-    students: [],
-    student_grades: [],
-    subjects: [],
-    teachers: [],
-    teacher_requests: [],
-    topics: [],
-    topic_options: [],
-    users: []
 }
+
+let resources = [
+    'council',
+    'council_grade',
+    'council_topic',
+    'evaluation',
+    'grade',
+    'grade_subject',
+    'grade_observation',
+    'medical_report',
+    'medical_report_subject',
+    'permission',
+    'role',
+    'role_type',
+    'role_type_permission',
+    'school',
+    'student',
+    'student_observation',
+    'student_grade',
+    'subject',
+    'teacher',
+    'teacher_request',
+    'topic',
+    'topic_option',
+    'user'
+]
+
+resources.forEach(resource => {
+    data[resource+'s'] = []
+})
 
 let token = JSON.parse(localStorage.getItem('token'))
 if (!token || new Date(token.expires_at) < new Date()) {
@@ -112,31 +119,6 @@ let app = new Vue({
         }
     }
 })
-
-let resources = [
-    'council',
-    'council_grade',
-    'council_topic',
-    'evaluation',
-    'grade',
-    'grade_subject',
-    'grade_observation',
-    'medical_report',
-    'medical_report_subject',
-    'permission',
-    'role',
-    'role_type',
-    'role_type_permission',
-    'school',
-    'student',
-    'student_grade',
-    'subject',
-    'teacher',
-    'teacher_request',
-    'topic',
-    'topic_option',
-    'user'
-]
 
 function seed() {
     let promises = []
@@ -255,7 +237,11 @@ function delete_resource(resource_name, id, notification) {
     })
 }
 
-function save_resource(resource_name, data) {
+function save_resource(resource_name, data, reload_data) {
+    if (reload_data === undefined) {
+        reload_data = true
+    }
+
     let path = resource_name
     let method = 'POST'
 
@@ -270,7 +256,9 @@ function save_resource(resource_name, data) {
         if (json.id !== undefined) {
             data.id = json.id
         }
-        return seed()
+        if (reload_data) {
+            return seed()
+        }
     }).then(() => data)
 }
 
@@ -631,29 +619,84 @@ function evaluation_save(event) {
     }
 
     let evaluations = []
+    let student_observations = []
 
     let student_rows = form.querySelectorAll('[data-student_id]')
     student_rows.forEach(student_row => {
         let topic_selects = student_row.querySelectorAll('[data-topic_id]')
         topic_selects.forEach(topic_select => {
+            let previous_evaluation = app._data.evaluations.find(existent_evaluation =>
+                    existent_evaluation.council_id === app._data.current_council.id &&
+                    existent_evaluation.grade_id === app._data.current_grade_id &&
+                    existent_evaluation.student_id === student_row.dataset.student_id &&
+                    existent_evaluation.subject_id === app._data.current_subject_id &&
+                    existent_evaluation.user_id === app._data.user.id &&
+                    app._data.topic_options.find(topic_option =>
+                        topic_option.id === existent_evaluation.topic_option_id &&
+                        topic_option.topic_id === topic_select.dataset.topic_id
+                    ) !== undefined
+                )
+
             evaluations.push({
                 ...base_evaluation,
                 student_id: student_row.dataset.student_id,
                 topic_id: topic_select.dataset.topic_id,
-                topic_option_id: topic_select.value
+                topic_option_id: topic_select.value,
+                id: previous_evaluation ? previous_evaluation.id : null
             })
+
+        })
+
+        let student_observation = student_row.querySelector('textarea').value
+        if (!student_observation.length) {
+            return
+        }
+
+        let previous_observation = app._data.student_observations.find(existent_observation =>
+            existent_observation.council_id === app._data.current_council.id &&
+            existent_observation.grade_id === app._data.current_grade_id &&
+            existent_observation.student_id === student_row.dataset.student_id &&
+            existent_observation.subject_id === app._data.current_subject_id &&
+            existent_observation.user_id === app._data.user.id
+        )
+
+        student_observations.push({
+            ...base_evaluation,
+            student_id: student_row.dataset.student_id,
+            description: student_observation,
+            id: previous_observation ? previous_observation.id : null
         })
     })
 
     let save_promises = []
     evaluations.forEach(evaluation => {
-        save_promises.push(save_resource('evaluation', evaluation))
+        save_promises.push(save_resource('evaluation', evaluation, false))
+    })
+    student_observations.forEach(student_observation => {
+        save_promises.push(save_resource('student_observation', student_observation, false))
     })
 
+    let grade_observation_description = form.querySelector('[name=grade_observation]').value
+    if (grade_observation_description.length) {
+        let previous_grade_observation = app._data.grade_observations.find(grade_observation =>
+            grade_observation.council_id === app._data.current_council.id &&
+            grade_observation.grade_id === app._data.current_grade_id &&
+            grade_observation.subject_id === app._data.current_subject_id &&
+            grade_observation.user_id === app._data.user.id
+        )
+        save_promises.push(save_resource('grade_observation', {
+            ...base_evaluation,
+            description: grade_observation_description,
+            id: previous_grade_observation ? previous_grade_observation.id : null
+        }, false))
+    }
+
     return Promise.all(save_promises).then(() => {
+        return seed()
+    }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
         window.onbeforeunload = event => {
-            let dialogText = undefined
+            event.returnValue = undefined
             return undefined
         }
     }).catch(error => {

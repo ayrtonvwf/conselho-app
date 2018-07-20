@@ -7,6 +7,7 @@ block content
     article.box
         .box-body
             form(action='#' data-success='Avaliação salva com sucesso' data-error='Não foi possível salvar a avaliação' onsubmit='evaluation_save(event)')
+                br
                 .row.justify-content-center
                     .col-12.col-md-8.col-lg-6
                         .row.justify-content-center
@@ -20,20 +21,32 @@ block content
                                     option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
                                     option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id) !== undefined) !== undefined' :value='subject.id') {{ subject.name }}
                                 label(for='current_subject_id') Matéria
-                .table
-                    table
-                        thead
-                            tr
-                                th Aluno
-                                th.no-wrap(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)') {{ topic.name }}
-                        tbody
-                            tr(v-for='student in students' v-if='!!current_subject_id && student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id) !== undefined' :data-student_id='student.id')
-                                td.no-wrap {{ student.name }}
-                                td(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)')
-                                    select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id')
-                                        option(v-if='!topic.topic_option_id && !selectedEvaluation(student.id, topic.id)' value='' hidden disabled selected) Selecione...
-                                        option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='(selectedEvaluation(student.id, topic.id) ? selectedEvaluation(student.id, topic.id) : topic.topic_option_id) === topic_option.id') {{ topic_option.name }}
-                .text-right
-                    button.btn-lg.btn-success(type='submit')
-                        .material-icons check
-                        |  Salvar avaliações
+                br
+                div(v-if='current_subject_id')
+                    .table
+                        table
+                            thead
+                                tr
+                                    th Aluno
+                                    th.no-wrap(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)' style='min-width: 150px') {{ topic.name }}
+                                    th Obs
+                            tbody
+                                tr(v-for='student in students' v-if='!!current_subject_id && student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id) !== undefined' :data-student_id='student.id')
+                                    td.no-wrap {{ student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id).number }} - {{ student.name }}
+                                    td(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)')
+                                        select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id')
+                                            option(v-if='!topic.topic_option_id && !selectedEvaluation(student.id, topic.id)' value='' hidden disabled selected) Selecione...
+                                            option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='(selectedEvaluation(student.id, topic.id) ? selectedEvaluation(student.id, topic.id) : topic.topic_option_id) === topic_option.id') {{ topic_option.name }}
+                                    td
+                                        textarea.resize-v(style='min-width: 250px' v-if='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id) !== undefined' v-model='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id).description')
+                                        textarea.resize-v(style='min-width: 250px' v-else)
+                    textarea.resize-v(name='grade_observation' style='min-width: 300px' minlength='3' v-if='grade_observations.find(grade_observation => grade_observation.grade_id === current_grade_id && grade_observation.subject_id === current_subject_id && grade_observation.council_id === current_council.id && grade_observation.user_id === user.id) !== undefined' v-model='student_observations.find(grade_observation=> grade_observation.grade_id === current_grade_id && grade_observation.subject_id === current_subject_id && grade_observation.council_id === current_council.id && grade_observation.user_id === user.id).description')
+                    textarea.resize-v(name='grade_observation' style='min-width: 300px' minlength='3' v-else)
+                    .text-right
+                        button.btn-lg.btn-success(type='submit')
+                            .material-icons check
+                            |  Salvar avaliações
+                .text-center.text-muted(v-else)
+                    br
+                    .h4 Selecione uma {{ current_grade_id ? 'matéria' : 'turma' }} para avaliar.
+                    br

@@ -6,7 +6,8 @@ block content
         | Turma
     article.box
         .box-body
-            form(action='#' onsubmit='form_submit(event)' data-success='Cadastrado com sucesso!' data-error='Não foi possível cadastrar' data-resource='teacher_request')
+            br
+            form(action='#' onsubmit='form_submit(event)' data-success='Aguardando a aprovação do supervisor!' data-error='Não foi possível cadastrar' data-resource='teacher_request')
                 .row.justify-content-center
                     .col-12.col-md-9
                         .row.justify-content-center
@@ -25,7 +26,8 @@ block content
                                 button.btn-success(type='submit')
                                     .material-icons check
                                     |  Salvar
-            .table
+            br
+            .table(v-if='teachers.find(teacher => teacher.user_id === user.id) !== undefined || teacher_requests.find(teacher_request => teacher_request.user_id === user_id) !== undefined')
                 table
                     thead
                         tr
@@ -45,54 +47,30 @@ block content
                             td {{ subjects.find(subject => subject.id === teacher.subject_id).name }}
                             td
                             td.text-right.no-wrap
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-teacher-"+teacher.id' title='Remover')
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(href='#modal-delete-teacher' title='Remover')
                                     .material-icons delete
                                     span.d-none.d-md-inline  Remover
-    div.modal#modal-new
-        .modal-header Nova turma
+            .text-center.text-muted(v-else)
+                br
+                .h4 Você ainda não está vinculado à nenhuma turma.
+                p Selecione uma turma e uma matéria e clique em #[b salvar] para poder avaliar.
+                br
+
+    div.modal.modal-xs.modal-danger(id='modal-delete-teacher')
+        .modal-header Fale com o supervisor
         .modal-body
-            .row.justify-content-center
-                .col-sm-11
-                    form(action='#' data-resource='grade' data-success='Turma cadastrada com sucesso' data-error='Não foi possível cadastrar a turma' onsubmit='grade_save(event)')
-                        input(type='hidden' name='active' value='1')
-                        br
-                        .row
-                            .col-sm-8.input
-                                input(required placeholder='Ex.: 1° Ano A' name='name')
-                                label Nome
-                            .col-sm-4.input
-                                input(type='number' required min='1' placeholder='Ex. 1° ano: 1' name='level')
-                                label Nível
-                                    |
-                                    |
-                                    .material-icons.tooltip.tooltip-left.tooltip-start(data-tooltip!='1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc') info
-                        br
-                        .row
-                            .col-6.col-md-4(v-for='subject in subjects' v-if='subject.active')
-                                label
-                                    input(type='checkbox' name='grade_subject[]' :value='subject.id')
-                                    |  {{ subject.name }}
-                        br
-                        a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                        button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
-                        br
+            p Você não pode se desvincular desta turma, pois já recebeu a aprovação do supervisor.
+            p Caso seja realmente necessário, solicite ao supervisor que te desvincule.
+        .modal-footer.text-right
+            a.btn-danger.btn-sm(href='#') #[.material-icons check]  Entendi
     a.modal-close(href='#')
 
-    div(v-for='teacher in teachers')
-        div.modal.modal-xs.modal-danger(:id='"modal-delete-teacher-" + teacher.id')
-            .modal-header Remover professor
-            .modal-body
-                p Tem certeza que deseja remover este professor?
-            .modal-footer
-                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher", \'+teacher.id+\')\'') #[.material-icons delete]  Remover
-        a.modal-close(href='#')
     div(v-for='teacher_request in teacher_requests')
         div.modal.modal-xs.modal-danger(:id='"modal-delete-teacher_request-" + teacher_request.id')
-            .modal-header Remover professor
+            .modal-header Remover solicitação
             .modal-body
-                p Tem certeza que deseja remover este professor?
+                p Tem certeza que deseja remover esta solicitação?
             .modal-footer
                 a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher_request", \'+teacher_request.id+\')\'') #[.material-icons delete]  Remover
+                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher_request", \'+teacher_request.id+\')\'') #[.material-icons check]  Remover
         a.modal-close(href='#')

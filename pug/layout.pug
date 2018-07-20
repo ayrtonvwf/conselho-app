@@ -22,6 +22,28 @@ html
             header.header
                 a.header-button.main-button(href='index.html') Conselho
                 a.header-button.menu-toggle.material-icons(href='#menu') menu
+                .header-pane(v-if='userHasPermission("role")')
+                    button.header-button.material-icons(type='button') calendar_today
+                        span.header-button-label-red(v-if='teacher_requests.length') {{ teacher_requests.length }}
+                    .header-pane-popup
+                        .header-pane-header
+                            i.material-icons notifications
+                            | Notificações
+                        .header-pane-body
+                            div(v-for='(teacher_request, index) in teacher_requests')
+                                hr.margin-h-15(v-if='index')
+                                a.no-link(href='role.html')
+                                    .header-notification-title
+                                        b {{ users.find(user => user.id === teacher_request.user_id).name }}
+                                        |  aguarda sua aprovação
+                                    .header-notification-description {{ grades.find(grade => grade.id === teacher_request.grade_id).name }} - {{ subjects.find(subject => subject.id === teacher_request.subject_id).name }}
+                                        .text-muted {{ new Date(teacher_request.created_at).toLocaleDateString('pt-BR') }}
+                            .text-center.text-muted(v-if='!teacher_requests.length')
+                                br
+                                br
+                                .h5 Não há notificações
+                                br
+                                br
                 .header-pane
                     button.header-button(type='button') {{ user.name }}
                     .header-pane-popup

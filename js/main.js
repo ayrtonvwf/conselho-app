@@ -2,8 +2,12 @@ let data = {
     pathname: document.location.pathname,
     token: {},
     user: {},
+    current_council: {},
     notification: {},
     new_topic_options: [{}],
+
+    current_grade_id: '',
+    current_subject_id: '',
 
     councils: [],
     council_grades: [],
@@ -32,11 +36,6 @@ let data = {
 let token = JSON.parse(localStorage.getItem('token'))
 if (!token || new Date(token.expires_at) < new Date()) {
     location.href = 'login.html'
-}
-
-if (document.location.pathname.endsWith('evaluate.html')) {
-    let current_council_id = new URL(document.location.href).searchParams.get('id')
-    data.current_council = data.councils.find(council => council.id === current_council_id)
 }
 
 let app = new Vue({
@@ -95,6 +94,21 @@ let app = new Vue({
             let permission = this.permissions.find(permission => permission.reference === permission_reference)
 
             return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
+        },
+        selectedEvaluation(student_id, topic_id) {
+            let evaluation = this.evaluations.find(evaluation =>
+                evaluation.council_id === this.current_council.id &&
+                evaluation.grade_id === this.current_grade_id &&
+                evaluation.student_id === student_id &&
+                evaluation.subject_id === this.current_subject_id &&
+                evaluation.user_id === this.user.id &&
+                this.topic_options.find(topic_option =>
+                    topic_option.id === evaluation.topic_option_id &&
+                    topic_option.topic_id === topic_id
+                ) !== undefined
+            )
+
+            return evaluation === undefined ? '' : evaluation.topic_option_id
         }
     }
 })
@@ -144,7 +158,14 @@ function seed() {
         resources.forEach(resource => {
             app_data[resource+'s'] = fetched_data[resource+'s']
         })
+
         app_data.user = app_data.users.find(user => parseInt(user.id) === token.user_id)
+
+        if (document.location.pathname.endsWith('evaluate.html')) {
+            let current_council_id = new URL(document.location.href).searchParams.get('id')
+            app_data.current_council = app_data.councils.find(council => council.id === current_council_id)
+        }
+
         app._data = app_data
     })
 }
@@ -587,5 +608,56 @@ function deny_teacher_request(teacher_request_id) {
     }).catch(error => {
         console.log('Error:', error)
         notify('Erro!', 'Não foi possível negar o professor', 'danger')
+    })
+}
+
+function set_confirm_redirect() {
+    window.onbeforeunload = event => {
+        let dialogText = 'Tem certeza que deseja sair da página? Você perderá o que não foi salvo'
+        event.returnValue = dialogText
+        return dialogText
+    }
+}
+
+function evaluation_save(event) {
+    event.preventDefault()
+
+    let form = event.target
+    let base_evaluation = {
+        council_id: app._data.current_council.id,
+        grade_id: app._data.current_grade_id,
+        subject_id: app._data.current_subject_id,
+        user_id: app._data.user.id
+    }
+
+    let evaluations = []
+
+    let student_rows = form.querySelectorAll('[data-student_id]')
+    student_rows.forEach(student_row => {
+        let topic_selects = student_row.querySelectorAll('[data-topic_id]')
+        topic_selects.forEach(topic_select => {
+            evaluations.push({
+                ...base_evaluation,
+                student_id: student_row.dataset.student_id,
+                topic_id: topic_select.dataset.topic_id,
+                topic_option_id: topic_select.value
+            })
+        })
+    })
+
+    let save_promises = []
+    evaluations.forEach(evaluation => {
+        save_promises.push(save_resource('evaluation', evaluation))
+    })
+
+    return Promise.all(save_promises).then(() => {
+        notify('Sucesso!', form.dataset.success, 'success')
+        window.onbeforeunload = event => {
+            let dialogText = undefined
+            return undefined
+        }
+    }).catch(error => {
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
     })
 }

@@ -87,7 +87,7 @@ block content
                             tbody
                                 tr(v-for='student in students' v-if='student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === grade.id) !== undefined')
                                     td(:class='student_grades.find(student_grade => student_grade.student_id === student.id).end_date <= new Date().toISOString().slice(0, 10) ? "text-striked" : ""') {{ student.name }}
-                                    td {{ student_grades.find(student_grade => student_grade.student_id === student.id).id }}
+                                    td {{ student_grades.find(student_grade => student_grade.student_id === student.id).number }}
                                     td.text-right
                                         button.btn-primary.btn-sm.tooltip.tooltip-end(title='Ativar e Desativar' :onclick='"student_toggle("+student.id+")"')
                                             .material-icons visibility_off

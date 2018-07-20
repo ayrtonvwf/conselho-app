@@ -43,6 +43,7 @@ block content
                         tr(v-for='teacher in teachers' v-if='teacher.user_id === user.id')
                             td {{ grades.find(grade => grade.id === teacher.grade_id).name }}
                             td {{ subjects.find(subject => subject.id === teacher.subject_id).name }}
+                            td
                             td.text-right.no-wrap
                                 a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-teacher-"+teacher.id' title='Remover')
                                     .material-icons delete

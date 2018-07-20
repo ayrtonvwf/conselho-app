@@ -12,7 +12,7 @@ block content
                 |  Criar nova turma
     article.box
         .box-body
-            .table
+            .table(v-if='grades.length')
                 table
                     thead
                         tr
@@ -28,9 +28,10 @@ block content
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + grade.id' title='Editar informações da turma')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-"+grade.id' title='Remover turma')
-                                    .material-icons delete
-                                    span.d-none.d-md-inline  Remover
+            .text-center.text-muted(v-else)
+                br
+                .h4 Ainda não há nenhuma turma cadastrada
+                br
     div.modal#modal-new
         .modal-header Nova turma
         .modal-body
@@ -79,7 +80,7 @@ block content
                                     label Número
                             button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                         br
-                        table.table
+                        table.table(v-if='student_grades.find(student_grade => student_grade.grade_id === grade.id) !== undefined')
                             thead
                                 tr
                                     th Nome
@@ -130,13 +131,4 @@ block content
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
                             button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                             br
-        a.modal-close(href='#')
-
-        div.modal.modal-xs.modal-danger(:id='"modal-delete-" + grade.id')
-            .modal-header Remover turma
-            .modal-body
-                p Tem certeza que deseja remover esta turma?
-            .modal-footer
-                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("grade", \'+grade.id+\')\'') #[.material-icons delete]  Remover
         a.modal-close(href='#')

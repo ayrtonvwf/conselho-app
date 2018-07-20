@@ -12,7 +12,7 @@ block content
                 |  Criar novo conselho
     article.box
         .box-body
-            .table
+            .table(v-if='councils.length')
                 table
                     thead
                         tr
@@ -28,9 +28,10 @@ block content
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + council.id' title='Editar informações do conselho')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-"+council.id' title='Remover conselho')
-                                    .material-icons delete
-                                    span.d-none.d-md-inline  Remover
+            .text-center.text-muted(v-else)
+                br
+                .h4 Ainda não há nenhum conselho de classe cadastrado
+                br
     div.modal#modal-new
         .modal-header Novo conselho de classe
         .modal-body
@@ -100,13 +101,4 @@ block content
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
                             a.btn-success.pull-right(href='#') #[.material-icons check]  Salvar
                             br
-        a.modal-close(href='#')
-
-        div.modal.modal-xs.modal-danger(:id='"modal-delete-" + council.id')
-            .modal-header Remover conselho de classe
-            .modal-body
-                p Tem certeza que deseja remover este conselho de classe?
-            .modal-footer
-                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                a.btn-danger.btn-sm.pull-right(href='#') #[.material-icons delete]  Remover
         a.modal-close(href='#')

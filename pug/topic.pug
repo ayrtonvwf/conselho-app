@@ -12,7 +12,7 @@ block content
                 | Criar novo tópico
     article.box
         .box-body
-            .table
+            .table(v-if='topics.length')
                 table
                     thead
                         tr
@@ -24,9 +24,10 @@ block content
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-"+topic.id' title='Editar tópico e suas opções de resposta')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-"+topic.id' title='Remover tópico')
-                                    .material-icons delete
-                                    span.d-none.d-md-inline  Remover
+            .text-center.text-muted(v-else)
+                br
+                .h4 Ainda não há nenhum tópico cadastrado
+                br
     div.modal#modal-new
         .modal-header Criar novo tópico
         .modal-body
@@ -127,13 +128,4 @@ block content
                 a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
                 a.btn-danger.btn-sm.pull-right(href='#' v-if='topic.active') #[.material-icons visibility_off]  Esconder
                 a.btn-success.btn-sm.pull-right(href='#' v-if='!topic.active') #[.material-icons visibility]  Mostrar
-        a.modal-close(href='#')
-
-        div.modal.modal-xs.modal-danger(:id='"modal-delete-" + topic.id')
-            .modal-header Remover tópico
-            .modal-body
-                p Tem certeza que deseja remover este tópico?
-            .modal-footer
-                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                button.btn-danger.btn-sm.pull-right(:onclick='"delete_resource(\'topic\', "+topic.id+")"') #[.material-icons delete]  Remover
         a.modal-close(href='#')

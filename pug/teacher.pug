@@ -12,15 +12,15 @@ block content
                     .col-12.col-md-9
                         .row.justify-content-center
                             .input.col-6.col-sm-4
-                                select#grade_id(required name='grade_id')
-                                    option(value='' hidden selected disabled) Selecione
+                                select#current_grade_id(name='grade_id' required v-model='current_grade_id')
+                                    option(value='' selected hidden disabled) Selecione...
                                     option(v-for='grade in grades' :value='grade.id') {{ grade.name }}
-                                label(for='grade_id') Turma
+                                label(for='current_grade_id') Turma
                             .input.col-6.col-sm-4
-                                select#subject_id(required name='subject_id')
-                                    option(value='' hidden selected disabled) Selecione
-                                    option(v-for='subject in subjects' :value='subject.id') {{ subject.name }}
-                                label(for='subject_id') Matéria
+                                select#current_subject_id(name='subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
+                                    option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
+                                    option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id' :disabled='teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined') {{ subject.name }}
+                                label(for='current_subject_id') Matéria
                             .col-12.col-sm-3
                                 br.d-none.d-sm-inline
                                 button.btn-success(type='submit')

@@ -120,16 +120,46 @@ let app = new Vue({
     }
 })
 
+function get_resource(name) {
+    return api_fetch(name)
+        .then(response => response.json())
+        .then(response_data => {
+            let return_data = response_data.results
+
+            let page = parseInt(response_data.current_page)
+            let max = parseInt(response_data.max_results_per_page)
+            let total = parseInt(response_data.total_results)
+
+            let remaining_pages = Math.floor(total/max)
+
+            if (total === max || !remaining_pages) {
+                return return_data
+            }
+
+            let remaining_requisitions = []
+            for (let i = 1; i <= remaining_pages; i++) {
+                remaining_requisitions.push(api_fetch(name, 'GET', {page: i+1}).then(remaining_response => remaining_response.json()))
+            }
+
+            return Promise.all(remaining_requisitions).then(remaining_responses => {
+                remaining_responses.forEach(remaining_response_data => {
+                    return_data = return_data.concat(remaining_response_data.results)
+                })
+                return return_data
+            })
+        })
+}
+
 function seed() {
     let promises = []
 
     let fetched_data = {}
 
     resources.forEach(resource => {
-        let promise = api_fetch(resource)
-            .then(response => response.json())
-            .then(data => fetched_data[resource+'s'] = data.results)
-            // .then(data => app._data[resource+'s'] = data.results)
+        let promise = get_resource(resource)
+            .then(data => {
+                fetched_data[resource+'s'] = data
+            })
 
         promises.push(promise)
     })
@@ -154,13 +184,26 @@ function seed() {
 
 seed()
 
+function serialize(obj) {
+    var str = [];
+    for (let p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
+        }
+    }
+    return str.join('&');
+}
+
 function api_fetch(path, method, body, headers) {
     if (method === undefined) {
         method = 'GET'
     }
 
     if (method === 'GET' || method === 'DELETE') {
-        body = undefined
+        if (body !== undefined) {
+            path += '?'+serialize(body)
+            body = undefined
+        }
     } else {
         body.school_id = 1
         body = JSON.stringify(body)
@@ -184,7 +227,7 @@ function api_fetch(path, method, body, headers) {
         body: body
     }
 
-    return fetch(url, options).then((response) => {
+    return fetch(url, options).then(response => {
         if (!response.ok) {
             throw response
         }

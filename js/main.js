@@ -117,6 +117,41 @@ let app = new Vue({
             )
 
             return evaluation === undefined ? '' : evaluation.topic_option_id
+        },
+        reportStudentTopic(student_id, topic_id) {
+            let evaluations = this.evaluations.filter(evaluation =>
+                evaluation.student_id === student_id &&
+                evaluation.grade_id === this.current_grade_id &&
+                evaluation.council_id === this.current_council.id &&
+                (
+                    !this.current_subject_id ||
+                    evaluation.subject_id === this.current_subject_id
+                )&&
+                this.topic_options.find(topic_option =>
+                    topic_option.topic_id === topic_id &&
+                    topic_option.id === evaluation.topic_option_id
+                ) !== undefined
+            )
+
+            if (!evaluations.length) {
+                return '-'
+            }
+
+            let values = evaluations.map(evaluation =>
+                parseInt(this.topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id).value)
+            )
+
+            let sum = values.reduce((a, b) => a + b)
+            let avg = sum / values.length
+
+            let topic_options = this.orderedTopicOptions(topic_id)
+            let topic_options_values = topic_options.map(topic_option => topic_option.value)
+
+            let nearest_value = parseInt(topic_options_values.reduce(function(prev, curr) {
+                return (Math.abs(curr - avg) < Math.abs(prev - avg) ? curr : prev);
+            }))
+
+            return topic_options.find(topic_option => parseInt(topic_option.value) === nearest_value).name + ' ('+nearest_value+'%)'
         }
     }
 })
@@ -172,7 +207,7 @@ function seed() {
 
         app_data.user = app_data.users.find(user => parseInt(user.id) === token.user_id)
 
-        if (document.location.pathname.endsWith('evaluate.html')) {
+        if (document.location.pathname.endsWith('evaluate.html') || document.location.pathname.endsWith('report.html')) {
             let current_council_id = new URL(document.location.href).searchParams.get('id')
             app_data.current_council = app_data.councils.find(council => council.id === current_council_id)
         }

@@ -20,7 +20,7 @@ block content
                                 select#current_subject_id(name='current_subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
                                     option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
                                     option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id) !== undefined) !== undefined' :value='subject.id') {{ subject.name }}
-                                label(for='current_subject_id') Matéria
+                                label(for='current_subject_id') Disciplina
                 br
                 div(v-if='current_subject_id')
                     .table
@@ -29,7 +29,7 @@ block content
                                 tr
                                     th Aluno
                                     th.no-wrap(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)' style='min-width: 150px') {{ topic.name }}
-                                    th Obs
+                                    th Observações Gerais
                             tbody
                                 tr(v-for='student in students' v-if='!!current_subject_id && student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id) !== undefined' :data-student_id='student.id')
                                     td.no-wrap {{ student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id).number }} - {{ student.name }}
@@ -39,7 +39,7 @@ block content
                                             option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='(selectedEvaluation(student.id, topic.id) ? selectedEvaluation(student.id, topic.id) : topic.topic_option_id) === topic_option.id') {{ topic_option.name }}
                                     td
                                         textarea.resize-v(style='min-width: 250px; min-height: 70px' v-if='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id) !== undefined' v-model='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id).description')
-                                        textarea.resize-v(style='min-width: 250px; min-height: 70px' v-else placeholder='O que ele não apredeu? O que precisa ser feito?')
+                                        textarea.resize-v(style='min-width: 250px; min-height: 70px' v-else placeholder='Conteúdos não assimilados, ações necessárias, etc')
                     textarea.resize-v(name='grade_observation' style='min-width: 300px' minlength='3' v-if='grade_observations.find(grade_observation => grade_observation.grade_id === current_grade_id && grade_observation.subject_id === current_subject_id && grade_observation.council_id === current_council.id && grade_observation.user_id === user.id) !== undefined' v-model='grade_observations.find(grade_observation=> grade_observation.grade_id === current_grade_id && grade_observation.subject_id === current_subject_id && grade_observation.council_id === current_council.id && grade_observation.user_id === user.id).description')
                     textarea.resize-v(name='grade_observation' style='min-width: 300px' minlength='3' v-else)
                     .text-right
@@ -48,5 +48,5 @@ block content
                             |  Salvar avaliações
                 .text-center.text-muted(v-else)
                     br
-                    .h4 Selecione uma {{ current_grade_id ? 'matéria' : 'turma' }} para avaliar.
+                    .h4 Selecione uma {{ current_grade_id ? 'disciplina' : 'turma' }} para avaliar.
                     br

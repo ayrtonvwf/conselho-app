@@ -218,7 +218,7 @@ function api_fetch(path, method, body, headers) {
     headers.set('Content-Type', 'application/json')
     headers.set('Token', token.value)
 
-    let url = 'https://conselho-api.infomec.net.br/'+path
+    let url = 'http://localhost/conselho-server/'+path
     let options = {
         headers: headers,
         method: method,
@@ -621,8 +621,8 @@ function accept_teacher_request(teacher_request_id) {
         start_date: '2018-01-01',
         end_date: '2018-12-31'
     }
-    api_fetch('teacher', 'POST', teacher, false).then(() => {
-        return delete_resource('teacher_request', teacher_request_id, false)
+    api_fetch('teacher', 'POST', teacher).then(() => {
+        return delete_resource('teacher_request', teacher_request_id)
     }).then(() => {
         notify('Sucesso!', 'Professor aceitado com sucesso', 'success')
     }).catch(error => {
@@ -632,7 +632,7 @@ function accept_teacher_request(teacher_request_id) {
 }
 
 function deny_teacher_request(teacher_request_id) {
-    delete_resource('teacher_request', teacher_request_id, false).then(() => {
+    delete_resource('teacher_request', teacher_request_id).then(() => {
         notify('Sucesso!', 'Professor negado com sucesso', 'success')
     }).catch(error => {
         console.log('Error:', error)

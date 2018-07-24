@@ -65,7 +65,7 @@ html
                         | Início
                     a.menu-link(href='subject.html' :class='pathname.endsWith("subject.html") ? "menu-active" : ""' v-if='userHasPermission("subject")')
                         i.material-icons book
-                        | Matérias
+                        | Disciplinas
                     a.menu-link(href='topic.html' :class='pathname.endsWith("topic.html") ? "menu-active" : ""' v-if='userHasPermission("topic")')
                         i.material-icons list
                         | Tópicos

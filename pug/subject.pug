@@ -5,11 +5,11 @@ block content
         .col-auto
             h1.content-title
                 i.material-icons book
-                | Matérias
+                | Disciplinas
         .col.text-right
             a.btn-success.btn-sm.no-wra(href='#modal-new')
                 .material-icons add
-                |  Criar nova matéria
+                |  Criar nova disciplina
     article.box
         .box-body
             .table(v-if='subjects.length')
@@ -22,19 +22,19 @@ block content
                             td(:class='!parseInt(subject.active) ? "text-muted" : ""') {{ subject.name }}
                                 span.text-muted(v-if='!parseInt(subject.active)')  (invisível)
                             td.text-right.no-wrap
-                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + subject.id' title='Editar matéria')
+                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + subject.id' title='Editar disciplina')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
             .text-center.text-muted(v-else)
                 br
-                .h4 Ainda não há nenhuma matéria cadastrada
+                .h4 Ainda não há nenhuma disciplina cadastrada
                 br
     div.modal#modal-new
-        .modal-header Nova matéria
+        .modal-header Nova disciplina
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form(action='#' data-resource='subject' data-success='Matéria cadastrada com sucesso' data-error='Não foi possível cadastrar a matéria' onsubmit='form_submit(event)')
+                    form(action='#' data-resource='subject' data-success='Disciplina cadastrada com sucesso' data-error='Não foi possível cadastrar a disciplina' onsubmit='form_submit(event)')
                         input(type='hidden' name='active' value='1')
                         br
                         .input
@@ -48,11 +48,11 @@ block content
 
     div(v-for='subject in subjects')
         div.modal(:id='"modal-edit-" + subject.id')
-            .modal-header Editar matéria
+            .modal-header Editar disciplina
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
-                        form(action='#' data-resource='subject' data-success='Matéria editada com sucesso' data-error='Não foi possível editar a matéria' onsubmit='form_submit(event)')
+                        form(action='#' data-resource='subject' data-success='Disciplina editada com sucesso' data-error='Não foi possível editar a disciplina' onsubmit='form_submit(event)')
                             input(type='hidden' name='id' :value='subject.id')
                             br
                             .row

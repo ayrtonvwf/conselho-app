@@ -20,7 +20,7 @@ block content
                                 select#current_subject_id(name='subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
                                     option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
                                     option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id' :disabled='teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined') {{ subject.name }}
-                                label(for='current_subject_id') Matéria
+                                label(for='current_subject_id') Disciplina
                             .col-12.col-sm-3
                                 br.d-none.d-sm-inline
                                 button.btn-success(type='submit')
@@ -32,7 +32,7 @@ block content
                     thead
                         tr
                             th Turma
-                            th Matéria
+                            th Disciplina
                     tbody
                         tr(v-for='teacher_request in teacher_requests' v-if='teacher_request.user_id === user.id')
                             td {{ grades.find(grade => grade.id === teacher_request.grade_id).name }}
@@ -53,7 +53,7 @@ block content
             .text-center.text-muted(v-else)
                 br
                 .h4 Você ainda não está vinculado à nenhuma turma.
-                p Selecione uma turma e uma matéria e clique em #[b salvar] para poder avaliar.
+                p Selecione uma turma e uma disciplina e clique em #[b salvar] para poder avaliar.
                 br
 
     div.modal.modal-xs.modal-danger(id='modal-delete-teacher')

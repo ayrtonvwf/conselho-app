@@ -19,8 +19,8 @@ block content
                             th Nome
                     tbody
                         tr(v-for='subject in subjects')
-                            td {{ subject.name }}
-                                span.text-muted(v-if='!subject.active')  invisível
+                            td(:class='!parseInt(subject.active) ? "text-muted" : ""') {{ subject.name }}
+                                span.text-muted(v-if='!parseInt(subject.active)')  (invisível)
                             td.text-right.no-wrap
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + subject.id' title='Editar matéria')
                                     .material-icons edit
@@ -62,7 +62,7 @@ block content
                                 .col-12.col-sm-4
                                     label
                                         br
-                                        input(name='active' :value='1' :checked='subject.active' type='checkbox')
+                                        input(name='active' :value='1' :checked='parseInt(subject.active)' type='checkbox')
                                         | Visível
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar

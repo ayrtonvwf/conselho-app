@@ -51,6 +51,7 @@ let app = new Vue({
     methods: {
         orderedTopicOptions(topic_id) {
             let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
+
             // order by value desc
             return topic_options.sort((a, b) => {
                 a = parseInt(a.value)
@@ -126,7 +127,6 @@ function get_resource(name) {
         .then(response_data => {
             let return_data = response_data.results
 
-            let page = parseInt(response_data.current_page)
             let max = parseInt(response_data.max_results_per_page)
             let total = parseInt(response_data.total_results)
 
@@ -164,7 +164,6 @@ function seed() {
         promises.push(promise)
     })
 
-
     return Promise.all(promises).then(() => {
         let app_data = app._data
         resources.forEach(resource => {
@@ -185,7 +184,7 @@ function seed() {
 seed()
 
 function serialize(obj) {
-    var str = [];
+    let str = [];
     for (let p in obj) {
         if (obj.hasOwnProperty(p)) {
             str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
@@ -391,14 +390,14 @@ function submit_topic(event) {
         })
     })
 
-    return save_resource('topic', topic).then(response => {
+    return save_resource('topic', topic, false).then(response => {
         topic.id = response.id
 
         let save_options = []
 
         options.forEach(option => {
             option.topic_id = response.id
-            save_options.push(save_resource('topic_option', option))
+            save_options.push(save_resource('topic_option', option, false))
         })
 
         return Promise.all(save_options)
@@ -455,14 +454,14 @@ function topic_update(event) {
         })
     })
 
-    return save_resource('topic', topic).then(response => {
+    return save_resource('topic', topic, false).then(response => {
         let save_options = []
 
         options.forEach(option => {
-            save_options.push(save_resource('topic_option', option))
+            save_options.push(save_resource('topic_option', option, false))
         })
 
-        return Promise.all(save_options)
+        return Promise.all(save_options).then(() => seed())
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -486,17 +485,17 @@ function grade_save(event) {
     let grade_subject_inputs = form.querySelectorAll('[name="grade_subject[]"]:checked')
     let grade_subject_ids = [].map.call(grade_subject_inputs, input => input.value)
 
-    return save_resource('grade', grade).then(response => {
+    return save_resource('grade', grade, false).then(response => {
         let save_grade_subjects = []
 
         grade_subject_ids.forEach(subject_id => {
             save_grade_subjects.push(save_resource('grade_subject', {
                 subject_id: subject_id,
                 grade_id: response.id
-            }))
+            }, false))
         })
 
-        return Promise.all(save_grade_subjects)
+        return Promise.all(save_grade_subjects).then(() => seed())
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -514,7 +513,7 @@ function student_save(event) {
         active: true
     }
 
-    return save_resource('student', student).then(response => {
+    return save_resource('student', student, false).then(response => {
         return save_resource('student_grade', {
             student_id: response.id,
             grade_id: form.querySelector('[name=grade_id]').value,
@@ -558,14 +557,14 @@ function council_save(event) {
     let council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
     let council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
 
-    return save_resource('council', council).then(response => {
+    return save_resource('council', council, false).then(response => {
         let save_council_topics = []
 
         council_topic_ids.forEach(topic_id => {
             save_council_topics.push(save_resource('council_topic', {
                 topic_id: topic_id,
                 council_id: response.id
-            }))
+            }, false))
         })
 
         let save_council_grades = []
@@ -574,9 +573,9 @@ function council_save(event) {
             save_council_grades.push(save_resource('council_grade', {
                 grade_id: grade.id,
                 council_id: response.id
-            }))
+            }, false))
         })
-        return Promise.all(save_council_topics.concat(save_council_grades))
+        return Promise.all(save_council_topics.concat(save_council_grades)).then(() => seed())
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -613,7 +612,6 @@ function logout() {
 }
 
 function accept_teacher_request(teacher_request_id) {
-    console.log(app._data.teacher_requests)
     let teacher_request = app._data.teacher_requests.find(teacher_request => parseInt(teacher_request.id) === teacher_request_id)
 
     let teacher = {
@@ -623,7 +621,7 @@ function accept_teacher_request(teacher_request_id) {
         start_date: '2018-01-01',
         end_date: '2018-12-31'
     }
-    api_fetch('teacher', 'POST', teacher).then(() => {
+    api_fetch('teacher', 'POST', teacher, false).then(() => {
         return delete_resource('teacher_request', teacher_request_id, false)
     }).then(() => {
         notify('Sucesso!', 'Professor aceitado com sucesso', 'success')

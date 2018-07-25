@@ -94,4 +94,5 @@ html
                 .notification-icon.material-icons(v-if='notification.icon !== undefined') {{ notification.icon }}
                 .notification-title {{ notification.title }}
                 | {{ notification.message }}
+        script(src='https://unpkg.com/dexie@latest/dist/dexie.js')
         script(src='js/main.js')

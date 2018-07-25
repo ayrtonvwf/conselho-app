@@ -1,3 +1,30 @@
+let db = new Dexie('conselho')
+db.version(1).stores({
+    councils: 'id',
+    council_grades: 'id',
+    council_topics: 'id',
+    evaluations: 'id',
+    grades: 'id',
+    grade_subjects: 'id',
+    grade_observations: 'id',
+    medical_reports: 'id',
+    medical_report_subjects: 'id',
+    permissions: 'id',
+    roles: 'id',
+    role_types: 'id',
+    role_type_permissions: 'id',
+    schools: 'id',
+    students: 'id',
+    student_observations: 'id',
+    student_grades: 'id',
+    subjects: 'id',
+    teachers: 'id',
+    teacher_requests: 'id',
+    topics: 'id',
+    topic_options: 'id',
+    users: 'id'
+})
+
 let data = {
     pathname: document.location.pathname,
     token: {},
@@ -9,6 +36,8 @@ let data = {
     current_grade_id: '',
     current_subject_id: '',
 }
+
+let load_data_from_cache = window.localStorage.getItem('has_loaded_data')
 
 let resources = [
     'council',
@@ -142,7 +171,7 @@ let app = new Vue({
             )
 
             let sum = values.reduce((a, b) => a + b)
-            let avg = sum / values.length
+            let avg = parseInt(sum / values.length)
 
             let topic_options = this.orderedTopicOptions(topic_id)
             let topic_options_values = topic_options.map(topic_option => topic_option.value)
@@ -151,7 +180,13 @@ let app = new Vue({
                 return (Math.abs(curr - avg) < Math.abs(prev - avg) ? curr : prev);
             }))
 
-            return topic_options.find(topic_option => parseInt(topic_option.value) === nearest_value).name + ' ('+nearest_value+'%)'
+            return topic_options.find(topic_option => parseInt(topic_option.value) === nearest_value).name + ' ('+avg+'%)'
+        },
+        studentGrade(student_id, grade_id) {
+            return this.student_grades.find(student_grade =>
+                student_grade.student_id === student_id &&
+                student_grade.grade_id === grade_id
+            )
         }
     }
 })
@@ -191,15 +226,25 @@ function seed() {
     let fetched_data = {}
 
     resources.forEach(resource => {
-        let promise = get_resource(resource)
-            .then(data => {
+        if (load_data_from_cache) {
+            promises.push(db[resource+'s'].toArray().then(data => {
                 fetched_data[resource+'s'] = data
-            })
+            }))
+        } else {
+            let promise = get_resource(resource)
+                .then(data => {
+                    fetched_data[resource + 's'] = data
+                    return db[resource+'s'].bulkPut(data)
+                })
 
-        promises.push(promise)
+            promises.push(promise)
+        }
     })
 
+    load_data_from_cache = false
+
     return Promise.all(promises).then(() => {
+        window.localStorage.setItem('has_loaded_data', true)
         let app_data = app._data
         resources.forEach(resource => {
             app_data[resource+'s'] = fetched_data[resource+'s']

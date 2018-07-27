@@ -63,7 +63,13 @@ html
                     data[field] = value
                 })
 
-                let url = 'https://conselho-api.infomec.net.br/user_token'
+                let api_url = 'https://conselho-api.infomec.net.br/'
+                if (location.href.indexOf('127.0.0.1') !== -1) {
+                    api_url = 'http://localhost/conselho-server/'
+                }
+
+                let url = api_url+'user_token'
+
                 let options = {
                     headers: headers,
                     method: 'POST',

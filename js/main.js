@@ -15,6 +15,11 @@ function dettect_support() {
 
 dettect_support()
 
+let api_url = 'https://conselho-api.infomec.net.br/'
+if (location.href.indexOf('127.0.0.1') !== -1) {
+    api_url = 'http://localhost/conselho-server/'
+}
+
 let db = new Dexie('conselho')
 db.version(1).stores({
     councils: 'id',
@@ -407,7 +412,7 @@ function api_fetch(path, method, body, headers) {
     headers.set('Content-Type', 'application/json')
     headers.set('Token', token.value)
 
-    let url = 'https://conselho-api.infomec.net.br/'+path
+    let url = api_url+path
     let options = {
         headers: headers,
         method: method,

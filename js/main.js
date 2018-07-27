@@ -563,7 +563,9 @@ function notify(title, message, style, time) {
 }
 
 function logout() {
-    app.loading = true
+    if (app) {
+        app.loading = true
+    }
     localStorage.removeItem('token')
     localStorage.removeItem('has_loaded_data')
     db.delete().then(() => {

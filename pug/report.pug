@@ -18,18 +18,14 @@ block content
                         .input.col-12.col-sm-6
                             select#current_subject_id(name='current_subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
                                 option(value='' selected) {{ current_grade_id ? 'Todas' : 'Selecione a turma...' }}
-                                option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id') {{ subject.name }}
+                                option(v-for='subject in subjectsInGrade' :value='subject.id') {{ subject.name }}
                             label(for='current_subject_id') Disciplina
             br
             .text-center.text-muted(v-if='!current_grade_id')
                 br
                 .h4 Selecione uma turma para ver o relatório.
                 br
-            .text-center.text-muted(v-else-if='evaluations.find(evaluation => evaluation.grade_id === current_grade_id && evaluation.council_id === current_council.id) === undefined')
-                br
-                .h4 Esta turma ainda não recebeu avaliações.
-                br
-            .text-center.text-muted(v-else-if='current_subject_id && evaluations.find(evaluation => evaluation.grade_id === current_grade_id && evaluation.council_id === current_council.id && evaluation.subject_id === current_subject_id) === undefined')
+            .text-center.text-muted(v-else-if='!evaluations.length')
                 br
                 .h4 Esta turma ainda não recebeu avaliações nesta disciplina.
                 br
@@ -39,16 +35,16 @@ block content
                         thead
                             tr
                                 th Aluno
-                                th(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)' style='min-width: 150px') {{ topic.name }}
+                                th(v-for='topic in councilTopics' style='min-width: 150px') {{ topic.name }}
                                 th.no-wrap Observações Gerais
                         tbody
-                            tr(v-for='student in students' v-if='student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id) !== undefined' :data-student_id='student.id')
-                                td.no-wrap {{ student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id).number }} - {{ student.name }}
-                                td(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)')
+                            tr(v-for='student in studentsInGrade' :data-student_id='student.id')
+                                td.no-wrap {{ studentGrade(student.id).number }} - {{ student.name }}
+                                td(v-for='topic in councilTopics')
                                     | {{ reportStudentTopic(student.id, topic.id) }}
                                 td
                                     p(v-for='student_observation in student_observations' v-if='student_observation.student_id === student.id && student_observation.council_id === current_council.id && student_observation.grade_id === current_grade_id && student_observation.description.length && (!current_subject_id || student_observation.subject_id === current_subject_id)' style='min-width: 250px') #[b {{ users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:] {{ student_observation.description }}
                 br
-                p(v-for='grade_observation in grade_observations' v-if='grade_observation.grade_id === current_grade_id && grade_observation.council_id === current_council.id && grade_observation.description.length && (!current_subject_id || grade_observation.subject_id === current_subject_id)')
+                p(v-for='grade_observation in gradeObservations')
                     b {{ users.find(user => user.id === grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+subjects.find(subject => subject.id === grade_observation.subject_id).name : '' }}:
                     |  {{ grade_observation.description }}

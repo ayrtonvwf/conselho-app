@@ -3,7 +3,7 @@ db.version(1).stores({
     councils: 'id',
     council_grades: 'id',
     council_topics: 'id',
-    evaluations: 'id',
+    evaluations: 'id, [council_id+grade_id], [council_id+grade_id+subject_id]',
     grades: 'id',
     grade_subjects: 'id',
     grade_observations: 'id',
@@ -24,6 +24,16 @@ db.version(1).stores({
     topic_options: 'id',
     users: 'id'
 })
+db.open().catch(error => {
+    console.error("Open failed: " + error.stack);
+})
+
+function set_load(state) {
+    if (state === undefined) {
+        state = true
+    }
+    app._data.loading = !!state
+}
 
 let data = {
     pathname: document.location.pathname,
@@ -32,9 +42,11 @@ let data = {
     current_council: {},
     notification: {},
     new_topic_options: [{}],
+    updated_evaluations: '',
 
     current_grade_id: '',
     current_subject_id: '',
+    loading: true
 }
 
 let load_data_from_cache = window.localStorage.getItem('has_loaded_data')
@@ -74,9 +86,35 @@ if (!token || new Date(token.expires_at) < new Date()) {
     location.href = 'login.html'
 }
 
+let filter_evaluations = function() {
+    if (!this.current_grade_id || !this.current_council.id) {
+        this.evaluations = []
+        return
+    }
+    this.loading = true
+
+    let index
+    let equals
+    if (this.current_subject_id) {
+        index = '[council_id+grade_id+subject_id]'
+        equals = [this.current_council.id, this.current_grade_id, this.current_subject_id]
+    } else {
+        index = '[council_id+grade_id]'
+        equals = [this.current_council.id, this.current_grade_id]
+    }
+
+    return db.evaluations.where(index).equals(equals).toArray().then(evaluations => {
+        this.evaluations = evaluations
+        this.loading = false
+    })
+}
 let app = new Vue({
     el: '#app',
     data: data,
+    watch: {
+        current_grade_id: filter_evaluations,
+        current_subject_id: filter_evaluations
+    },
     methods: {
         orderedTopicOptions(topic_id) {
             let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
@@ -136,28 +174,23 @@ let app = new Vue({
             let evaluation = this.evaluations.find(evaluation =>
                 evaluation.council_id === this.current_council.id &&
                 evaluation.grade_id === this.current_grade_id &&
-                evaluation.student_id === student_id &&
+                evaluation.student_id === parseInt(student_id) &&
                 evaluation.subject_id === this.current_subject_id &&
                 evaluation.user_id === this.user.id &&
                 this.topic_options.find(topic_option =>
                     topic_option.id === evaluation.topic_option_id &&
-                    topic_option.topic_id === topic_id
+                    topic_option.topic_id === parseInt(topic_id)
                 ) !== undefined
             )
 
             return evaluation === undefined ? '' : evaluation.topic_option_id
         },
         reportStudentTopic(student_id, topic_id) {
+            let topic_options = this.orderedTopicOptions(topic_id)
+
             let evaluations = this.evaluations.filter(evaluation =>
                 evaluation.student_id === student_id &&
-                evaluation.grade_id === this.current_grade_id &&
-                evaluation.council_id === this.current_council.id &&
-                (
-                    !this.current_subject_id ||
-                    evaluation.subject_id === this.current_subject_id
-                )&&
-                this.topic_options.find(topic_option =>
-                    topic_option.topic_id === topic_id &&
+                topic_options.find(topic_option =>
                     topic_option.id === evaluation.topic_option_id
                 ) !== undefined
             )
@@ -167,13 +200,12 @@ let app = new Vue({
             }
 
             let values = evaluations.map(evaluation =>
-                parseInt(this.topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id).value)
+                parseInt(topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id).value)
             )
 
             let sum = values.reduce((a, b) => a + b)
             let avg = parseInt(sum / values.length)
 
-            let topic_options = this.orderedTopicOptions(topic_id)
             let topic_options_values = topic_options.map(topic_option => topic_option.value)
 
             let nearest_value = parseInt(topic_options_values.reduce(function(prev, curr) {
@@ -182,10 +214,57 @@ let app = new Vue({
 
             return topic_options.find(topic_option => parseInt(topic_option.value) === nearest_value).name + ' ('+avg+'%)'
         },
-        studentGrade(student_id, grade_id) {
+        studentGrade(student_id) {
             return this.student_grades.find(student_grade =>
-                student_grade.student_id === student_id &&
-                student_grade.grade_id === grade_id
+                parseInt(student_grade.grade_id) === parseInt(this.current_grade_id) &&
+                parseInt(student_grade.student_id) === parseInt(student_id)
+            )
+        }
+    },
+    computed: {
+        studentsInGrade() {
+            if (!this.current_grade_id) {
+                return undefined
+            }
+            return this.students.filter(student => this.studentGrade(student.id, this.current_grade_id) !== undefined)
+        },
+        currentGrade() {
+            if (!this.current_grade_id) {
+                return undefined
+            }
+            return this.grades.find(grade => parseInt(grade.id) === parseInt(this.current_grade_id))
+        },
+        councilTopics() {
+            return this.topics.filter(topic =>
+                this.council_topics.find(council_topic =>
+                    council_topic.topic_id === topic.id &&
+                    council_topic.council_id === this.current_council.id
+                ) !== undefined
+            )
+        },
+        subjectsInGrade() {
+            if (!this.current_grade_id) {
+                return undefined
+            }
+            return this.subjects.filter(subject =>
+                this.grade_subjects.find(grade_subject =>
+                    grade_subject.subject_id === subject.id &&
+                    grade_subject.grade_id === this.current_grade_id
+                )
+            )
+        },
+        gradeObservations() {
+            if (!this.current_grade_id) {
+                return undefined
+            }
+            return this.grade_observations.filter(grade_observation =>
+                parseInt(grade_observation.grade_id) === parseInt(this.current_grade_id) &&
+                parseInt(grade_observation.council_id) === parseInt(this.current_council.id) &&
+                grade_observation.description.length &&
+                (
+                    !this.current_subject_id ||
+                    parseInt(grade_observation.subject_id) === parseInt(this.current_subject_id)
+                )
             )
         }
     }
@@ -220,12 +299,20 @@ function get_resource(name) {
         })
 }
 
-function seed() {
+function seed(needed_resources) {
+    if (needed_resources === undefined) {
+        needed_resources = resources
+    } else if (typeof needed_resources === 'string') {
+        needed_resources = [needed_resources]
+    }
+
+    app._data.loading = true
+
     let promises = []
 
     let fetched_data = {}
 
-    resources.forEach(resource => {
+    needed_resources.forEach(resource => {
         if (load_data_from_cache) {
             promises.push(db[resource+'s'].toArray().then(data => {
                 fetched_data[resource+'s'] = data
@@ -234,7 +321,7 @@ function seed() {
             let promise = get_resource(resource)
                 .then(data => {
                     fetched_data[resource + 's'] = data
-                    return db[resource+'s'].bulkPut(data)
+                    return db[resource+'s'].bulkPut(parseObjects(data))
                 })
 
             promises.push(promise)
@@ -246,16 +333,21 @@ function seed() {
     return Promise.all(promises).then(() => {
         window.localStorage.setItem('has_loaded_data', true)
         let app_data = app._data
-        resources.forEach(resource => {
+        needed_resources.forEach(resource => {
+            if (resource === 'evaluation') {
+                return
+            }
             app_data[resource+'s'] = fetched_data[resource+'s']
         })
 
         app_data.user = app_data.users.find(user => parseInt(user.id) === token.user_id)
 
         if (document.location.pathname.endsWith('evaluate.html') || document.location.pathname.endsWith('report.html')) {
-            let current_council_id = new URL(document.location.href).searchParams.get('id')
+            let current_council_id = parseInt(new URL(document.location.href).searchParams.get('id'))
             app_data.current_council = app_data.councils.find(council => council.id === current_council_id)
         }
+
+        app_data.loading = false
 
         app._data = app_data
     })
@@ -285,7 +377,7 @@ function api_fetch(path, method, body, headers) {
         }
     } else {
         body.school_id = 1
-        body = JSON.stringify(body)
+        body = JSON.stringify(parseObject(body))
     }
 
     if (headers === undefined) {
@@ -331,7 +423,11 @@ function form_submit(event) {
         data[checkbox.name] = checkbox.checked
     })
 
-    save_resource(resource, data).then(() => {
+    app._data.loading = true
+
+    save_resource(resource, data, false).then(() => {
+        return seed(resource)
+    }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
         console.log('Error:', error)
@@ -346,8 +442,9 @@ function delete_resource(resource_name, id, notification) {
         notification = true
     }
 
+    app._data.loading = true
     return api_fetch(resource_name+'/'+id, 'DELETE').then(() => {
-        return seed()
+        return seed(resource_name)
     }).then(() => {
         if (notification) {
             notify('Sucesso!', 'Excluído com sucesso', 'success')
@@ -370,13 +467,15 @@ function save_resource(resource_name, data, reload_data) {
     if (data.id) {
         path += '/'+data.id
         method = 'PATCH'
+    } else {
+        delete data.id
     }
 
     return api_fetch(path, method, data).then(response => {
         return response.json()
     }).then((json) => {
-        if (json.id !== undefined) {
-            data.id = json.id
+        if (json.id) {
+            data.id = parseInt(json.id)
         }
         if (reload_data) {
             return seed()
@@ -445,6 +544,8 @@ function submit_topic(event) {
 
     document.location.hash = '' // closes the current modal
 
+    app._data.loading = true
+
     let form = event.target
     let topic = {
         name: form.querySelector('[name=name]').value,
@@ -487,7 +588,9 @@ function submit_topic(event) {
         }
 
         topic.topic_option_id = promises_response[default_option_index].id
-        return save_resource('topic', topic)
+        return save_resource('topic', topic, false)
+    }).then(() => {
+        return seed(['topic', 'topic_option'])
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -500,6 +603,8 @@ function topic_update(event) {
     event.preventDefault()
 
     document.location.hash = '' // closes the current modal
+
+    app._data.loading = true
 
     let form = event.target
     let topic = {
@@ -541,7 +646,9 @@ function topic_update(event) {
             save_options.push(save_resource('topic_option', option, false))
         })
 
-        return Promise.all(save_options).then(() => seed())
+        return Promise.all(save_options)
+    }).then(() => {
+        return seed(['topic', 'topic_option'])
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -575,7 +682,9 @@ function grade_save(event) {
             }, false))
         })
 
-        return Promise.all(save_grade_subjects).then(() => seed())
+        return Promise.all(save_grade_subjects)
+    }).then(() => {
+        return seed(['grade', 'grade_subject'])
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -600,7 +709,9 @@ function student_save(event) {
             number: form.querySelector('[name=number]').value,
             start_date: '2018-01-01',
             end_date: '2018-12-31'
-        })
+        }, false)
+    }).then(() => {
+        return seed(['student', 'student_grade'])
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -613,7 +724,9 @@ function student_toggle(student_id) {
     let student_grade = app._data.student_grades.find(student_grade => parseInt(student_grade.student_id) === student_id)
     student_grade.end_date = new Date(student_grade.end_date) <= new Date() ? '2018-12-31' : new Date().toISOString().slice(0, 10)
 
-    return save_resource('student_grade', student_grade).then(() => {
+    return save_resource('student_grade', student_grade, false).then(() => {
+        return seed('student_grade')
+    }).then(() => {
         notify('Sucesso!', '', 'success')
     }).catch(error => {
         console.log('Error:', error)
@@ -655,7 +768,9 @@ function council_save(event) {
                 council_id: response.id
             }, false))
         })
-        return Promise.all(save_council_topics.concat(save_council_grades)).then(() => seed())
+        return Promise.all(save_council_topics.concat(save_council_grades))
+    }).then(() => {
+        return seed(['council', 'council_topic', 'council_grade'])
     }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
@@ -678,7 +793,9 @@ function council_update(event) {
         active: true
     }
 
-    return save_resource('council', council).then(() => {
+    return save_resource('council', council, false).then(() => {
+        return seed('council')
+    }).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
         console.log('Error:', error)
@@ -688,6 +805,7 @@ function council_update(event) {
 
 function logout() {
     localStorage.removeItem('token')
+    localStorage.removeItem('has_loaded_data')
     location.href = 'login.html'
 }
 
@@ -731,7 +849,13 @@ function set_confirm_redirect() {
 function evaluation_save(event) {
     event.preventDefault()
 
+    app._data.loading = true
+
+    app._data.loading = false
+    return ;
+
     let form = event.target
+
     let base_evaluation = {
         council_id: app._data.current_council.id,
         grade_id: app._data.current_grade_id,
@@ -747,21 +871,21 @@ function evaluation_save(event) {
         let topic_selects = student_row.querySelectorAll('[data-topic_id]')
         topic_selects.forEach(topic_select => {
             let previous_evaluation = app._data.evaluations.find(existent_evaluation =>
-                    existent_evaluation.council_id === app._data.current_council.id &&
-                    existent_evaluation.grade_id === app._data.current_grade_id &&
-                    existent_evaluation.student_id === student_row.dataset.student_id &&
-                    existent_evaluation.subject_id === app._data.current_subject_id &&
-                    existent_evaluation.user_id === app._data.user.id &&
-                    app._data.topic_options.find(topic_option =>
-                        topic_option.id === existent_evaluation.topic_option_id &&
-                        topic_option.topic_id === topic_select.dataset.topic_id
-                    ) !== undefined
-                )
+                existent_evaluation.council_id === app._data.current_council.id &&
+                existent_evaluation.grade_id === app._data.current_grade_id &&
+                existent_evaluation.student_id === parseInt(student_row.dataset.student_id) &&
+                existent_evaluation.subject_id === app._data.current_subject_id &&
+                existent_evaluation.user_id === app._data.user.id &&
+                app._data.topic_options.find(topic_option =>
+                    topic_option.id === existent_evaluation.topic_option_id &&
+                    topic_option.topic_id === parseInt(topic_select.dataset.topic_id)
+                ) !== undefined
+            )
 
             evaluations.push({
                 ...base_evaluation,
-                student_id: student_row.dataset.student_id,
-                topic_id: topic_select.dataset.topic_id,
+                student_id: parseInt(student_row.dataset.student_id),
+                topic_id: parseInt(topic_select.dataset.topic_id),
                 topic_option_id: topic_select.value,
                 id: previous_evaluation ? previous_evaluation.id : null
             })
@@ -776,28 +900,30 @@ function evaluation_save(event) {
         let previous_observation = app._data.student_observations.find(existent_observation =>
             existent_observation.council_id === app._data.current_council.id &&
             existent_observation.grade_id === app._data.current_grade_id &&
-            existent_observation.student_id === student_row.dataset.student_id &&
+            existent_observation.student_id === parseInt(student_row.dataset.student_id) &&
             existent_observation.subject_id === app._data.current_subject_id &&
             existent_observation.user_id === app._data.user.id
         )
 
         student_observations.push({
             ...base_evaluation,
-            student_id: student_row.dataset.student_id,
+            student_id: parseInt(student_row.dataset.student_id),
             description: student_observation,
             id: previous_observation ? previous_observation.id : null
         })
     })
 
-    let save_promises = []
+    let evaluation_promises = []
     evaluations.forEach(evaluation => {
-        save_promises.push(save_resource('evaluation', evaluation, false))
+        evaluation_promises.push(save_resource('evaluation', evaluation, false))
     })
+    let student_observation_promises = []
     student_observations.forEach(student_observation => {
-        save_promises.push(save_resource('student_observation', student_observation, false))
+        student_observation_promises.push(save_resource('student_observation', student_observation, false))
     })
 
     let grade_observation_description = form.querySelector('[name=grade_observation]').value
+    let grade_observation_promise
     if (grade_observation_description.length) {
         let previous_grade_observation = app._data.grade_observations.find(grade_observation =>
             grade_observation.council_id === app._data.current_council.id &&
@@ -805,23 +931,55 @@ function evaluation_save(event) {
             grade_observation.subject_id === app._data.current_subject_id &&
             grade_observation.user_id === app._data.user.id
         )
-        save_promises.push(save_resource('grade_observation', {
+        grade_observation_promise = save_resource('grade_observation', {
             ...base_evaluation,
             description: grade_observation_description,
             id: previous_grade_observation ? previous_grade_observation.id : null
-        }, false))
+        }, false)
     }
 
-    return Promise.all(save_promises).then(() => {
-        return seed()
-    }).then(() => {
+    let save_promises = [
+        Promise.all(evaluation_promises).then(evaluation_results =>
+            db.evaluations.bulkPut(evaluation_results)
+        ),
+        Promise.all(student_observation_promises).then(student_observation_results =>
+            db.student_observations.bulkPut(student_observation_results)
+        ),
+        grade_observation_promise.then(grade_observation_result =>
+            db.grade_observations.put(grade_observation_result)
+        )
+    ]
+
+    return Promise.all(save_promises).then(() => filter_evaluations())
+    .then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
-        window.onbeforeunload = event => {
-            event.returnValue = undefined
-            return undefined
-        }
+        window.onbeforeunload = undefined
+        app._data.loading = false
     }).catch(error => {
+        app._data.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
+}
+
+function parseObject(object) {
+    let properties = Object.keys(object)
+    properties.forEach(property => {
+        if (object[property] === null || object[property] === undefined) {
+            return
+        }
+
+        if (object[property].toString() === parseInt(object[property]).toString()) {
+            object[property] = parseInt(object[property]) // "int" to int
+        } else if (object[property].toString() === parseFloat(object[property]).toString()) {
+            object[property] = parseFloat(object[property]) // "float" to float
+        } else if (object[property] === !!object[property]) {
+            object[property] = parseInt(object[property]) // bool to int
+        }
+    })
+    return object
+}
+
+function parseObjects(object_array) {
+    return object_array.map(object => parseObject(object))
 }

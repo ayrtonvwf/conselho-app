@@ -22,10 +22,10 @@ block content
                             td(:class='!parseInt(grade.active) ? "text-muted" : ""') {{ grade.name }}
                                 span.text-muted(v-if='!parseInt(grade.active)')  (invisível)
                             td.text-right.no-wrap
-                                a.btn-primary.btn-sm.tooltip.tooltip-end(:href='"#modal-student-" + grade.id' title='Estudantes')
+                                a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-students' title='Estudantes' :onclick='"app._data.current_grade_id = "+grade.id')
                                     .material-icons person
                                     span.d-none.d-md-inline  Estudantes
-                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + grade.id' title='Editar informações da turma')
+                                a.btn-warning.btn-sm.tooltip.tooltip-end(href='#modal-edit' title='Editar informações da turma' :onclick='"app._data.current_grade_id = "+grade.id')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
             .text-center.text-muted(v-else)
@@ -62,14 +62,14 @@ block content
                         br
     a.modal-close(href='#')
 
-    div(v-for='grade in grades')
-        div.modal(:id='"modal-student-" + grade.id')
-            .modal-header Estudantes - {{ grade.name }}
+    template(v-if='current_grade_id')
+        div.modal#modal-students
+            .modal-header Estudantes - {{ grades.find(grade => parseInt(grade.id) === parseInt(current_grade_id)).name }}
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
                         form(action='#' data-resource='grade' data-success='Estudante cadastrado com sucesso' data-error='Não foi possível cadastrar o estudante' onsubmit='student_save(event)')
-                            input(type='hidden' name='grade_id' :value='grade.id')
+                            input(type='hidden' name='grade_id' :value='current_grade_id')
                             br
                             .row
                                 .col-sm-8.input
@@ -80,15 +80,15 @@ block content
                                     label Número
                             button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                         br
-                        table.table(v-if='student_grades.find(student_grade => student_grade.grade_id === grade.id) !== undefined')
+                        table.table(v-if='studentsInGrade')
                             thead
                                 tr
                                     th Nome
                                     th Número
                             tbody
-                                tr(v-for='student in students.filter(student_filter => studentGrade(student_filter.id, grade.id) !== undefined)')
-                                    td(:class='studentGrade(student.id, grade.id).end_date <= new Date().toISOString().slice(0, 10) ? "text-striked" : ""') {{ student.name }}
-                                    td {{ studentGrade(student.id, grade.id).number }}
+                                tr(v-for='student in studentsInGrade')
+                                    td(:class='studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10) ? "text-striked" : ""') {{ student.name }}
+                                    td {{ studentGrade(student.id).number }}
                                     td.text-right
                                         button.btn-primary.btn-sm.tooltip.tooltip-end(title='Ativar e Desativar' :onclick='"student_toggle("+student.id+")"')
                                             .material-icons visibility_off
@@ -98,20 +98,20 @@ block content
                         a.btn-danger(href='#') #[.material-icons close]  Fechar
         a.modal-close(href='#')
 
-        div.modal(:id='"modal-edit-" + grade.id')
+        div.modal(id='modal-edit')
             .modal-header Editar turma
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
                         form(action='#' data-resource='grade' data-success='Turma editada com sucesso' data-error='Não foi possível editar a turma' onsubmit='form_submit(event)')
-                            input(type='hidden' name='id' :value='grade.id')
+                            input(type='hidden' name='id' :value='current_grade_id')
                             br
                             .row
                                 .col-sm-8.input
-                                    input(required :value='grade.name' placeholder='Ex.: 1° Ano A' name='name')
+                                    input(required :value='currentGrade.name' placeholder='Ex.: 1° Ano A' name='name')
                                     label Nome
                                 .col-sm-4.input
-                                    input(type='number' required :value='grade.level' min='1' placeholder='Ex.: 1' name='level')
+                                    input(type='number' required :value='currentGrade.level' min='1' placeholder='Ex.: 1' name='level')
                                     label Nível
                                         |
                                         |
@@ -120,11 +120,11 @@ block content
                                 .col-12.text-center
                                     label
                                         br
-                                        input(name='active' value='1' :checked='parseInt(grade.active)' type='checkbox')
+                                        input(name='active' value='1' :checked='parseInt(currentGrade.active)' type='checkbox')
                                         | Visível
                             br
                             .row
-                                .col-6.col-md-4(v-for='subject in subjects.filter(subject_filter => grade_subjects.find(grade_subject => grade_subject.grade_id === grade.id && grade_subject.subject_id === subject_filter.id) !== undefined)')
+                                .col-6.col-md-4(v-for='subject in subjects.filter(subject_filter => grade_subjects.find(grade_subject => grade_subject.grade_id === current_grade_id && grade_subject.subject_id === subject_filter.id) !== undefined)')
                                     .material-icons check
                                     |  {{ subject.name }}
                             br

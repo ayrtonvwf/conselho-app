@@ -18,8 +18,8 @@ block content
                                 label(for='current_grade_id') Turma
                             .input.col-12.col-sm-6
                                 select#current_subject_id(name='current_subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
-                                    option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
-                                    option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id) !== undefined) !== undefined' :value='subject.id') {{ subject.name }}
+                                    option(value='' :selected='!current_grade_id || subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length !== 1' hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
+                                    option(v-for='subject in subjectsInGrade' v-if='grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))' :selected='subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length === 1' :value='subject.id') {{ subject.name }}
                                 label(for='current_subject_id') Disciplina
                 br
                 div(v-if='current_subject_id')
@@ -28,12 +28,12 @@ block content
                             thead
                                 tr
                                     th Aluno
-                                    th.no-wrap(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)' style='min-width: 150px') {{ topic.name }}
+                                    th.no-wrap(v-for='topic in councilTopics' style='min-width: 150px') {{ topic.name }}
                                     th Observações Gerais
                             tbody
-                                tr(v-for='student in students' v-if='!!current_subject_id && student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id) !== undefined' :data-student_id='student.id')
-                                    td.no-wrap {{ student_grades.find(student_grade => student_grade.student_id === student.id && student_grade.grade_id === current_grade_id).number }} - {{ student.name }}
-                                    td(v-for='topic in topics.filter(topic => council_topics.find(council_topic => council_topic.topic_id === topic.id && council_topic.council_id === current_council.id) !== undefined)')
+                                tr(v-for='student in studentsInGrade' :data-student_id='student.id')
+                                    td.no-wrap {{ studentGrade(student.id).number }} - {{ student.name }}
+                                    td(v-for='topic in councilTopics')
                                         select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id')
                                             option(v-if='!topic.topic_option_id && !selectedEvaluation(student.id, topic.id)' value='' hidden disabled selected) Selecione...
                                             option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='(selectedEvaluation(student.id, topic.id) ? selectedEvaluation(student.id, topic.id) : topic.topic_option_id) === topic_option.id') {{ topic_option.name }}

@@ -12,6 +12,31 @@ html
         title Conselho
         link(rel='stylesheet' href='node_modules/lite-admin/dist/style.css')
         link(rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons')
+        style.
+            #loading {
+                position: fixed;
+                top: 0px;
+                left: 0px;
+                right: 0px;
+                bottom: 0px;
+                background-color: rgba(0, 0, 0, .7);
+                color: white;
+                line-height: 100vh;
+                text-align: center;
+                z-index: 100;
+            }
+            #loading>.material-icons {
+                font-size: 35px;
+                animation: loading 1.5s 0s infinite linear;
+            }
+            @keyframes loading {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(-360deg);
+                }
+            }
 
         // in production change to vue.min.js
         script(src='node_modules/vue/dist/vue.js')
@@ -94,5 +119,7 @@ html
                 .notification-icon.material-icons(v-if='notification.icon !== undefined') {{ notification.icon }}
                 .notification-title {{ notification.title }}
                 | {{ notification.message }}
+            #loading(v-if='loading')
+                .material-icons sync
         script(src='https://unpkg.com/dexie@latest/dist/dexie.js')
         script(src='js/main.js')

@@ -390,7 +390,7 @@ function api_fetch(path, method, body, headers) {
     headers.set('Content-Type', 'application/json')
     headers.set('Token', token.value)
 
-    let url = 'http://localhost/conselho-server/'+path
+    let url = 'https://conselho-api.infomec.net.br/'+path
     let options = {
         headers: headers,
         method: method,

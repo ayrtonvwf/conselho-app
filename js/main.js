@@ -563,7 +563,7 @@ function notify(title, message, style, time) {
 }
 
 function logout() {
-    if (app) {
+    if ('app' in window) {
         app.loading = true
     }
     localStorage.removeItem('token')

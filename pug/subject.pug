@@ -34,7 +34,7 @@ block content
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form(action='#' data-resource='subject' data-success='Disciplina cadastrada com sucesso' data-error='Não foi possível cadastrar a disciplina' onsubmit='form_submit(event)')
+                    form(action='#' data-resource='subject' data-success='Disciplina cadastrada com sucesso' data-error='Não foi possível cadastrar a disciplina' onsubmit='subject_save(event)')
                         input(type='hidden' name='active' value='1')
                         br
                         .input
@@ -52,7 +52,7 @@ block content
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
-                        form(action='#' data-resource='subject' data-success='Disciplina editada com sucesso' data-error='Não foi possível editar a disciplina' onsubmit='form_submit(event)')
+                        form(action='#' data-resource='subject' data-success='Disciplina editada com sucesso' data-error='Não foi possível editar a disciplina' onsubmit='subject_update(event)')
                             input(type='hidden' name='id' :value='subject.id')
                             br
                             .row
@@ -69,3 +69,5 @@ block content
                             button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                             br
         a.modal-close(href='#')
+
+    script(src='js/subject.js')

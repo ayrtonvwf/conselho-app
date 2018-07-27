@@ -32,7 +32,7 @@ function set_load(state) {
     if (state === undefined) {
         state = true
     }
-    app._data.loading = !!state
+    app.loading = !!state
 }
 
 let data = {
@@ -41,7 +41,7 @@ let data = {
     user: {},
     current_council: {},
     notification: {},
-    new_topic_options: [{}],
+    new_topic_options: [{default: 1}],
     updated_evaluations: '',
 
     current_grade_id: '',
@@ -83,7 +83,7 @@ resources.forEach(resource => {
 
 let token = JSON.parse(localStorage.getItem('token'))
 if (!token || new Date(token.expires_at) < new Date()) {
-    location.href = 'login.html'
+    logout()
 }
 
 let filter_evaluations = function() {
@@ -306,7 +306,7 @@ function seed(needed_resources) {
         needed_resources = [needed_resources]
     }
 
-    app._data.loading = true
+    app.loading = true
 
     let promises = []
 
@@ -332,7 +332,7 @@ function seed(needed_resources) {
 
     return Promise.all(promises).then(() => {
         window.localStorage.setItem('has_loaded_data', true)
-        let app_data = app._data
+        let app_data = app
         needed_resources.forEach(resource => {
             if (resource === 'evaluation') {
                 return
@@ -349,7 +349,7 @@ function seed(needed_resources) {
 
         app_data.loading = false
 
-        app._data = app_data
+        app = app_data
     })
 }
 
@@ -423,7 +423,7 @@ function form_submit(event) {
         data[checkbox.name] = checkbox.checked
     })
 
-    app._data.loading = true
+    app.loading = true
 
     save_resource(resource, data, false).then(() => {
         return seed(resource)
@@ -435,30 +435,43 @@ function form_submit(event) {
     })
 }
 
-function delete_resource(resource_name, id, notification) {
+function delete_resource(resource_name, id, notification, reload_view) {
     document.location.hash = '' // closes modal
 
     if (notification === undefined) {
         notification = true
     }
 
-    app._data.loading = true
+    if (reload_view === undefined) {
+        reload_view = true
+    }
+
+    app.loading = true
     return api_fetch(resource_name+'/'+id, 'DELETE').then(() => {
-        return seed(resource_name)
+        return db[resource_name+'s'].delete(id)
+    }).then(() => {
+        if (reload_view) {
+            return db[resource_name+'s'].toArray().then(all_data => app[resource_name+'s'] = all_data)
+        }
     }).then(() => {
         if (notification) {
+            app.loading = false
             notify('Sucesso!', 'Excluído com sucesso', 'success')
         }
     }).catch(() => {
         if (notification) {
+            app.loading = false
             notify('Erro!', 'Não foi possível excluir', 'danger')
         }
     })
 }
 
-function save_resource(resource_name, data, reload_data) {
-    if (reload_data === undefined) {
-        reload_data = true
+function save_resource(resource_name, data, save_to_db, update_view) {
+    if (save_to_db === undefined) {
+        save_to_db = true
+    }
+    if (save_to_db && update_view === undefined) {
+        update_view = true
     }
 
     let path = resource_name
@@ -477,8 +490,18 @@ function save_resource(resource_name, data, reload_data) {
         if (json.id) {
             data.id = parseInt(json.id)
         }
-        if (reload_data) {
-            return seed()
+        if (json.created_at) {
+            data.created_at = json.created_at
+        }
+        if (json.updated_at) {
+            data.updated_evaluations = json.updated_at
+        }
+        if (save_to_db) {
+            return db[resource_name+'s'].put(data)
+        }
+    }).then(() => {
+        if (update_view) {
+            return db[resource_name+'s'].toArray().then(all_data => app[resource_name+'s'] = all_data)
         }
     }).then(() => data)
 }
@@ -539,17 +562,98 @@ function notify(title, message, style, time) {
     }, start_delay)
 }
 
-function submit_topic(event) {
+function logout() {
+    app.loading = true
+    localStorage.removeItem('token')
+    localStorage.removeItem('has_loaded_data')
+    db.delete().then(() => {
+        location.href = 'login.html'
+    })
+}
+
+function parseObject(object) {
+    let properties = Object.keys(object)
+    properties.forEach(property => {
+        if (object[property] === null || object[property] === undefined) {
+            return
+        }
+
+        if (object[property].toString() === parseInt(object[property]).toString()) {
+            object[property] = parseInt(object[property]) // "int" to int
+        } else if (object[property].toString() === parseFloat(object[property]).toString()) {
+            object[property] = parseFloat(object[property]) // "float" to float
+        } else if (object[property] === !!object[property]) {
+            object[property] = object[property] ? 1 : 0 // bool to int
+        }
+    })
+    return object
+}
+
+function parseObjects(object_array) {
+    return object_array.map(object => parseObject(object))
+}
+
+// specific resource operations
+
+function subject_save(event) {
+    event.preventDefault()
+
+    app.loading = true
+
+    document.location.hash = '' // closes the current modal
+
+    let form = event.target
+    let subject = parseObject({
+        name: form.querySelector('[name=name]').value,
+        active: true
+    })
+
+    return save_resource('subject', subject).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function subject_update(event) {
     event.preventDefault()
 
     document.location.hash = '' // closes the current modal
 
-    app._data.loading = true
+    app.loading = true
+
+    let form = event.target
+    let subject = parseObject({
+        id: form.querySelector('[name=id]').value,
+        name: form.querySelector('[name=name]').value,
+        active: !!form.querySelector('[name=active]').checked
+    })
+
+    return save_resource('subject', subject).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function topic_save(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    app.loading = true
 
     let form = event.target
     let topic = {
         name: form.querySelector('[name=name]').value,
-        active: true
+        active: true,
+        topic_option_id: null
     }
 
     let option_name_inputs = form.querySelectorAll('[name="option_name[]"]')
@@ -571,14 +675,14 @@ function submit_topic(event) {
         })
     })
 
-    return save_resource('topic', topic, false).then(response => {
+    return save_resource('topic', topic, true, false).then(response => {
         topic.id = response.id
 
         let save_options = []
 
         options.forEach(option => {
             option.topic_id = response.id
-            save_options.push(save_resource('topic_option', option, false))
+            save_options.push(save_resource('topic_option', option, true, false))
         })
 
         return Promise.all(save_options)
@@ -590,10 +694,15 @@ function submit_topic(event) {
         topic.topic_option_id = promises_response[default_option_index].id
         return save_resource('topic', topic, false)
     }).then(() => {
-        return seed(['topic', 'topic_option'])
+        return Promise.all([
+            db.topics.toArray().then(data => app.topics = data),
+            db.topic_options.toArray().then(data => app.topic_options = data)
+        ])
     }).then(() => {
+        app.loading = false
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -604,14 +713,9 @@ function topic_update(event) {
 
     document.location.hash = '' // closes the current modal
 
-    app._data.loading = true
+    app.loading = true
 
     let form = event.target
-    let topic = {
-        id: form.querySelector('[name=id]').value,
-        name: form.querySelector('[name=name]').value,
-        active: form.querySelector('[name=active]').checked
-    }
 
     let option_id_inputs = form.querySelectorAll('[name="option_id[]"]')
     let option_ids = [].map.call(option_id_inputs, input => input.value)
@@ -626,7 +730,12 @@ function topic_update(event) {
     let option_defaults = [].map.call(option_default_inputs, input => input.checked)
     let default_option_index = option_defaults.indexOf(true)
 
-    topic.topic_option_id = option_ids[default_option_index]
+    let topic = {
+        id: form.querySelector('[name=id]').value,
+        name: form.querySelector('[name=name]').value,
+        active: form.querySelector('[name=active]').checked,
+        topic_option_id: option_ids[default_option_index] ? option_ids[default_option_index] : null
+    }
 
     let options = []
     option_names.forEach((name, i) => {
@@ -639,19 +748,24 @@ function topic_update(event) {
         })
     })
 
-    return save_resource('topic', topic, false).then(response => {
+    return save_resource('topic', topic, true, false).then(response => {
         let save_options = []
 
         options.forEach(option => {
-            save_options.push(save_resource('topic_option', option, false))
+            save_options.push(save_resource('topic_option', option, true, false))
         })
 
         return Promise.all(save_options)
     }).then(() => {
-        return seed(['topic', 'topic_option'])
+        return Promise.all([
+            db.topics.toArray().then(data => app.topics = data),
+            db.topic_options.toArray().then(data => app.topic_options = data)
+        ])
     }).then(() => {
+        app.loading = false
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -661,6 +775,8 @@ function grade_save(event) {
     event.preventDefault()
 
     document.location.hash = '' // closes the current modal
+
+    app.loading = true
 
     let form = event.target
     let grade = {
@@ -672,22 +788,49 @@ function grade_save(event) {
     let grade_subject_inputs = form.querySelectorAll('[name="grade_subject[]"]:checked')
     let grade_subject_ids = [].map.call(grade_subject_inputs, input => input.value)
 
-    return save_resource('grade', grade, false).then(response => {
+    return save_resource('grade', grade).then(response => {
         let save_grade_subjects = []
 
         grade_subject_ids.forEach(subject_id => {
             save_grade_subjects.push(save_resource('grade_subject', {
                 subject_id: subject_id,
                 grade_id: response.id
-            }, false))
+            }, true, false))
         })
 
         return Promise.all(save_grade_subjects)
     }).then(() => {
-        return seed(['grade', 'grade_subject'])
+        return db.grade_subjects.toArray().then(all_data => app.grade_subjects = all_data)
     }).then(() => {
+        app.loading = false
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function grade_update(event) {
+    event.preventDefault()
+
+    document.location.hash = '' // closes the current modal
+
+    app.loading = true
+
+    let form = event.target
+    let grade = {
+        id: form.querySelector('[name=id').value,
+        name: form.querySelector('[name=name]').value,
+        level: form.querySelector('[name=level]').value,
+        active: form.querySelector('[name=active]').checked
+    }
+
+    return save_resource('grade', grade).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -696,39 +839,48 @@ function grade_save(event) {
 function student_save(event) {
     event.preventDefault()
 
+    app.loading = true
+
     let form = event.target
     let student = {
         name: form.querySelector('[name=name]').value,
         active: true
     }
 
-    return save_resource('student', student, false).then(response => {
-        return save_resource('student_grade', {
-            student_id: response.id,
-            grade_id: form.querySelector('[name=grade_id]').value,
-            number: form.querySelector('[name=number]').value,
-            start_date: '2018-01-01',
-            end_date: '2018-12-31'
-        }, false)
+    let student_grade = {
+        grade_id: form.querySelector('[name=grade_id]').value,
+        number: form.querySelector('[name=number]').value,
+        start_date: '2018-01-01',
+        end_date: '2018-12-31'
+    }
+    return save_resource('student', student, true, false).then(response => {
+        student.id = response.id
+        student_grade.student_id = response.id
+        return save_resource('student_grade', student_grade, true, false)
+    }).then((response) => {
+        student_grade.id = response.id
+        app.students.push(student)
+        app.student_grades.push(student_grade)
     }).then(() => {
-        return seed(['student', 'student_grade'])
-    }).then(() => {
+        app.loading = false
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
 
 function student_toggle(student_id) {
-    let student_grade = app._data.student_grades.find(student_grade => parseInt(student_grade.student_id) === student_id)
+    let student_grade = app.student_grades.find(student_grade => parseInt(student_grade.student_id) === student_id)
     student_grade.end_date = new Date(student_grade.end_date) <= new Date() ? '2018-12-31' : new Date().toISOString().slice(0, 10)
 
-    return save_resource('student_grade', student_grade, false).then(() => {
-        return seed('student_grade')
-    }).then(() => {
+    app.loading = true
+    return save_resource('student_grade', student_grade).then(() => {
         notify('Sucesso!', '', 'success')
+        app.loading = false
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', '', 'danger')
     })
@@ -738,6 +890,8 @@ function council_save(event) {
     event.preventDefault()
 
     document.location.hash = '' // closes the current modal
+
+    app.loading = true
 
     let form = event.target
     let council = {
@@ -750,30 +904,30 @@ function council_save(event) {
     let council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
     let council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
 
-    return save_resource('council', council, false).then(response => {
+    return save_resource('council', council).then(response => {
         let save_council_topics = []
 
         council_topic_ids.forEach(topic_id => {
             save_council_topics.push(save_resource('council_topic', {
                 topic_id: topic_id,
                 council_id: response.id
-            }, false))
+            }))
         })
 
         let save_council_grades = []
 
-        app._data.grades.forEach(grade => {
+        app.grades.forEach(grade => {
             save_council_grades.push(save_resource('council_grade', {
                 grade_id: grade.id,
                 council_id: response.id
-            }, false))
+            }))
         })
         return Promise.all(save_council_topics.concat(save_council_grades))
     }).then(() => {
-        return seed(['council', 'council_topic', 'council_grade'])
-    }).then(() => {
+        app.loading = false
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
@@ -784,6 +938,8 @@ function council_update(event) {
 
     document.location.hash = '' // closes the current modal
 
+    app.loading = true
+
     let form = event.target
     let council = {
         id: form.querySelector('[name=id]').value,
@@ -793,24 +949,20 @@ function council_update(event) {
         active: true
     }
 
-    return save_resource('council', council, false).then(() => {
-        return seed('council')
-    }).then(() => {
+    return save_resource('council', council).then(() => {
+        app.loading = false
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
 
-function logout() {
-    localStorage.removeItem('token')
-    localStorage.removeItem('has_loaded_data')
-    location.href = 'login.html'
-}
-
 function accept_teacher_request(teacher_request_id) {
-    let teacher_request = app._data.teacher_requests.find(teacher_request => parseInt(teacher_request.id) === teacher_request_id)
+    let teacher_request = app.teacher_requests.find(teacher_request => parseInt(teacher_request.id) === teacher_request_id)
+
+    app.loading = true
 
     let teacher = {
         user_id: teacher_request.user_id,
@@ -819,20 +971,25 @@ function accept_teacher_request(teacher_request_id) {
         start_date: '2018-01-01',
         end_date: '2018-12-31'
     }
-    api_fetch('teacher', 'POST', teacher).then(() => {
+    save_resource('teacher', teacher).then(() => {
         return delete_resource('teacher_request', teacher_request_id)
     }).then(() => {
+        app.loading = false
         notify('Sucesso!', 'Professor aceitado com sucesso', 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', 'Não foi possível aceitar o professor', 'danger')
     })
 }
 
 function deny_teacher_request(teacher_request_id) {
+    app.loading = true
     delete_resource('teacher_request', teacher_request_id).then(() => {
+        app.loading = false
         notify('Sucesso!', 'Professor negado com sucesso', 'success')
     }).catch(error => {
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', 'Não foi possível negar o professor', 'danger')
     })
@@ -849,18 +1006,18 @@ function set_confirm_redirect() {
 function evaluation_save(event) {
     event.preventDefault()
 
-    app._data.loading = true
+    app.loading = true
 
-    app._data.loading = false
+    app.loading = false
     return ;
 
     let form = event.target
 
     let base_evaluation = {
-        council_id: app._data.current_council.id,
-        grade_id: app._data.current_grade_id,
-        subject_id: app._data.current_subject_id,
-        user_id: app._data.user.id
+        council_id: app.current_council.id,
+        grade_id: app.current_grade_id,
+        subject_id: app.current_subject_id,
+        user_id: app.user.id
     }
 
     let evaluations = []
@@ -870,13 +1027,13 @@ function evaluation_save(event) {
     student_rows.forEach(student_row => {
         let topic_selects = student_row.querySelectorAll('[data-topic_id]')
         topic_selects.forEach(topic_select => {
-            let previous_evaluation = app._data.evaluations.find(existent_evaluation =>
-                existent_evaluation.council_id === app._data.current_council.id &&
-                existent_evaluation.grade_id === app._data.current_grade_id &&
+            let previous_evaluation = app.evaluations.find(existent_evaluation =>
+                existent_evaluation.council_id === app.current_council.id &&
+                existent_evaluation.grade_id === app.current_grade_id &&
                 existent_evaluation.student_id === parseInt(student_row.dataset.student_id) &&
-                existent_evaluation.subject_id === app._data.current_subject_id &&
-                existent_evaluation.user_id === app._data.user.id &&
-                app._data.topic_options.find(topic_option =>
+                existent_evaluation.subject_id === app.current_subject_id &&
+                existent_evaluation.user_id === app.user.id &&
+                app.topic_options.find(topic_option =>
                     topic_option.id === existent_evaluation.topic_option_id &&
                     topic_option.topic_id === parseInt(topic_select.dataset.topic_id)
                 ) !== undefined
@@ -897,12 +1054,12 @@ function evaluation_save(event) {
             return
         }
 
-        let previous_observation = app._data.student_observations.find(existent_observation =>
-            existent_observation.council_id === app._data.current_council.id &&
-            existent_observation.grade_id === app._data.current_grade_id &&
+        let previous_observation = app.student_observations.find(existent_observation =>
+            existent_observation.council_id === app.current_council.id &&
+            existent_observation.grade_id === app.current_grade_id &&
             existent_observation.student_id === parseInt(student_row.dataset.student_id) &&
-            existent_observation.subject_id === app._data.current_subject_id &&
-            existent_observation.user_id === app._data.user.id
+            existent_observation.subject_id === app.current_subject_id &&
+            existent_observation.user_id === app.user.id
         )
 
         student_observations.push({
@@ -925,11 +1082,11 @@ function evaluation_save(event) {
     let grade_observation_description = form.querySelector('[name=grade_observation]').value
     let grade_observation_promise
     if (grade_observation_description.length) {
-        let previous_grade_observation = app._data.grade_observations.find(grade_observation =>
-            grade_observation.council_id === app._data.current_council.id &&
-            grade_observation.grade_id === app._data.current_grade_id &&
-            grade_observation.subject_id === app._data.current_subject_id &&
-            grade_observation.user_id === app._data.user.id
+        let previous_grade_observation = app.grade_observations.find(grade_observation =>
+            grade_observation.council_id === app.current_council.id &&
+            grade_observation.grade_id === app.current_grade_id &&
+            grade_observation.subject_id === app.current_subject_id &&
+            grade_observation.user_id === app.user.id
         )
         grade_observation_promise = save_resource('grade_observation', {
             ...base_evaluation,
@@ -954,32 +1111,10 @@ function evaluation_save(event) {
     .then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
         window.onbeforeunload = undefined
-        app._data.loading = false
+        app.loading = false
     }).catch(error => {
-        app._data.loading = false
+        app.loading = false
         console.log('Error:', error)
         notify('Erro!', form.dataset.error, 'danger')
     })
-}
-
-function parseObject(object) {
-    let properties = Object.keys(object)
-    properties.forEach(property => {
-        if (object[property] === null || object[property] === undefined) {
-            return
-        }
-
-        if (object[property].toString() === parseInt(object[property]).toString()) {
-            object[property] = parseInt(object[property]) // "int" to int
-        } else if (object[property].toString() === parseFloat(object[property]).toString()) {
-            object[property] = parseFloat(object[property]) // "float" to float
-        } else if (object[property] === !!object[property]) {
-            object[property] = parseInt(object[property]) // bool to int
-        }
-    })
-    return object
-}
-
-function parseObjects(object_array) {
-    return object_array.map(object => parseObject(object))
 }

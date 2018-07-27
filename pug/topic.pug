@@ -34,10 +34,10 @@ block content
         .modal-body
             .row.justify-content-center
                 .col-sm-11
-                    form(action='#' data-success='Tópico cadastrado com sucesso' data-error='Não foi possível cadastrar o tópico' onsubmit='submit_topic(event)')
+                    form(action='#' data-success='Tópico cadastrado com sucesso' data-error='Não foi possível cadastrar o tópico' onsubmit='topic_save(event)')
                         br
                         .input
-                            input(required placeholder='Ex.: Tarefas de casa' name='name')
+                            input(required placeholder='Ex.: Tarefas de casa' name='name' minlength='3')
                             label Nome
                         hr
                         .h4 Opções de resposta
@@ -51,12 +51,12 @@ block content
                                 tr(v-for='(topic_option, i) in new_topic_options')
                                     td
                                         .input
-                                            input(required style='margin: 0px' placeholder='Ex.: Excelente' v-model='topic_option.name' name='option_name[]')
+                                            input(required style='margin: 0px' placeholder='Ex.: Excelente' v-model='topic_option.name' name='option_name[]' minlength='3')
                                     td
                                         .input
                                             input(required type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100' v-model='topic_option.value' name='option_value[]')
                                     td.text-center
-                                            input(type='radio' name='option_default' value='1' v-model='topic_option.default')
+                                            input(type='radio' name='option_default' value='1' v-model='topic_option.default' required)
                                     td.text-right(style='margin-top: -2px')
                                         button.btn-danger.tooltip.tooltip-end(title='Remover opção de resposta' style='margin: 0px 2px' :disabled='new_topic_options.length <= 2' v-on:click='new_topic_options.splice(i, 1)' type='button')
                                             .material-icons delete
@@ -84,7 +84,7 @@ block content
                             .row
                                 .col-8
                                     .input
-                                        input(required :value='topic.name' placeholder='Ex.: Tarefas de casa' name='name')
+                                        input(required :value='topic.name' placeholder='Ex.: Tarefas de casa' name='name' minlength='3')
                                         label Nome
                                 .col-4
                                     br
@@ -104,12 +104,12 @@ block content
                                         td
                                             input(type='hidden' name='option_id[]' :value='topic_option.id')
                                             .input
-                                                input(required :value='topic_option.name' style='margin: 0px' placeholder='Ex.: Excelente' name='option_name[]')
+                                                input(required :value='topic_option.name' style='margin: 0px' placeholder='Ex.: Excelente' name='option_name[]' minlength='3')
                                         td
                                             .input
                                                 input(required :value='topic_option.value' type='number' min='0' max='100' style='margin: 0px' placeholder='0 - 100' name='option_value[]')
                                         td.text-center
-                                            input(type='radio' name='option_default' value='1' :checked='topic.topic_option_id === topic_option.id')
+                                            input(type='radio' name='option_default' value='1' :checked='topic.topic_option_id === topic_option.id' required)
                             .text-center
                                 button.btn-primary.tooltip(type='button' title='Criar uma nova opção de resposta para este tópico' v-on:click='topic_options.push({topic_id: topic.id})')
                                     .material-icons add

@@ -103,7 +103,7 @@ block content
             .modal-body
                 .row.justify-content-center
                     .col-sm-11
-                        form(action='#' data-resource='grade' data-success='Turma editada com sucesso' data-error='Não foi possível editar a turma' onsubmit='form_submit(event)')
+                        form(action='#' data-resource='grade' data-success='Turma editada com sucesso' data-error='Não foi possível editar a turma' onsubmit='grade_update(event)')
                             input(type='hidden' name='id' :value='current_grade_id')
                             br
                             .row

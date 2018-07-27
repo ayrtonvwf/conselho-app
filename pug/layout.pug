@@ -40,6 +40,7 @@ html
 
         // in production change to vue.min.js
         script(src='node_modules/vue/dist/vue.js')
+        script(src='node_modules/dexie/dist/dexie.min.js')
     body.mark-required
         form#form-valid-support-helper
             input(required)
@@ -121,5 +122,4 @@ html
                 | {{ notification.message }}
             #loading(v-if='loading')
                 .material-icons sync
-        script(src='https://unpkg.com/dexie@latest/dist/dexie.js')
         script(src='js/main.js')

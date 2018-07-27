@@ -41,6 +41,7 @@ html
         // in production change to vue.min.js
         script(src='node_modules/vue/dist/vue.js')
         script(src='node_modules/dexie/dist/dexie.min.js')
+        script(src='https://cdn.polyfill.io/v2/polyfill.js?rum=1&features=default,es6,localStorage,Array.prototype.find,Element.prototype.dataset,Promise')
     body.mark-required
         form#form-valid-support-helper
             input(required)

@@ -1,3 +1,20 @@
+window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB
+window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction || {READ_WRITE: "readwrite"}
+window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange
+
+function dettect_support() {
+    let idb = !!(window.indexedDB)
+    let promise = !!(typeof Promise !== 'undefined')
+    let fetch = !!(self.fetch)
+
+    if (!idb || !promise || !fetch) {
+        alert('Este navegador não é suportado. Atualize-o ou tente utilizar outro navegador!')
+        location.href = 'login.html'
+    }
+}
+
+dettect_support()
+
 let db = new Dexie('conselho')
 db.version(1).stores({
     councils: 'id',

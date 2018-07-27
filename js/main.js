@@ -1064,13 +1064,15 @@ function evaluation_save(event) {
                 ) !== undefined
             )
 
-            evaluations.push({
-                ...base_evaluation,
-                student_id: parseInt(student_row.dataset.student_id),
-                topic_id: parseInt(topic_select.dataset.topic_id),
-                topic_option_id: topic_select.value,
-                id: previous_evaluation ? previous_evaluation.id : null
-            })
+            evaluations.push(Object.assign(
+                base_evaluation,
+                {
+                    student_id: parseInt(student_row.dataset.student_id),
+                    topic_id: parseInt(topic_select.dataset.topic_id),
+                    topic_option_id: topic_select.value,
+                    id: previous_evaluation ? previous_evaluation.id : null
+                }
+            ))
 
         })
 
@@ -1087,12 +1089,14 @@ function evaluation_save(event) {
             existent_observation.user_id === app.user.id
         )
 
-        student_observations.push({
-            ...base_evaluation,
-            student_id: parseInt(student_row.dataset.student_id),
-            description: student_observation,
-            id: previous_observation ? previous_observation.id : null
-        })
+        student_observations.push(Object.assign(
+            base_evaluation,
+            {
+                student_id: parseInt(student_row.dataset.student_id),
+                description: student_observation,
+                id: previous_observation ? previous_observation.id : null
+            }
+        ))
     })
 
     let evaluation_promises = []
@@ -1113,11 +1117,14 @@ function evaluation_save(event) {
             grade_observation.subject_id === app.current_subject_id &&
             grade_observation.user_id === app.user.id
         )
-        grade_observation_promise = save_resource('grade_observation', {
-            ...base_evaluation,
-            description: grade_observation_description,
-            id: previous_grade_observation ? previous_grade_observation.id : null
-        }, false)
+
+        grade_observation_promise = save_resource('grade_observation', Object.assign(
+            base_evaluation,
+            {
+                description: grade_observation_description,
+                id: previous_grade_observation ? previous_grade_observation.id : null
+            }
+        ), false)
     }
 
     let save_promises = [

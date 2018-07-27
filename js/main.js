@@ -563,14 +563,15 @@ function notify(title, message, style, time) {
 }
 
 function logout() {
-    if ('app' in window && typeof app !== 'undefined' && app) {
-        app.loading = true
-    }
     localStorage.removeItem('token')
     localStorage.removeItem('has_loaded_data')
     db.delete().then(() => {
         location.href = 'login.html'
+    }).catch(() => {
+        location.href = 'login.html'
     })
+
+    app.loading = true
 }
 
 function parseObject(object) {

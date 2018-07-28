@@ -49,6 +49,7 @@ html
             header.header
                 a.header-button.main-button(href='index.html') Conselho
                 a.header-button.menu-toggle.material-icons(href='#menu') menu
+                button.header-button.material-icons(type='button' onclick='load_from_api()') sync
                 .header-pane(v-if='userHasPermission("role")')
                     button.header-button.material-icons(type='button') calendar_today
                         span.header-button-label-red(v-if='teacher_requests.length') {{ teacher_requests.length }}

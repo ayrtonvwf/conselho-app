@@ -20,8 +20,7 @@ if (location.href.indexOf('127.0.0.1') !== -1) {
     api_url = 'http://localhost/conselho-server/'
 }
 
-let db = new Dexie('conselho')
-db.version(1).stores({
+let db_schema = {
     councils: 'id',
     council_grades: 'id',
     council_topics: 'id',
@@ -45,16 +44,37 @@ db.version(1).stores({
     topics: 'id',
     topic_options: 'id',
     users: 'id'
-})
+}
+
+let db = new Dexie('conselho')
+db.version(1).stores(db_schema)
 db.open().catch(error => {
     console.error("Open failed: " + error.stack);
 })
 
-function set_load(state) {
-    if (state === undefined) {
-        state = true
+let sync_db = new Dexie('conselho-sync')
+sync_db.version(1).stores(db_schema)
+sync_db.open().catch(error => {
+    console.error("Open failed: " + error.stack);
+})
+
+function sync() {
+    let sync_schedule = JSON.parse(window.localStorage.getItem('sync_schedule'))
+    if (!sync_schedule || !sync_schedule.length) {
+        sync_schedule = resources
+        window.localStorage.setItem('sync_schedule', JSON.stringify(sync_schedule))
     }
-    app.loading = !!state
+
+    let next = sync_schedule.find(e => !!e)
+
+    get_resource(next).then(data => {
+        return sync_db[next+'s'].bulkPut(parseObjects(data))
+    }).then(() => {
+        sync_schedule.shift()
+        window.localStorage.setItem('sync_schedule', JSON.stringify(sync_schedule))
+        window.localStorage.setItem('sync_updated_'+next, Date.now().toString())
+        setTimeout(sync, 3000)
+    })
 }
 
 let data = {
@@ -568,6 +588,47 @@ function parseObject(object) {
 
 function parseObjects(object_array) {
     return object_array.map(object => parseObject(object))
+}
+
+function load_from_api() {
+    app.loading = true
+
+    let promises = []
+
+    let fetched_data = {}
+
+    resources.forEach(resource => {
+        let promise = get_resource(resource).then(data => {
+            fetched_data[resource + 's'] = data
+            return db[resource+'s'].bulkPut(parseObjects(data))
+        })
+
+        promises.push(promise)
+    })
+
+    return Promise.all(promises).then(() => {
+        window.localStorage.setItem('has_loaded_data', true)
+        let app_data = app
+        resources.forEach(resource => {
+            if (resource === 'evaluation') {
+                return
+            }
+            app_data[resource+'s'] = fetched_data[resource+'s']
+        })
+
+        app_data.user = app_data.users.find(user => parseInt(user.id) === token.user_id)
+
+        if (document.location.pathname.endsWith('evaluate.html') || document.location.pathname.endsWith('report.html')) {
+            let current_council_id = parseInt(new URL(document.location.href).searchParams.get('id'))
+            app_data.current_council = app_data.councils.find(council => council.id === current_council_id)
+        }
+
+        app_data.loading = false
+
+        app = app_data
+    }).catch(() => {
+        app.loading = false
+    })
 }
 
 // specific resource operations

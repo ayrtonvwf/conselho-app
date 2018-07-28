@@ -409,7 +409,9 @@ function api_fetch(path, method, body, headers) {
     headers.set('Timezone', '-03:00')
     headers.set('Accept', 'application/json; charset=UTF-8')
     headers.set('Content-Type', 'application/json')
-    headers.set('Token', token.value)
+    if (!headers.has('Token')) {
+        headers.set('Token', token.value)
+    }
 
     let url = api_url+path
     let options = {
@@ -458,7 +460,7 @@ function delete_resource(resource_name, id, notification, reload_view) {
     })
 }
 
-function save_resource(resource_name, data, save_to_db, update_view) {
+function save_resource(resource_name, data, save_to_db, update_view, headers) {
     if (save_to_db === undefined) {
         save_to_db = true
     }
@@ -476,7 +478,7 @@ function save_resource(resource_name, data, save_to_db, update_view) {
         delete data.id
     }
 
-    return api_fetch(path, method, data).then(response => {
+    return api_fetch(path, method, data, headers).then(response => {
         return response.json()
     }).then((json) => {
         if (json.id) {
@@ -637,6 +639,50 @@ function load_from_api() {
 
 // specific resource operations
 
+function user_save(event) {
+    event.preventDefault()
+
+    let form = event.target
+
+    let data = {
+        name: form.querySelector('[name=name]').value,
+        email: form.querySelector('[name=email]').value,
+        password: form.querySelector('[name=password]').value
+    }
+
+    let role = {
+        role_type_id: form.querySelector('[name=role_type_id]').value
+    }
+
+    if (data.password !== form.querySelector('[name=re_password]').value) {
+        notify('Erro!', 'As senhas informadas devem ser iguais!', 'danger')
+        return
+    }
+
+    app.loading = true
+
+    save_resource('user', data).then(response => {
+        data.id = response.id
+        role.user_id = response.id
+        return api_fetch('user_token', 'POST', data)
+    }).then(response => {
+        return response.json()
+    }).then(response => {
+        return save_resource('role', role, true, true, {Token: response.value})
+    }).then(response => {
+        role.id = response.id
+        role.approved = true
+        return save_resource('role', role)
+    }).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
 function teacher_request_save(event) {
     event.preventDefault()
 
@@ -674,6 +720,7 @@ function teacher_save(event) {
     }
 
     save_resource('teacher', data).then(() => {
+        document.location.hash = '' // closes the current modal
         app.loading = false
         app.current_subject_id = ''
         app.current_grade_id = ''

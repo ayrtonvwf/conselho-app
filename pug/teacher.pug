@@ -7,7 +7,7 @@ block content
     article.box
         .box-body
             br
-            form(action='#' onsubmit='form_submit(event)' data-success='Aguardando a aprovação do supervisor!' data-error='Não foi possível cadastrar' data-resource='teacher_request')
+            form(action='#' onsubmit='teacher_request_save(event)' data-success='Aguardando a aprovação do supervisor!' data-error='Não foi possível cadastrar')
                 .row.justify-content-center
                     .col-12.col-md-9
                         .row.justify-content-center

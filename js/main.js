@@ -110,7 +110,6 @@ if (!token || new Date(token.expires_at) < new Date()) {
 
 let filter_evaluations = function() {
     if (!app.current_grade_id || !app.current_council || !app.current_council.id) {
-        console.log(this.current_grade_id, this.current_council, app.current_grade_id, app.current_council)
         this.evaluations = []
         return
     }
@@ -314,12 +313,8 @@ function get_resource(name) {
         })
 }
 
-function seed(needed_resources) {
-    if (needed_resources === undefined) {
-        needed_resources = resources
-    } else if (typeof needed_resources === 'string') {
-        needed_resources = [needed_resources]
-    }
+function seed() {
+    let needed_resources = resources
 
     app.loading = true
 
@@ -421,35 +416,6 @@ function api_fetch(path, method, body, headers) {
     })
 }
 
-function form_submit(event) {
-    event.preventDefault()
-
-    document.location.hash = '' // closes the current modal
-
-    let form = event.target
-    let resource = form.dataset.resource
-    let form_data = new FormData(form)
-    let data = {}
-    form_data.forEach((value, field) => {
-        data[field] = value
-    })
-
-    form.querySelectorAll('[type=checkbox]').forEach((checkbox) => {
-        data[checkbox.name] = checkbox.checked
-    })
-
-    app.loading = true
-
-    save_resource(resource, data, false).then(() => {
-        return seed(resource)
-    }).then(() => {
-        notify('Sucesso!', form.dataset.success, 'success')
-    }).catch(error => {
-        console.log('Error:', error)
-        notify('Erro!', form.dataset.error, 'danger')
-    })
-}
-
 function delete_resource(resource_name, id, notification, reload_view) {
     document.location.hash = '' // closes modal
 
@@ -463,11 +429,11 @@ function delete_resource(resource_name, id, notification, reload_view) {
 
     app.loading = true
     return api_fetch(resource_name+'/'+id, 'DELETE').then(() => {
-        return db[resource_name+'s'].delete(id)
-    }).then(() => {
         if (reload_view) {
-            return db[resource_name+'s'].toArray().then(all_data => app[resource_name+'s'] = all_data)
+            let i = app[resource_name+'s'].findIndex(item => parseInt(item.id) === parseInt(id))
+            app[resource_name+'s'].splice(i, 1)
         }
+        return db[resource_name+'s'].delete(id)
     }).then(() => {
         if (notification) {
             app.loading = false
@@ -511,12 +477,18 @@ function save_resource(resource_name, data, save_to_db, update_view) {
         if (json.updated_at) {
             data.updated_evaluations = json.updated_at
         }
+        if (update_view && method === 'POST') {
+            app[resource_name+'s'].push(data)
+        } else if (update_view && method === 'PATCH') {
+            let i = app[resource_name+'s'].findIndex(item => parseInt(item.id) === parseInt(data.id))
+            if (i !== undefined) {
+                app[resource_name+'s'][i] = data
+            } else {
+                app[resource_name+'s'].push(data)
+            }
+        }
         if (save_to_db) {
             return db[resource_name+'s'].put(data)
-        }
-    }).then(() => {
-        if (update_view) {
-            return db[resource_name+'s'].toArray().then(all_data => app[resource_name+'s'] = all_data)
         }
     }).then(() => data)
 }
@@ -612,6 +584,28 @@ function parseObjects(object_array) {
 }
 
 // specific resource operations
+
+function teacher_request_save(event) {
+    event.preventDefault()
+
+    app.loading = true
+
+    let form = event.target
+    let data = {
+        grade_id: form.querySelector('[name=grade_id]').value,
+        subject_id: form.querySelector('[name=subject_id]').value,
+        user_id: app.user.id
+    }
+
+    save_resource('teacher_request', data).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
 
 function subject_save(event) {
     event.preventDefault()

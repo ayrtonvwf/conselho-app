@@ -106,10 +106,13 @@ html
                     a.menu-link(href='role.html' :class='pathname.endsWith("role.html") ? "menu-active" : ""' v-if='userHasPermission("role")')
                         i.material-icons supervisor_account
                         | Usuários
-                    a.menu-link(href='teacher.html' :class='pathname.endsWith("teacher.html") ? "menu-active" : ""' v-if='userHasPermission("evaluate")')
-                         i.material-icons people
-                         | Turmas
+                    a.menu-link(href='teacher.html' :class='pathname.endsWith("teacher.html") ? "menu-active" : ""' v-if='userHasPermission("teacher")')
+                        i.material-icons supervisor_account
+                        | Professores
                     template(v-if='userHasPermission("evaluate")')
+                        a.menu-link(href='teacher_request.html' :class='pathname.endsWith("teacher_request.html") ? "menu-active" : ""')
+                            i.material-icons people
+                            | Turmas
                         a.menu-link(v-for='council in activeCouncils' :href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id === council.id ? "menu-active" : ""')
                             i.material-icons edit
                             | {{ council.name }}

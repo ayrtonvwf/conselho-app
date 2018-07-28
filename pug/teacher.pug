@@ -3,74 +3,119 @@ extends layout.pug
 block content
     h1.content-title
         i.material-icons people
-        | Turma
+        | Professores
     article.box
+        .box-header Aguardando aprovação
         .box-body
-            br
-            form(action='#' onsubmit='teacher_request_save(event)' data-success='Aguardando a aprovação do supervisor!' data-error='Não foi possível cadastrar')
-                .row.justify-content-center
-                    .col-12.col-md-9
-                        .row.justify-content-center
-                            .input.col-6.col-sm-4
-                                select#current_grade_id(name='grade_id' required v-model='current_grade_id')
-                                    option(value='' selected hidden disabled) Selecione...
-                                    option(v-for='grade in grades' :value='grade.id') {{ grade.name }}
-                                label(for='current_grade_id') Turma
-                            .input.col-6.col-sm-4
-                                select#current_subject_id(name='subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
-                                    option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
-                                    option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id' :disabled='teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined') {{ subject.name }}
-                                label(for='current_subject_id') Disciplina
-                            .col-12.col-sm-3
-                                br.d-none.d-sm-inline
-                                button.btn-success(type='submit')
-                                    .material-icons check
-                                    |  Salvar
-            br
-            .table(v-if='teachers.find(teacher => teacher.user_id === user.id) !== undefined || teacher_requests.find(teacher_request => teacher_request.user_id === user_id) !== undefined')
+            .table(v-if='teacher_requests.length')
                 table
+                    thead
+                        tr
+                            th Nome
+                            th Turma
+                            th Disciplina
+                    tbody
+                        tr(v-for='teacher_request in teacher_requests')
+                            td {{ users.find(user => user.id === teacher_request.user_id).name }}
+                            td {{ grades.find(grade => grade.id === teacher_request.grade_id).name }}
+                            td {{ subjects.find(subject => subject.id === teacher_request.subject_id).name }}
+                            td.text-right.no-wrap
+                                a.btn-success.btn-sm.tooltip.tooltip-end(:href='"#modal-accept-" + teacher_request.id' title='Aceitar professor')
+                                    .material-icons check
+                                    span.d-none.d-md-inline  Aceitar professor
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-deny-" + teacher_request.id' title='Negar professor')
+                                    .material-icons close
+                                    span.d-none.d-md-inline  Negar professor
+            .text-center.text-muted(v-else)
+                br
+                .h4 Nenhum professor esperando aprovação
+                br
+    article.box
+        .box-header Todos
+        .box-body
+            .table
+                table
+                    thead
+                        tr
+                            th Nome
+                    tbody
+                        tr(v-for='user in users.filter(user => userHasPermission("evaluate", user.id))')
+                            td {{ user.name }}
+                            td.text-right.no-wrap
+                                a.btn-primary.btn-sm.tooltip.tooltip-end(:href='"#modal-grades-" + user.id' title='Turmas')
+                                    .material-icons people
+                                    span.d-none.d-md-inline  Turmas
+    div(v-for='user in users')
+        div.modal(:id='"modal-grades-" + user.id')
+            .modal-header Turmas de {{ user.name }}
+            .modal-body
+                br
+                form(action='#' onsubmit='teacher_save(event)' data-success='Professor salvo com sucesso!' data-error='Não foi possível cadastrar')
+                    input(type='hidden' name='user_id' :value='user.id')
+                    .row.justify-content-center
+                        .col-12.col-md-9
+                            .row.justify-content-center
+                                .input.col-6.col-sm-4
+                                    select#current_grade_id(name='grade_id' required v-model='current_grade_id')
+                                        option(value='' selected hidden disabled) Selecione...
+                                        option(v-for='grade in grades' :value='grade.id') {{ grade.name }}
+                                    label(for='current_grade_id') Turma
+                                .input.col-6.col-sm-4
+                                    select#current_subject_id(name='subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
+                                        option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
+                                        option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id' :disabled='teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined') {{ subject.name }}
+                                    label(for='current_subject_id') Disciplina
+                                .col-12.col-sm-3
+                                    br.d-none.d-sm-inline
+                                    button.btn-success(type='submit')
+                                        .material-icons check
+                                        |  Salvar
+                br
+                table.table(v-if='teachers.find(teacher => teacher.user_id === user.id) !== undefined')
                     thead
                         tr
                             th Turma
                             th Disciplina
                     tbody
-                        tr(v-for='teacher_request in teacher_requests' v-if='teacher_request.user_id === user.id')
-                            td {{ grades.find(grade => grade.id === teacher_request.grade_id).name }}
-                            td {{ subjects.find(subject => subject.id === teacher_request.subject_id).name }}
-                            td.text-muted Aguardando aprovação
-                            td.text-right.no-wrap
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-delete-teacher_request-"+teacher_request.id' title='Remover')
-                                    .material-icons delete
-                                    span.d-none.d-md-inline  Remover
                         tr(v-for='teacher in teachers' v-if='teacher.user_id === user.id')
                             td {{ grades.find(grade => grade.id === teacher.grade_id).name }}
                             td {{ subjects.find(subject => subject.id === teacher.subject_id).name }}
-                            td
-                            td.text-right.no-wrap
-                                a.btn-danger.btn-sm.tooltip.tooltip-end(href='#modal-delete-teacher' title='Remover')
+                            td.text-right
+                                a.btn-danger.btn-sm.tooltip.tooltip-end(:href='"#modal-remove-" + teacher.id' title='Remover')
                                     .material-icons delete
                                     span.d-none.d-md-inline  Remover
-            .text-center.text-muted(v-else)
-                br
-                .h4 Você ainda não está vinculado à nenhuma turma.
-                p Selecione uma turma e uma disciplina e clique em #[b salvar] para poder avaliar.
-                br
+                .text-center.text-muted(v-else)
+                    br
+                    .h4 Nenhuma turma aprovada
+                    br
 
-    div.modal.modal-xs.modal-danger(id='modal-delete-teacher')
-        .modal-header Fale com o supervisor
-        .modal-body
-            p Você não pode se desvincular desta turma, pois já recebeu a aprovação do supervisor.
-            p Caso seja realmente necessário, solicite ao supervisor que te desvincule.
-        .modal-footer.text-right
-            a.btn-danger.btn-sm(href='#') #[.material-icons check]  Entendi
-    a.modal-close(href='#')
+        a.modal-close(href='#')
 
     div(v-for='teacher_request in teacher_requests')
-        div.modal.modal-xs.modal-danger(:id='"modal-delete-teacher_request-" + teacher_request.id')
-            .modal-header Remover solicitação
+        div.modal.modal-xs.modal-success(:id='"modal-accept-" + teacher_request.id')
+            .modal-header Aceitar professor
             .modal-body
-                p Tem certeza que deseja remover esta solicitação?
+                p Tem certeza que deseja aceitar este professor?
             .modal-footer
                 a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
-                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher_request", \'+teacher_request.id+\')\'') #[.material-icons check]  Remover
+                button.btn-success.btn-sm.pull-right(:onclick='\'accept_teacher_request(\'+teacher_request.id+\')\'') #[.material-icons check]  Aceitar
+        a.modal-close(href='#')
+
+        div.modal.modal-xs.modal-danger(:id='"modal-deny-" + teacher_request.id')
+            .modal-header Negar professor
+            .modal-body
+                p Tem certeza que deseja negar este professor?
+            .modal-footer
+                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
+                button.btn-danger.btn-sm.pull-right(:onclick='\'deny_teacher_request(\'+teacher_request.id+\')\'') #[.material-icons close]  Negar
+        a.modal-close(href='#')
+
+    div(v-for='teacher in teachers')
+        div.modal.modal-xs.modal-danger(:id='"modal-remove-" + teacher.id')
+            .modal-header Remover professor
+            .modal-body
+                p Tem certeza que deseja remover este professor?
+            .modal-footer
+                a.btn-primary.btn-sm(href='#') #[.material-icons close]  Cancelar
+                button.btn-danger.btn-sm.pull-right(:onclick='\'delete_resource("teacher", \'+teacher.id+\')\'') #[.material-icons delete]  Remover
         a.modal-close(href='#')

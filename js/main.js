@@ -190,8 +190,12 @@ let app = new Vue({
 
             return this.role_types.find(role_type => role_type.id === role.role_type_id)
         },
-        userHasPermission(permission_reference) {
-            let role_type = this.role_type(this.user.id)
+        userHasPermission(permission_reference, user_id) {
+            if (!user_id) {
+                user_id = this.user.id
+            }
+
+            let role_type = this.role_type(user_id)
 
             if (role_type.id === undefined) {
                 return false;
@@ -647,6 +651,32 @@ function teacher_request_save(event) {
 
     save_resource('teacher_request', data).then(() => {
         app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function teacher_save(event) {
+    event.preventDefault()
+
+    app.loading = true
+
+    let form = event.target
+    let data = {
+        grade_id: form.querySelector('[name=grade_id]').value,
+        subject_id: form.querySelector('[name=subject_id]').value,
+        user_id: form.querySelector('[name=user_id]').value,
+        start_date: '2018-01-01',
+        end_date: '2018-12-31'
+    }
+
+    save_resource('teacher', data).then(() => {
+        app.loading = false
+        app.current_subject_id = ''
+        app.current_grade_id = ''
         notify('Sucesso!', form.dataset.success, 'success')
     }).catch(error => {
         app.loading = false

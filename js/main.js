@@ -218,6 +218,11 @@ let app = new Vue({
         }
     },
     computed: {
+        activeCouncils() {
+            return this.councils.filter(council =>
+                new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()
+            )
+        },
         studentsInGrade() {
             if (!this.current_grade_id) {
                 return undefined

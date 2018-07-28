@@ -108,9 +108,10 @@ html
                     a.menu-link(href='teacher.html' :class='pathname.endsWith("teacher.html") ? "menu-active" : ""' v-if='userHasPermission("evaluate")')
                          i.material-icons people
                          | Turmas
-                    a.menu-link(:href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id === council.id ? "menu-active" : ""' v-for='council in councils' v-if='userHasPermission("evaluate") && activeCouncil(council.id)')
-                        i.material-icons edit
-                        | {{ council.name }}
+                    template(v-if='userHasPermission("evaluate")')
+                        a.menu-link(v-for='council in activeCouncils' :href='"evaluate.html?id="+council.id' :class='pathname.endsWith("evaluate.html") && current_council.id === council.id ? "menu-active" : ""')
+                            i.material-icons edit
+                            | {{ council.name }}
                 main.content.mark-required.selection-primary
                     block content
             input(type='radio' name='notification-toggle' class='notification-toggle notification-start-hidden' checked)

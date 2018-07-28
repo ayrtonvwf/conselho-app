@@ -109,25 +109,26 @@ if (!token || new Date(token.expires_at) < new Date()) {
 }
 
 let filter_evaluations = function() {
-    if (!this.current_grade_id || !this.current_council.id) {
+    if (!app.current_grade_id || !app.current_council || !app.current_council.id) {
+        console.log(this.current_grade_id, this.current_council, app.current_grade_id, app.current_council)
         this.evaluations = []
         return
     }
-    this.loading = true
+    app.loading = true
 
     let index
     let equals
-    if (this.current_subject_id) {
+    if (app.current_subject_id) {
         index = '[council_id+grade_id+subject_id]'
-        equals = [this.current_council.id, this.current_grade_id, this.current_subject_id]
+        equals = [app.current_council.id, app.current_grade_id, app.current_subject_id]
     } else {
         index = '[council_id+grade_id]'
-        equals = [this.current_council.id, this.current_grade_id]
+        equals = [app.current_council.id, app.current_grade_id]
     }
 
     return db.evaluations.where(index).equals(equals).toArray().then(evaluations => {
-        this.evaluations = evaluations
-        this.loading = false
+        app.evaluations = evaluations
+        app.loading = false
     })
 }
 let app = new Vue({
@@ -193,17 +194,9 @@ let app = new Vue({
             return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
         },
         selectedEvaluation(student_id, topic_id) {
-            let evaluation = this.evaluations.find(evaluation =>
-                evaluation.council_id === this.current_council.id &&
-                evaluation.grade_id === this.current_grade_id &&
-                evaluation.student_id === parseInt(student_id) &&
-                evaluation.subject_id === this.current_subject_id &&
-                evaluation.user_id === this.user.id &&
-                this.topic_options.find(topic_option =>
-                    topic_option.id === evaluation.topic_option_id &&
-                    topic_option.topic_id === parseInt(topic_id)
-                ) !== undefined
-            )
+            let evaluation = this.evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined)
+
+            console.log('selected evaluation')
 
             return evaluation === undefined ? '' : evaluation.topic_option_id
         },
@@ -1031,19 +1024,14 @@ function set_confirm_redirect() {
 function evaluation_save(event) {
     event.preventDefault()
 
-    app.loading = true
-
-    app.loading = false
-    return ;
-
     let form = event.target
 
-    let base_evaluation = {
+    let base_evaluation = parseObject({
         council_id: app.current_council.id,
         grade_id: app.current_grade_id,
         subject_id: app.current_subject_id,
         user_id: app.user.id
-    }
+    })
 
     let evaluations = []
     let student_observations = []
@@ -1053,10 +1041,7 @@ function evaluation_save(event) {
         let topic_selects = student_row.querySelectorAll('[data-topic_id]')
         topic_selects.forEach(topic_select => {
             let previous_evaluation = app.evaluations.find(existent_evaluation =>
-                existent_evaluation.council_id === app.current_council.id &&
-                existent_evaluation.grade_id === app.current_grade_id &&
                 existent_evaluation.student_id === parseInt(student_row.dataset.student_id) &&
-                existent_evaluation.subject_id === app.current_subject_id &&
                 existent_evaluation.user_id === app.user.id &&
                 app.topic_options.find(topic_option =>
                     topic_option.id === existent_evaluation.topic_option_id &&
@@ -1064,15 +1049,16 @@ function evaluation_save(event) {
                 ) !== undefined
             )
 
-            evaluations.push(Object.assign(
-                base_evaluation,
-                {
-                    student_id: parseInt(student_row.dataset.student_id),
-                    topic_id: parseInt(topic_select.dataset.topic_id),
-                    topic_option_id: topic_select.value,
-                    id: previous_evaluation ? previous_evaluation.id : null
-                }
-            ))
+            evaluations.push({
+                council_id: app.current_council.id,
+                grade_id: app.current_grade_id,
+                subject_id: app.current_subject_id,
+                user_id: app.user.id,
+                student_id: parseInt(student_row.dataset.student_id),
+                topic_id: parseInt(topic_select.dataset.topic_id),
+                topic_option_id: topic_select.value,
+                id: previous_evaluation ? previous_evaluation.id : null
+            })
 
         })
 
@@ -1089,27 +1075,27 @@ function evaluation_save(event) {
             existent_observation.user_id === app.user.id
         )
 
-        student_observations.push(Object.assign(
-            base_evaluation,
-            {
-                student_id: parseInt(student_row.dataset.student_id),
-                description: student_observation,
-                id: previous_observation ? previous_observation.id : null
-            }
-        ))
-    })
+        if (previous_observation && previous_observation.description === student_observation) {
+            return
+        }
 
-    let evaluation_promises = []
-    evaluations.forEach(evaluation => {
-        evaluation_promises.push(save_resource('evaluation', evaluation, false))
-    })
-    let student_observation_promises = []
-    student_observations.forEach(student_observation => {
-        student_observation_promises.push(save_resource('student_observation', student_observation, false))
+        student_observations.push({
+            council_id: app.current_council.id,
+            grade_id: app.current_grade_id,
+            subject_id: app.current_subject_id,
+            user_id: app.user.id,
+            student_id: parseInt(student_row.dataset.student_id),
+            description: student_observation,
+            id: previous_observation ? previous_observation.id : null
+        })
     })
 
     let grade_observation_description = form.querySelector('[name=grade_observation]').value
-    let grade_observation_promise
+
+    app.loading = true
+
+    let save_promises = []
+
     if (grade_observation_description.length) {
         let previous_grade_observation = app.grade_observations.find(grade_observation =>
             grade_observation.council_id === app.current_council.id &&
@@ -1118,29 +1104,26 @@ function evaluation_save(event) {
             grade_observation.user_id === app.user.id
         )
 
-        grade_observation_promise = save_resource('grade_observation', Object.assign(
-            base_evaluation,
-            {
+        if (!previous_grade_observation || !previous_grade_observation.description === grade_observation_description) {
+            save_promises.push(save_resource('grade_observation', {
+                council_id: app.current_council.id,
+                grade_id: app.current_grade_id,
+                subject_id: app.current_subject_id,
+                user_id: app.user.id,
                 description: grade_observation_description,
                 id: previous_grade_observation ? previous_grade_observation.id : null
-            }
-        ), false)
+            }))
+        }
     }
 
-    let save_promises = [
-        Promise.all(evaluation_promises).then(evaluation_results =>
-            db.evaluations.bulkPut(evaluation_results)
-        ),
-        Promise.all(student_observation_promises).then(student_observation_results =>
-            db.student_observations.bulkPut(student_observation_results)
-        ),
-        grade_observation_promise.then(grade_observation_result =>
-            db.grade_observations.put(grade_observation_result)
-        )
-    ]
+    evaluations.forEach(evaluation => {
+        save_promises.push(save_resource('evaluation', evaluation, true, false))
+    })
+    student_observations.forEach(student_observation => {
+        save_promises.push(save_resource('student_observation', student_observation))
+    })
 
-    return Promise.all(save_promises).then(() => filter_evaluations())
-    .then(() => {
+    return Promise.all(save_promises).then(() => filter_evaluations()).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
         window.onbeforeunload = undefined
         app.loading = false

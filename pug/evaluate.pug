@@ -34,9 +34,12 @@ block content
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id')
                                     td.no-wrap {{ studentGrade(student.id).number }} - {{ student.name }}
                                     td(v-for='topic in councilTopics')
-                                        select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id')
-                                            option(v-if='!topic.topic_option_id && !selectedEvaluation(student.id, topic.id)' value='' hidden disabled selected) Selecione...
-                                            option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='(selectedEvaluation(student.id, topic.id) ? selectedEvaluation(student.id, topic.id) : topic.topic_option_id) === topic_option.id') {{ topic_option.name }}
+                                        template(v-if='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined)')
+                                            select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id' v-model='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined).topic_option_id')
+                                                option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id') {{ topic_option.name }}
+                                        template(v-else)
+                                            select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id')
+                                                option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='topic_option.topic_option_id === topic_option.id') {{ topic_option.name }}
                                     td
                                         textarea.resize-v(style='min-width: 250px; min-height: 70px' v-if='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id) !== undefined' v-model='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id).description')
                                         textarea.resize-v(style='min-width: 250px; min-height: 70px' v-else placeholder='Conteúdos não assimilados, ações necessárias, etc')

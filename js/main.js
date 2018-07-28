@@ -829,7 +829,7 @@ function topic_save(event) {
         }
 
         topic.topic_option_id = promises_response[default_option_index].id
-        return save_resource('topic', topic, false)
+        return save_resource('topic', topic)
     }).then(() => {
         return Promise.all([
             db.topics.toArray().then(data => app.topics = data),

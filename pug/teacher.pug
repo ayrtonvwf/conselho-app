@@ -63,7 +63,7 @@ block content
                                 .input.col-6.col-sm-4
                                     select#current_subject_id(name='subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
                                         option(value='' selected hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
-                                        option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id' :disabled='teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined') {{ subject.name }}
+                                        option(v-for='subject in subjects' v-if='current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined' :value='subject.id' :disabled='teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined') {{ subject.name }} {{ teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined ? ' - '+users.find(user => teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id).user_id === user.id).name : '' }}
                                     label(for='current_subject_id') Disciplina
                                 .col-12.col-sm-3
                                     br.d-none.d-sm-inline

@@ -32,7 +32,7 @@ block content
                                     th Observações Gerais
                             tbody
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id')
-                                    td.no-wrap {{ studentGrade(student.id).number }} - {{ student.name }}
+                                    td {{ studentGrade(student.id).number }} - {{ student.name }}
                                     td(v-for='topic in councilTopics')
                                         template(v-if='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined)')
                                             select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id' v-model='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined).topic_option_id')

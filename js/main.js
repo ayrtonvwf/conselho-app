@@ -170,17 +170,6 @@ let app = new Vue({
 
             return this.role_types.find(role_type => role_type.id === role.role_type_id)
         },
-        userCanEvaluate(user_id) {
-            let role_type = this.role_type(user_id)
-
-            if (role_type.id === undefined) {
-                return false;
-            }
-
-            let permission = this.permissions.find(permission => permission.reference === 'evaluate')
-
-            return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id)
-        },
         userHasPermission(permission_reference) {
             let role_type = this.role_type(this.user.id)
 
@@ -191,13 +180,6 @@ let app = new Vue({
             let permission = this.permissions.find(permission => permission.reference === permission_reference)
 
             return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
-        },
-        selectedEvaluation(student_id, topic_id) {
-            let evaluation = this.evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined)
-
-            console.log('selected evaluation')
-
-            return evaluation === undefined ? '' : evaluation.topic_option_id
         },
         reportStudentTopic(student_id, topic_id) {
             let topic_options = this.orderedTopicOptions(topic_id)

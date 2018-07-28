@@ -25,6 +25,9 @@ block content
                                 a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-students' title='Estudantes' :onclick='"app._data.current_grade_id = "+grade.id')
                                     .material-icons person
                                     span.d-none.d-md-inline  Estudantes
+                                a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-subjects' title='Disciplinas' :onclick='"app._data.current_grade_id = "+grade.id')
+                                    .material-icons book
+                                    span.d-none.d-md-inline  Disciplinas
                                 a.btn-warning.btn-sm.tooltip.tooltip-end(href='#modal-edit' title='Editar informações da turma' :onclick='"app._data.current_grade_id = "+grade.id')
                                     .material-icons edit
                                     span.d-none.d-md-inline  Editar
@@ -98,7 +101,7 @@ block content
                         a.btn-danger(href='#') #[.material-icons close]  Fechar
         a.modal-close(href='#')
 
-        div.modal(id='modal-edit')
+        div.modal#modal-edit
             .modal-header Editar turma
             .modal-body
                 .row.justify-content-center
@@ -123,12 +126,35 @@ block content
                                         input(name='active' value='1' :checked='parseInt(currentGrade.active)' type='checkbox')
                                         | Visível
                             br
+                            a.btn-danger(href='#') #[.material-icons close]  Cancelar
+                            button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
+                            br
+        a.modal-close(href='#')
+
+        div.modal#modal-subjects
+            .modal-header Disciplinas - {{ grades.find(grade => grade.id === current_grade_id).name }}
+            .modal-body
+                .row.justify-content-center
+                    .col-sm-11
+                        form(action='#' data-success='Disciplina incluída com sucesso' data-error='Não foi possível incluir a disciplina' onsubmit='grade_subject_save(event)')
+                            br
+                            .row.justify-content-center
+                                .col-12.col-sm-6.input
+                                    select(required name='subject_id')
+                                        option(value='' disabled hidden selected) Selecione...
+                                        option(v-for='subject in subjects.filter(subject_filter => grade_subjects.find(grade_subject => grade_subject.grade_id === current_grade_id && grade_subject.subject_id === subject_filter.id) === undefined)' :value='subject.id') {{ subject.name }}
+                                    label Disciplina
+                                .col-12.col-sm-3
+                                    br.d-none.d-sm-inline
+                                    button.btn-success(type='submit')
+                                        .material-icons check
+                                        |  Salvar
+
                             .row
                                 .col-6.col-md-4(v-for='subject in subjects.filter(subject_filter => grade_subjects.find(grade_subject => grade_subject.grade_id === current_grade_id && grade_subject.subject_id === subject_filter.id) !== undefined)')
                                     .material-icons check
                                     |  {{ subject.name }}
                             br
                             a.btn-danger(href='#') #[.material-icons close]  Cancelar
-                            button.btn-success.pull-right(type='submit') #[.material-icons check]  Salvar
                             br
         a.modal-close(href='#')

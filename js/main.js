@@ -639,6 +639,27 @@ function load_from_api() {
 
 // specific resource operations
 
+function grade_subject_save(event) {
+    event.preventDefault()
+
+    app.loading = true
+
+    let form = event.target
+    let data = {
+        grade_id: app.current_grade_id,
+        subject_id: form.querySelector('[name=subject_id]').value
+    }
+
+    save_resource('grade_subject', data).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
 function user_save(event) {
     event.preventDefault()
 

@@ -28,7 +28,7 @@ block content
                             thead
                                 tr
                                     th Aluno
-                                    th.no-wrap(v-for='topic in councilTopics' style='min-width: 150px') {{ topic.name }}
+                                    th(v-for='topic in councilTopics') {{ topic.name }}
                                     th Observações Gerais
                             tbody
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id')

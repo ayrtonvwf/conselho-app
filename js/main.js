@@ -726,6 +726,55 @@ function fixedTableHeader(table, horizontal_scroll) {
     table.style.position = 'relative'
     horizontal_scroll.appendChild(fixed_table)
 
+    let right_interval = undefined
+    let left_interval = undefined
+    horizontal_scroll.addEventListener('mousemove', (event) => {
+        let left = horizontal_scroll.getBoundingClientRect().left
+        let width = horizontal_scroll.offsetWidth
+        let x = event.clientX
+
+        if (x < 100) {
+            if (right_interval) {
+                clearInterval(right_interval)
+                right_interval = undefined
+            }
+            if (!left_interval) {
+                left_interval = setInterval(() => {
+                    horizontal_scroll.scrollBy({left: -100, behavior: 'smooth'})
+                }, 100)
+            }
+        } else if (left+width - x < 100) {
+            if (left_interval) {
+                clearInterval(left_interval)
+                left_interval = undefined
+            }
+            if (!right_interval) {
+                right_interval = setInterval(() => {
+                    horizontal_scroll.scrollBy({left: 100, behavior: 'smooth'})
+                }, 100)
+            }
+        } else {
+            if (left_interval) {
+                clearInterval(left_interval)
+                left_interval = undefined
+            }
+            if (right_interval) {
+                clearInterval(right_interval)
+                right_interval = undefined
+            }
+        }
+    })
+    horizontal_scroll.addEventListener('mouseout', () => {
+        if (left_interval) {
+            clearInterval(left_interval)
+            left_interval = undefined
+        }
+        if (right_interval) {
+            clearInterval(right_interval)
+            right_interval = undefined
+        }
+    })
+
     window.addEventListener('scroll', () => {
         let offset = table.getBoundingClientRect().top
         if (offset > 0) {

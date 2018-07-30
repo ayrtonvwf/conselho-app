@@ -1359,10 +1359,11 @@ function evaluation_save(event) {
 
     let student_rows = form.querySelectorAll('[data-student_id]')
     student_rows.forEach(student_row => {
-        let student_observation = student_row.querySelector('textarea').value
-        if (!student_observation.length) {
+        let student_observation = student_row.querySelector('textarea')
+        if (!student_observation || !student_observation.value) {
             return
         }
+        student_observation = student_observation.value
 
         let previous_observation = app.student_observations.find(existent_observation =>
             existent_observation.council_id === app.current_council.id &&

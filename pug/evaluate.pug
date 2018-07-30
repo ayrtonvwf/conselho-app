@@ -22,12 +22,12 @@ block content
                                     option(v-for='subject in subjectsInGrade' v-if='grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))' :selected='subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length === 1' :value='subject.id') {{ subject.name }}
                                 label(for='current_subject_id') Disciplina
                 br
-                div(v-if='current_subject_id && evaluations.length')
-                    .text-center
-                        label
-                            input(type='checkbox' v-model='hide_evaluated_students')
-                            |  Mostrar apenas alunos não avaliados
-                    br
+                div(v-if='current_subject_id')
+                    //.text-center
+                    //    label
+                    //        input(type='checkbox' v-model='hide_evaluated_students')
+                    //        |  Mostrar apenas alunos não avaliados
+                    //br
                     .table
                         table
                             thead
@@ -35,7 +35,7 @@ block content
                                     th Aluno
                                     th(v-for='topic in councilTopics') {{ topic.name }}
                                     th Observações Gerais
-                            tbody
+                            tbody(v-if='evaluations.length')
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id')
                                     td {{ studentGrade(student.id).number }} - {{ student.name }}
                                         span.text-muted(v-if='!studentHasEvaluation(student.id)')  (não avaliado)

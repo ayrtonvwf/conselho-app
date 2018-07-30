@@ -296,28 +296,24 @@ let app = new Vue({
             if (!this.current_grade_id) {
                 return undefined
             }
-            return this.students
-                .filter(student =>
-                    this.studentGrade(student.id) !== undefined &&
-                    (
-                        !this.hide_evaluated_students ||
-                        this.studentHasEvaluation(student.id)
-                    )
-                )
-                .sort((a, b) => {
-                    a = this.studentGrade(a.id).number
-                    b = this.studentGrade(b.id).number
+            let students = this.students.filter(student => this.studentGrade(student.id) !== undefined)
+            if (this.hide_evaluated_students) {
+                students = students.filter(student => !this.studentHasEvaluation(student.id))
+            }
+            return students.sort((a, b) => {
+                a = this.studentGrade(a.id).number
+                b = this.studentGrade(b.id).number
 
-                    if (a < b) {
-                        return -1
-                    }
+                if (a < b) {
+                    return -1
+                }
 
-                    if (a > b) {
-                        return 1
-                    }
+                if (a > b) {
+                    return 1
+                }
 
-                    return 0
-                })
+                return 0
+            })
         },
         currentGrade() {
             if (!this.current_grade_id) {

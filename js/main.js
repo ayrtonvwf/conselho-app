@@ -129,11 +129,11 @@ if (!token || new Date(token.expires_at) < new Date()) {
 }
 
 let filter_evaluations = function() {
-    if (!app.current_grade_id || !app.current_council || !app.current_council.id) {
+    let is_evaluation = !!document.location.pathname.endsWith('evaluate.html')
+    if (!app.current_grade_id || !app.current_council || !app.current_council.id || (is_evaluation && !app.current_subject_id)) {
         this.evaluations = []
         return
     }
-    app.loading = true
 
     let index
     let equals
@@ -145,11 +145,48 @@ let filter_evaluations = function() {
         equals = [app.current_council.id, app.current_grade_id]
     }
 
+    app.loading = true
+
     return db.evaluations.where(index).equals(equals).toArray().then(evaluations => {
+        if (is_evaluation) {
+            evaluations = evaluations
+                .filter(evaluation => evaluation.user_id === app.user.id)
+                .map(evaluation => {
+                    let topic_option = app.topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id)
+                    evaluation.topic_id = topic_option.topic_id
+                    return evaluation
+                })
+
+            let missing_evaluations = []
+
+            app.studentsInGrade.forEach(student => {
+                app.councilTopics.forEach(topic => {
+                    let evaluation = evaluations.find(evaluation =>
+                        evaluation.student_id === student.id &&
+                        evaluation.topic_id === topic.id
+                    )
+                    if (evaluation) {
+                        return
+                    }
+                    missing_evaluations.push({
+                        student_id: student.id,
+                        topic_id: topic.id,
+                        topic_option_id: topic.topic_option_id,
+                        council_id: app.current_council.id,
+                        user_id: app.user.id,
+                        grade_id: app.current_grade_id,
+                        subject_id: app.current_subject_id
+                    })
+                })
+            })
+
+            evaluations = evaluations.concat(missing_evaluations)
+        }
+
         app.evaluations = evaluations
         app.loading = false
 
-        let table = document.querySelector('table')
+        let table = document.querySelector('table:not([data-fixed_table])')
         let table_parent = document.querySelector('.table')
         fixedTableHeader(table, table_parent)
     })
@@ -243,6 +280,9 @@ let app = new Vue({
                 parseInt(student_grade.grade_id) === parseInt(this.current_grade_id) &&
                 parseInt(student_grade.student_id) === parseInt(student_id)
             )
+        },
+        studentHasEvaluation(student_id) {
+            return !!this.evaluations.find(evaluation => evaluation.student_id === student_id && evaluation.id)
         }
     },
     computed: {
@@ -661,8 +701,18 @@ function fixedTableHeader(table, horizontal_scroll) {
         return
     }
 
+    let prev_fixed_table = horizontal_scroll.querySelector('table[data-fixed_table=fixed_table]')
+    if (prev_fixed_table) {
+        horizontal_scroll.removeChild(prev_fixed_table)
+    }
+
     let table_header = table.querySelector('thead')
     let fixed_table = document.createElement('table')
+    fixed_table.style.position = 'absolute'
+    fixed_table.style.backgroundColor = 'white'
+    fixed_table.style.display = 'none'
+    fixed_table.style.top = '0px'
+    fixed_table.dataset.fixed_table = 'fixed_table'
     fixed_table.appendChild(table_header.cloneNode(true))
     let ths = table_header.querySelectorAll('th')
     ths.forEach((th, i) => {
@@ -671,13 +721,9 @@ function fixedTableHeader(table, horizontal_scroll) {
         fixed_table.querySelector('th:nth-child('+pos+')').style.minWidth = width
         fixed_table.querySelector('th:nth-child('+pos+')').style.maxWidth = width
     })
-    fixed_table.style.position = 'absolute'
-    fixed_table.style.backgroundColor = 'white'
-    fixed_table.style.display = 'none'
-    fixed_table.style.zIndex = 100
 
     table.style.position = 'relative'
-    horizontal_scroll.insertBefore(fixed_table, table)
+    horizontal_scroll.appendChild(fixed_table)
 
     window.addEventListener('scroll', () => {
         let offset = table.getBoundingClientRect().top
@@ -1258,42 +1304,11 @@ function evaluation_save(event) {
 
     let form = event.target
 
-    let base_evaluation = parseObject({
-        council_id: app.current_council.id,
-        grade_id: app.current_grade_id,
-        subject_id: app.current_subject_id,
-        user_id: app.user.id
-    })
-
-    let evaluations = []
+    let evaluations = app.evaluations
     let student_observations = []
 
     let student_rows = form.querySelectorAll('[data-student_id]')
     student_rows.forEach(student_row => {
-        let topic_selects = student_row.querySelectorAll('[data-topic_id]')
-        topic_selects.forEach(topic_select => {
-            let previous_evaluation = app.evaluations.find(existent_evaluation =>
-                existent_evaluation.student_id === parseInt(student_row.dataset.student_id) &&
-                existent_evaluation.user_id === app.user.id &&
-                app.topic_options.find(topic_option =>
-                    topic_option.id === existent_evaluation.topic_option_id &&
-                    topic_option.topic_id === parseInt(topic_select.dataset.topic_id)
-                ) !== undefined
-            )
-
-            evaluations.push({
-                council_id: app.current_council.id,
-                grade_id: app.current_grade_id,
-                subject_id: app.current_subject_id,
-                user_id: app.user.id,
-                student_id: parseInt(student_row.dataset.student_id),
-                topic_id: parseInt(topic_select.dataset.topic_id),
-                topic_option_id: topic_select.value,
-                id: previous_evaluation ? previous_evaluation.id : null
-            })
-
-        })
-
         let student_observation = student_row.querySelector('textarea').value
         if (!student_observation.length) {
             return
@@ -1358,6 +1373,51 @@ function evaluation_save(event) {
     return Promise.all(save_promises).then(() => filter_evaluations()).then(() => {
         notify('Sucesso!', form.dataset.success, 'success')
         window.onbeforeunload = undefined
+        app.loading = false
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}
+
+function student_evaluation_save(student_id) {
+    app.loading = true
+
+    let save_promises = []
+
+    let evaluations = app.evaluations.filter(evaluation => evaluation.student_id === student_id)
+
+    evaluations.forEach(evaluation => {
+        save_promises.push(save_resource('evaluation', evaluation, true, false))
+    })
+
+    let student_observation = document.querySelector('tr[data-student_id="'+student_id+'"] textarea').value
+
+    if (student_observation.length) {
+        let previous_observation = app.student_observations.find(existent_observation =>
+            existent_observation.council_id === app.current_council.id &&
+            existent_observation.grade_id === app.current_grade_id &&
+            existent_observation.student_id === student_id &&
+            existent_observation.subject_id === app.current_subject_id &&
+            existent_observation.user_id === app.user.id
+        )
+
+        if (!previous_observation || previous_observation.description !== student_observation) {
+            save_promises.push(save_resource('student_observation', {
+                council_id: app.current_council.id,
+                grade_id: app.current_grade_id,
+                subject_id: app.current_subject_id,
+                user_id: app.user.id,
+                student_id: student_id,
+                description: student_observation,
+                id: previous_observation ? previous_observation.id : null
+            }))
+        }
+    }
+
+    return Promise.all(save_promises).then(() => {
+        notify('Sucesso!', 'A avaliação do aluno foi salva com sucesso!', 'success')
         app.loading = false
     }).catch(error => {
         app.loading = false

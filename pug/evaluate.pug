@@ -22,7 +22,7 @@ block content
                                     option(v-for='subject in subjectsInGrade' v-if='grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))' :selected='subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length === 1' :value='subject.id') {{ subject.name }}
                                 label(for='current_subject_id') Disciplina
                 br
-                div(v-if='current_subject_id')
+                div(v-if='current_subject_id && evaluations.length')
                     .table
                         table
                             thead
@@ -33,16 +33,17 @@ block content
                             tbody
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id')
                                     td {{ studentGrade(student.id).number }} - {{ student.name }}
+                                        span.text-muted(v-if='!studentHasEvaluation(student.id)')  (não avaliado)
                                     td(v-for='topic in councilTopics')
-                                        template(v-if='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined)')
-                                            select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id' v-model='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.user_id === user.id && topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id && topic_option.topic_id === topic.id) !== undefined).topic_option_id')
-                                                option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id') {{ topic_option.name }}
-                                        template(v-else)
-                                            select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id')
-                                                option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id' :selected='topic_option.topic_option_id === topic_option.id') {{ topic_option.name }}
+                                        select(required onchange='set_confirm_redirect()' :data-topic_id='topic.id' v-model='evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.topic_id === topic.id).topic_option_id')
+                                            option(v-for='topic_option in orderedTopicOptions(topic.id)' :value='topic_option.id') {{ topic_option.name }}
                                     td
                                         textarea.resize-v(style='min-width: 250px; min-height: 70px' v-if='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id) !== undefined' v-model='student_observations.find(student_observation => student_observation.student_id === student.id && student_observation.grade_id === current_grade_id && student_observation.subject_id === current_subject_id && student_observation.council_id === current_council.id && student_observation.user_id === user.id).description')
                                         textarea.resize-v(style='min-width: 250px; min-height: 70px' v-else placeholder='Conteúdos não assimilados e ações efetivadas')
+                                    td
+                                        a.btn-success.btn-sm.tooltip.tooltip-end(type='button' title='Salvar avaliação do aluno' :onclick='"student_evaluation_save("+student.id+")"')
+                                            .material-icons check
+                                            span.d-none.d-md-inline  Salvar
                     br
                     .row
                         .col-md-8

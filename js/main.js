@@ -88,7 +88,8 @@ let data = {
 
     current_grade_id: '',
     current_subject_id: '',
-    loading: true
+    loading: true,
+    hide_evaluated_students: false
 }
 
 let load_data_from_cache = window.localStorage.getItem('has_loaded_data')
@@ -296,7 +297,13 @@ let app = new Vue({
                 return undefined
             }
             return this.students
-                .filter(student => this.studentGrade(student.id) !== undefined)
+                .filter(student =>
+                    this.studentGrade(student.id) !== undefined &&
+                    (
+                        !this.hide_evaluated_students ||
+                        this.studentHasEvaluation(student.id)
+                    )
+                )
                 .sort((a, b) => {
                     a = this.studentGrade(a.id).number
                     b = this.studentGrade(b.id).number

@@ -23,6 +23,11 @@ block content
                                 label(for='current_subject_id') Disciplina
                 br
                 div(v-if='current_subject_id && evaluations.length')
+                    .text-center
+                        label
+                            input(type='checkbox' v-model='hide_evaluated_students')
+                            |  Mostrar apenas alunos não avaliados
+                    br
                     .table
                         table
                             thead

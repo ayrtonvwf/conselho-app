@@ -89,13 +89,26 @@ block content
                                     th Nome
                                     th Número
                             tbody
-                                tr(v-for='student in studentsInGrade')
-                                    td(:class='studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10) ? "text-striked" : ""') {{ student.name }}
-                                    td {{ studentGrade(student.id).number }}
-                                    td.text-right
-                                        button.btn-primary.btn-sm.tooltip.tooltip-end(title='Ativar e Desativar' :onclick='"student_toggle("+student.id+")"')
-                                            .material-icons visibility_off
-                                            span.d-none.d-md-inline  Ativar e Desativar
+                                tr(v-for='student in studentsInGrade' :data-student_id='student.id')
+                                    template(v-if='studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)')
+                                        td(class='text-striked') {{ student.name }}
+                                        td(style='max-width: 75px') {{ studentGrade(student.id).number }}
+                                        td.text-right
+                                            button.btn-primary.btn-sm.tooltip.tooltip-end(title='Ativar e Desativar' :onclick='"student_toggle("+student.id+")"')
+                                                .material-icons visibility_off
+                                                span.d-none.d-md-inline  Ativar e Desativar
+                                    template(v-else)
+                                        td
+                                            input(name='name' :value='student.name')
+                                        td(style='max-width: 75px')
+                                            input(type='number' min='1' step='1' name='number' :value='studentGrade(student.id).number')
+                                        td.text-right
+                                            button.btn-success.btn-sm.tooltip.tooltip-end(title='Salvar' :onclick='"student_update("+student.id+")"')
+                                                .material-icons save
+                                                span.d-none.d-md-inline  Salvar
+                                            button.btn-primary.btn-sm.tooltip.tooltip-end(title='Ativar e Desativar' :onclick='"student_toggle("+student.id+")"')
+                                                .material-icons visibility_off
+                                                span.d-none.d-md-inline  Ativar e Desativar
 
                         br
                         a.btn-danger(href='#') #[.material-icons close]  Fechar

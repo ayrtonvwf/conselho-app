@@ -654,6 +654,44 @@ function load_from_api() {
 
 // specific resource operations
 
+function student_update(student_id) {
+    let tr = document.querySelector('[data-student_id="'+student_id+'"]')
+
+    let student = {
+        id: student_id,
+        name: tr.querySelector('[name=name]').value
+    }
+
+    if (student.name.length < 3) {
+        notify('Erro', 'O nome do aluno precisa de ao menos 3 caracteres', 'error')
+        return
+    }
+
+    let student_grade = {
+        id: app.studentGrade(student_id).id,
+        student_id: student_id,
+        grade_id: app.current_grade_id,
+        number: parseInt(tr.querySelector('[name=number]').value)
+    }
+
+    if (!student_grade.number) {
+        notify('Erro', 'O aluno precisa de um número válido')
+        return
+    }
+
+    app.loading = true
+    save_resource('student', student).then(() => {
+        return save_resource('student_grade', student_grade)
+    }).then(() => {
+        app.loading = false
+        notify('Sucesso!', 'Aluno editado com sucesso!', 'success')
+    }).catch(error => {
+        console.log('Error:', error)
+        app.loading = false
+        notify('Erro!', 'Não foi possível editar o aluno!', 'error')
+    })
+}
+
 function grade_subject_save(event) {
     event.preventDefault()
 

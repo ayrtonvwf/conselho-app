@@ -23,11 +23,11 @@ block content
                                 label(for='current_subject_id') Disciplina
                 br
                 div(v-if='current_subject_id')
-                    //.text-center
-                    //    label
-                    //        input(type='checkbox' v-model='hide_evaluated_students')
-                    //        |  Mostrar apenas alunos não avaliados
-                    //br
+                    .text-center
+                        label
+                            input(type='checkbox' v-model='hide_evaluated_students')
+                            |  Mostrar apenas alunos não avaliados
+                    br
                     .table
                         table
                             thead
@@ -36,7 +36,7 @@ block content
                                     th(v-for='topic in councilTopics') {{ topic.name }}
                                     th Observações Gerais
                             tbody(v-if='evaluations.length')
-                                tr(v-for='student in studentsInGrade' :data-student_id='student.id')
+                                tr(v-for='student in studentsInGrade' :data-student_id='student.id' v-if='!hide_evaluated_students || !studentHasEvaluation(student.id)')
                                     td {{ studentGrade(student.id).number }} - {{ student.name }}
                                         span.text-muted(v-if='!studentHasEvaluation(student.id)')  (não avaliado)
                                     td(v-for='topic in councilTopics')
@@ -48,7 +48,6 @@ block content
                                     td
                                         a.btn-success.btn-sm.tooltip.tooltip-end(type='button' title='Salvar avaliação do aluno' :onclick='"student_evaluation_save("+student.id+")"')
                                             .material-icons check
-                                            span.d-none.d-md-inline  Salvar
                     br
                     .row
                         .col-md-8

@@ -39,7 +39,7 @@ html
             }
 
         // in production change to vue.min.js
-        script(src='https://cdn.polyfill.io/v2/polyfill.min.js?rum=1&features=default,es6,localStorage,Array.prototype.find,Element.prototype.dataset,Promise')
+        script(src='https://cdn.polyfill.io/v2/polyfill.min.js?rum=1&features=default,es6,localStorage,Array.prototype.find,Element.prototype.dataset,MutationObserver')
         script(src='node_modules/vue/dist/vue.js')
         script(src='node_modules/dexie/dist/dexie.min.js')
     body.mark-required
@@ -128,4 +128,5 @@ html
                 | {{ notification.message }}
             #loading(v-if='loading')
                 .material-icons sync
+        script(src='js/super-table.js')
         script(src='js/main.js')

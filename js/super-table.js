@@ -25,29 +25,39 @@ function scrollOnMousePosition(event) {
             clearInterval(right_interval)
             right_interval = undefined
         }
-        if (!left_interval) {
+        if (!left_interval && horizontal_scroll.scrollLeft) {
             left_interval = setInterval(() => {
                 horizontal_scroll.scrollBy({left: -100, behavior: 'smooth'})
+                if (!horizontal_scroll.scrollLeft) {
+                    stopScrollOnMouseOut()
+                }
             }, 100)
+            horizontal_scroll.style.cursor = 'w-resize'
         }
     } else if (left+width - x < 100) {
         if (left_interval) {
             clearInterval(left_interval)
             left_interval = undefined
         }
-        if (!right_interval) {
+        if (!right_interval && horizontal_scroll.scrollLeft + horizontal_scroll.offsetWidth < table.offsetWidth) {
             right_interval = setInterval(() => {
                 horizontal_scroll.scrollBy({left: 100, behavior: 'smooth'})
+                if (horizontal_scroll.scrollLeft + horizontal_scroll.offsetWidth === table.offsetWidth) {
+                    stopScrollOnMouseOut()
+                }
             }, 100)
+            horizontal_scroll.style.cursor = 'e-resize'
         }
     } else {
         if (left_interval) {
             clearInterval(left_interval)
             left_interval = undefined
+            horizontal_scroll.style.cursor = 'auto'
         }
         if (right_interval) {
             clearInterval(right_interval)
             right_interval = undefined
+            horizontal_scroll.style.cursor = 'auto'
         }
     }
 }
@@ -56,10 +66,12 @@ function stopScrollOnMouseOut() {
     if (left_interval) {
         clearInterval(left_interval)
         left_interval = undefined
+        horizontal_scroll.style.cursor = 'auto'
     }
     if (right_interval) {
         clearInterval(right_interval)
         right_interval = undefined
+        horizontal_scroll.style.cursor = 'auto'
     }
 }
 

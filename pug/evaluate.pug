@@ -44,7 +44,7 @@ block content
                                         td(v-for='topic in councilTopics') -
                                         td -
                                         td -
-                                    template(v-else-if='!hide_evaluated_students')
+                                    template(v-else-if='studentGrade(student.id).end_date > new Date().toISOString().slice(0, 10)')
                                         td {{ studentGrade(student.id).number }} - {{ student.name }}
                                             span.text-muted(v-if='!studentHasEvaluation(student.id)')  (não avaliado)
                                         td(v-for='topic in councilTopics')

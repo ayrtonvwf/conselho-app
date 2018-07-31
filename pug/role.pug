@@ -20,7 +20,7 @@ block content
                             th Tipo
                             th E-mail
                     tbody
-                        tr(v-for='user in users')
+                        tr(v-for='user in orderedUsers')
                             td {{ user.name }}
                             td {{ role_type(user.id).name }}
                             td {{ user.email }}

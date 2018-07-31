@@ -349,6 +349,9 @@ let app = new Vue({
                     parseInt(grade_observation.subject_id) === parseInt(this.current_subject_id)
                 )
             )
+        },
+        orderedUsers() {
+            return this.users.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true }))
         }
     }
 })

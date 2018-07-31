@@ -39,13 +39,13 @@ block content
                         tr
                             th Nome
                     tbody
-                        tr(v-for='user in users.filter(user => userHasPermission("evaluate", user.id))')
+                        tr(v-for='user in orderedUsers.filter(user => userHasPermission("evaluate", user.id))')
                             td {{ user.name }}
                             td.text-right.no-wrap
                                 a.btn-primary.btn-sm.tooltip.tooltip-end(:href='"#modal-grades-" + user.id' title='Turmas')
                                     .material-icons people
                                     span.d-none.d-md-inline  Turmas
-    div(v-for='user in users')
+    div(v-for='user in users.filter(user => userHasPermission("evaluate", user.id))')
         div.modal(:id='"modal-grades-" + user.id')
             .modal-header Turmas de {{ user.name }}
             .modal-body

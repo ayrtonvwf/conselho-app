@@ -52,31 +52,6 @@ db.open().catch(error => {
     console.error("Open failed: " + error.stack);
 })
 
-let sync_db = new Dexie('conselho-sync')
-sync_db.version(1).stores(db_schema)
-sync_db.open().catch(error => {
-    console.error("Open failed: " + error.stack);
-})
-
-function sync() {
-    let sync_schedule = JSON.parse(window.localStorage.getItem('sync_schedule'))
-    if (!sync_schedule || !sync_schedule.length) {
-        sync_schedule = resources
-        window.localStorage.setItem('sync_schedule', JSON.stringify(sync_schedule))
-    }
-
-    let next = sync_schedule.find(e => !!e)
-
-    get_resource(next).then(data => {
-        return sync_db[next+'s'].bulkPut(parseObjects(data))
-    }).then(() => {
-        sync_schedule.shift()
-        window.localStorage.setItem('sync_schedule', JSON.stringify(sync_schedule))
-        window.localStorage.setItem('sync_updated_'+next, Date.now().toString())
-        setTimeout(sync, 3000)
-    })
-}
-
 let data = {
     pathname: document.location.pathname,
     token: {},
@@ -467,13 +442,17 @@ function api_fetch(path, method, body, headers) {
         method = 'GET'
     }
 
+    if (!body) {
+        body = { school_id: 1}
+    } else {
+        body.school_id = 1
+    }
     if (method === 'GET' || method === 'DELETE') {
         if (body !== undefined) {
             path += '?'+serialize(body)
             body = undefined
         }
     } else {
-        body.school_id = 1
         body = JSON.stringify(parseObject(body))
     }
 

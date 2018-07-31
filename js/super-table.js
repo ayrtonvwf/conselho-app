@@ -195,6 +195,7 @@ function superTable() {
     horizontal_scroll.removeEventListener('mouseout', stopScrollOnMouseOut)
     horizontal_scroll.removeEventListener('mousemove', scrollOnMousePosition)
     window.removeEventListener('scroll', positionTableHeader)
+    window.removeEventListener('resize', positionTableHeader)
     horizontal_scroll.removeEventListener('scroll', positionTableCol)
 
     if (!is_touching) {
@@ -202,6 +203,7 @@ function superTable() {
         horizontal_scroll.addEventListener('mouseout', stopScrollOnMouseOut)
     }
     window.addEventListener('scroll', positionTableHeader)
+    window.addEventListener('resize', positionTableHeader)
     horizontal_scroll.addEventListener('scroll', positionTableCol)
 
     horizontal_scroll.appendChild(fixed_table)

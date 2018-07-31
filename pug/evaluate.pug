@@ -35,6 +35,7 @@ block content
                                     th Aluno
                                     th(v-for='topic in councilTopics') {{ topic.name }}
                                     th Observações Gerais
+                                    th
                             tbody(v-if='evaluations.length')
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id' v-if='!hide_evaluated_students || !studentHasEvaluation(student.id)')
                                     template(v-if='studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)')

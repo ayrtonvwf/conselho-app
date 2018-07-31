@@ -4,6 +4,13 @@ let horizontal_scroll
 let fixed_table
 let right_interval
 let left_interval
+let is_touching = false
+
+function dettectTouchStart() {
+    is_touching = true
+    window.removeEventListener('touchstart', dettectTouchStart)
+}
+window.addEventListener('touchstart', dettectTouchStart)
 
 function scrollOnMousePosition(event) {
     let left = horizontal_scroll.getBoundingClientRect().left
@@ -103,10 +110,11 @@ function superTable() {
     horizontal_scroll.removeEventListener('mouseout', stopScrollOnMouseOut)
     horizontal_scroll.removeEventListener('mousemove', scrollOnMousePosition)
     window.removeEventListener('scroll', positionTableHeader)
-    window.removeEventListener('DOMSubtreeMofified', positionTableHeader)
 
-    horizontal_scroll.addEventListener('mousemove', scrollOnMousePosition)
-    horizontal_scroll.addEventListener('mouseout', stopScrollOnMouseOut)
+    if (!is_touching) {
+        horizontal_scroll.addEventListener('mousemove', scrollOnMousePosition)
+        horizontal_scroll.addEventListener('mouseout', stopScrollOnMouseOut)
+    }
     window.addEventListener('scroll', positionTableHeader)
 
     horizontal_scroll.appendChild(fixed_table)

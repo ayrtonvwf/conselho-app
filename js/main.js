@@ -130,6 +130,7 @@ if (!token || new Date(token.expires_at) < new Date()) {
 }
 
 let filter_evaluations = function() {
+    console.log('a')
     let is_evaluation = !!document.location.pathname.endsWith('evaluate.html')
     if (!app.current_grade_id || !app.current_council || !app.current_council.id || (is_evaluation && !app.current_subject_id)) {
         this.evaluations = []
@@ -194,7 +195,22 @@ let app = new Vue({
     el: '#app',
     data: data,
     watch: {
-        current_grade_id: filter_evaluations,
+        current_grade_id: (new_grade_id) => {
+            let is_evaluation = !!document.location.pathname.endsWith('evaluate.html')
+            if (!is_evaluation) {
+                filter_evaluations()
+            } else {
+                let teachers = app.teachers.filter(teacher =>
+                    teacher.user_id === app.user.id &&
+                    teacher.grade_id === new_grade_id
+                )
+                if (teachers.length === 1) {
+                    app.current_subject_id = teachers[0].subject_id
+                } else {
+                    app.current_subject_id = ''
+                }
+            }
+        },
         current_subject_id: filter_evaluations
     },
     methods: {

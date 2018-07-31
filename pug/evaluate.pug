@@ -18,8 +18,8 @@ block content
                                 label(for='current_grade_id') Turma
                             .input.col-12.col-sm-6
                                 select#current_subject_id(name='current_subject_id' required v-model='current_subject_id' :disabled='!current_grade_id')
-                                    option(value='' :selected='!current_grade_id || subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length !== 1' hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
-                                    option(v-for='subject in subjectsInGrade' v-if='grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))' :selected='subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length === 1' :value='subject.id') {{ subject.name }}
+                                    option(value='' hidden disabled) {{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}
+                                    option(v-for='subject in subjectsInGrade' v-if='grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id && teacher.grade_id === current_grade_id))' :selected='subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length === 1' :value='subject.id') {{ subject.name }}
                                 label(for='current_subject_id') Disciplina
                 br
                 div(v-if='current_subject_id')
@@ -38,13 +38,13 @@ block content
                                     th
                             tbody(v-if='evaluations.length')
                                 tr(v-for='student in studentsInGrade' :data-student_id='student.id' v-if='!hide_evaluated_students || !studentHasEvaluation(student.id)')
-                                    template(v-if='studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)')
+                                    template(v-if='!hide_evaluated_students && studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)')
                                         td.text-striked {{ studentGrade(student.id).number }} - {{ student.name }}
                                             span.text-muted(v-if='!studentHasEvaluation(student.id)')  (não avaliado)
                                         td(v-for='topic in councilTopics') -
                                         td -
                                         td -
-                                    template(v-else)
+                                    template(v-else-if='!hide_evaluated_students')
                                         td {{ studentGrade(student.id).number }} - {{ student.name }}
                                             span.text-muted(v-if='!studentHasEvaluation(student.id)')  (não avaliado)
                                         td(v-for='topic in councilTopics')

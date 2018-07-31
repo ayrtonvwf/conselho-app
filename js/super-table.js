@@ -199,8 +199,6 @@ function superTable() {
     }
 
     observer = new MutationObserver(() => {
-        console.log('muted')
-
         observer.disconnect()
 
         calculateTableHeaderWidth()

@@ -733,7 +733,7 @@ function fixedTableHeader(table, horizontal_scroll) {
         let width = horizontal_scroll.offsetWidth
         let x = event.clientX
 
-        if (x < 100) {
+        if (x < left+100) {
             if (right_interval) {
                 clearInterval(right_interval)
                 right_interval = undefined

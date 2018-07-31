@@ -12,19 +12,18 @@ block content
                 |  Criar nova disciplina
     article.box
         .box-body
-            .table(v-if='subjects.length')
-                table
-                    thead
-                        tr
-                            th Nome
-                    tbody
-                        tr(v-for='subject in subjects')
-                            td(:class='!parseInt(subject.active) ? "text-muted" : ""') {{ subject.name }}
-                                span.text-muted(v-if='!parseInt(subject.active)')  (invisível)
-                            td.text-right.no-wrap
-                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + subject.id' title='Editar disciplina')
-                                    .material-icons edit
-                                    span.d-none.d-md-inline  Editar
+            table.table(v-if='subjects.length')
+                thead
+                    tr
+                        th Nome
+                tbody
+                    tr(v-for='subject in subjects')
+                        td(:class='!parseInt(subject.active) ? "text-muted" : ""') {{ subject.name }}
+                            span.text-muted(v-if='!parseInt(subject.active)')  (invisível)
+                        td.text-right.no-wrap
+                            a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + subject.id' title='Editar disciplina')
+                                .material-icons edit
+                                span.d-none.d-md-inline  Editar
             .text-center.text-muted(v-else)
                 br
                 .h4 Ainda não há nenhuma disciplina cadastrada

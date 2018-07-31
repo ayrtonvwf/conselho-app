@@ -12,18 +12,17 @@ block content
                 |  Criar novo usuário
     article.box
         .box-body
-            .table
-                table
-                    thead
-                        tr
-                            th Nome
-                            th Tipo
-                            th E-mail
-                    tbody
-                        tr(v-for='user in orderedUsers')
-                            td {{ user.name }}
-                            td {{ role_type(user.id).name }}
-                            td {{ user.email }}
+            table.table
+                thead
+                    tr
+                        th Nome
+                        th Tipo
+                        th E-mail
+                tbody
+                    tr(v-for='user in orderedUsers')
+                        td {{ user.name }}
+                        td {{ role_type(user.id).name }}
+                        td {{ user.email }}
     div.modal#modal-new
         .modal-header Novo usuário
         .modal-body

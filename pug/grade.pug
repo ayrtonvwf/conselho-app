@@ -12,25 +12,24 @@ block content
                 |  Criar nova turma
     article.box
         .box-body
-            .table(v-if='grades.length')
-                table
-                    thead
-                        tr
-                            th Nome
-                    tbody
-                        tr(v-for='grade in grades')
-                            td(:class='!parseInt(grade.active) ? "text-muted" : ""') {{ grade.name }}
-                                span.text-muted(v-if='!parseInt(grade.active)')  (invisível)
-                            td.text-right.no-wrap
-                                a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-students' title='Estudantes' :onclick='"app._data.current_grade_id = "+grade.id')
-                                    .material-icons person
-                                    span.d-none.d-md-inline  Estudantes
-                                a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-subjects' title='Disciplinas' :onclick='"app._data.current_grade_id = "+grade.id')
-                                    .material-icons book
-                                    span.d-none.d-md-inline  Disciplinas
-                                a.btn-warning.btn-sm.tooltip.tooltip-end(href='#modal-edit' title='Editar informações da turma' :onclick='"app._data.current_grade_id = "+grade.id')
-                                    .material-icons edit
-                                    span.d-none.d-md-inline  Editar
+            table.table(v-if='grades.length')
+                thead
+                    tr
+                        th Nome
+                tbody
+                    tr(v-for='grade in grades')
+                        td(:class='!parseInt(grade.active) ? "text-muted" : ""') {{ grade.name }}
+                            span.text-muted(v-if='!parseInt(grade.active)')  (invisível)
+                        td.text-right.no-wrap
+                            a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-students' title='Estudantes' :onclick='"app._data.current_grade_id = "+grade.id')
+                                .material-icons person
+                                span.d-none.d-md-inline  Estudantes
+                            a.btn-primary.btn-sm.tooltip.tooltip-end(href='#modal-subjects' title='Disciplinas' :onclick='"app._data.current_grade_id = "+grade.id')
+                                .material-icons book
+                                span.d-none.d-md-inline  Disciplinas
+                            a.btn-warning.btn-sm.tooltip.tooltip-end(href='#modal-edit' title='Editar informações da turma' :onclick='"app._data.current_grade_id = "+grade.id')
+                                .material-icons edit
+                                span.d-none.d-md-inline  Editar
             .text-center.text-muted(v-else)
                 br
                 .h4 Ainda não há nenhuma turma cadastrada

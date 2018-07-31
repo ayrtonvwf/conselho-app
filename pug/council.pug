@@ -12,25 +12,24 @@ block content
                 |  Criar novo conselho
     article.box
         .box-body
-            .table(v-if='councils.length')
-                table
-                    thead
-                        tr
-                            th Nome
-                            th.d-none.d-sm-table-cell Período
-                            th.d-none.d-lg-table-cell Status
-                    tbody
-                        tr(v-for='council in councils' :class='activeCouncil(council.id) ? "text-bold" : ""')
-                            td {{ council.name }}
-                            td.d-none.d-sm-table-cell {{ new Date(council.start_date).toLocaleDateString('pt-BR') }} - {{ new Date(council.end_date).toLocaleDateString('pt-BR') }}
-                            td.d-none.d-lg-table-cell {{ new Date() > new Date(council.end_date) ? 'Finalizado' : (new Date() < new Date(council.start_date) ? 'Aguardando início' : (council.active ? 'Acontecendo' : 'Pausado')) }}
-                            td.text-right.no-wrap
-                                a.btn-primary.btn-sm.tooltip.tooltip-end(:href='"report.html?id=" + council.id' title='Relatórios do conselho de classe')
-                                    .material-icons bar_chart
-                                    span.d-none.d-md-inline  Relatórios
-                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + council.id' title='Editar informações do conselho')
-                                    .material-icons edit
-                                    span.d-none.d-md-inline  Editar
+            table.table(v-if='councils.length')
+                thead
+                    tr
+                        th Nome
+                        th.d-none.d-sm-table-cell Período
+                        th.d-none.d-lg-table-cell Status
+                tbody
+                    tr(v-for='council in councils' :class='activeCouncil(council.id) ? "text-bold" : ""')
+                        td {{ council.name }}
+                        td.d-none.d-sm-table-cell {{ new Date(council.start_date).toLocaleDateString('pt-BR') }} - {{ new Date(council.end_date).toLocaleDateString('pt-BR') }}
+                        td.d-none.d-lg-table-cell {{ new Date() > new Date(council.end_date) ? 'Finalizado' : (new Date() < new Date(council.start_date) ? 'Aguardando início' : (council.active ? 'Acontecendo' : 'Pausado')) }}
+                        td.text-right.no-wrap
+                            a.btn-primary.btn-sm.tooltip.tooltip-end(:href='"report.html?id=" + council.id' title='Relatórios do conselho de classe')
+                                .material-icons bar_chart
+                                span.d-none.d-md-inline  Relatórios
+                            a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-edit-" + council.id' title='Editar informações do conselho')
+                                .material-icons edit
+                                span.d-none.d-md-inline  Editar
             .text-center.text-muted(v-else)
                 br
                 .h4 Ainda não há nenhum conselho de classe cadastrado

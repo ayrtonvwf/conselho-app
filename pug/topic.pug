@@ -12,19 +12,18 @@ block content
                 | Criar novo tópico
     article.box
         .box-body
-            .table(v-if='topics.length')
-                table
-                    thead
-                        tr
-                            th Nome
-                    tbody
-                        tr(v-for='topic in topics')
-                            td(:class='!parseInt(topic.active) ? "text-muted" : ""') {{ topic.name }}
-                                span.text-muted(v-if='!parseInt(topic.active)')  (invisível)
-                            td.text-right.no-wrap
-                                a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-"+topic.id' title='Editar tópico e suas opções de resposta')
-                                    .material-icons edit
-                                    span.d-none.d-md-inline  Editar
+            table.table(v-if='topics.length')
+                thead
+                    tr
+                        th Nome
+                tbody
+                    tr(v-for='topic in topics')
+                        td(:class='!parseInt(topic.active) ? "text-muted" : ""') {{ topic.name }}
+                            span.text-muted(v-if='!parseInt(topic.active)')  (invisível)
+                        td.text-right.no-wrap
+                            a.btn-warning.btn-sm.tooltip.tooltip-end(:href='"#modal-"+topic.id' title='Editar tópico e suas opções de resposta')
+                                .material-icons edit
+                                span.d-none.d-md-inline  Editar
             .text-center.text-muted(v-else)
                 br
                 .h4 Ainda não há nenhum tópico cadastrado

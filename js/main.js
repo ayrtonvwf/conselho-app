@@ -1402,3 +1402,40 @@ function student_evaluation_save(student_id) {
         notify('Erro!', form.dataset.error, 'danger')
     })
 }
+
+function user_update(event) {
+    event.preventDefault()
+
+    let form = event.target
+    let user = {
+        id: app.user.id,
+        name: app.user.name,
+        email: app.user.email
+    }
+
+    let password = form.querySelector('#password').value
+    let re_password = form.querySelector('#re_password').value
+
+    if (password !== re_password) {
+        notify('Erro!', 'Os dois campos de senha devem ser iguais!', 'danger')
+        return
+    }
+
+    if (password) {
+        user.password = password
+    }
+
+    app.loading = true
+
+    return api_fetch('user', 'PATCH', user).then(response => {
+        delete user.password
+        return db.users.put(user)
+    }).then(() => {
+        app.loading = false
+        notify('Sucesso!', form.dataset.success, 'success')
+    }).catch(error => {
+        app.loading = false
+        console.log('Error:', error)
+        notify('Erro!', form.dataset.error, 'danger')
+    })
+}

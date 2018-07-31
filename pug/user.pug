@@ -4,9 +4,26 @@ block content
     h1.content-title
         i.material-icons person
         | Usuário
-    article.box
-        .box-body
-            .text-center.text-muted
-                br
-                .h4 Página em construção
-                br
+    .row.justify-content-center
+        .col-md-10.col-lg-8.col-xlg-6
+            article.box
+                .box-body
+                    form(action='#' data-success='Usuário editado com sucesso' data-error='Não foi possível editar o usuário' onsubmit='user_update(event)')
+                        .row
+                            .input.col-sm-6
+                                input#user_name(v-model='user.name' minlength='3' required)
+                                label(for='user_name') Nome completo
+                            .input.col-sm-6
+                                input#user_email(v-model='user.email' type='email' minlength='3' required)
+                                label(for='user_email') E-mail
+                        .row
+                            .input.col-sm-6
+                                input#password(type='password' minlength='5' placeholder='Apenas caso queira alterar')
+                                label(for='password') Nova senha
+                            .input.col-sm-6
+                                input#re_password(type='password' minlength='5' placeholder='Para conferir se digitou corretamente')
+                                label(for='re_password') Repita a senha
+                        .text-right
+                            button.btn-success
+                                .material-icons check
+                                |  Salvar

@@ -130,7 +130,6 @@ if (!token || new Date(token.expires_at) < new Date()) {
 }
 
 let filter_evaluations = function() {
-    console.log('a')
     let is_evaluation = !!document.location.pathname.endsWith('evaluate.html')
     if (!app.current_grade_id || !app.current_council || !app.current_council.id || (is_evaluation && !app.current_subject_id)) {
         this.evaluations = []

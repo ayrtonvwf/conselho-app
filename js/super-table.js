@@ -122,6 +122,7 @@ function mountFixedColumn() {
     fixed_column.style.marginTop = '0px'
     fixed_column.style.borderRight = '1px solid darkgray'
     fixed_column.dataset.fixed_column = 'fixed_column'
+    fixed_column.style.zIndex = 10
     let fixed_column_tbody = table.querySelector('tbody')
     if (fixed_column_tbody) {
         fixed_column_tbody = fixed_column_tbody.cloneNode()
@@ -182,6 +183,7 @@ function superTable() {
     fixed_table.style.display = 'none'
     fixed_table.style.top = '0px'
     fixed_table.style.left = '0px'
+    fixed_table.style.zIndex = 11
     fixed_table.dataset.fixed_table = 'fixed_table'
     fixed_table.appendChild(table_header.cloneNode(true))
 

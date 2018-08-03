@@ -17,7 +17,7 @@
                 <div class="input col-12 col-sm-6">
                   <select id="current_subject_id" name="current_subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
                     <option value="" hidden disabled>{{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}</option>
-                    <option v-for="subject in subjectsInGrade" :key="subject.id" v-if="grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id && teacher.grade_id === current_grade_id))" :selected="subjectsInGrade.filter(subject => grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && teachers.find(teacher => teacher.user_id === user.id && teacher.subject_id === subject.id))).length === 1" :value="subject.id">{{ subject.name }}</option>
+                    <option v-for="subject in subjectsInGrade.filter(subject => teachers.find(teacher => teacher.subject_id === subject.id && teacher.grade_id === current_grade_id && teacher.user_id === user.id))" :key="subject.id" :value="subject.id">{{ subject.name }}</option>
                   </select>
                   <label for="current_subject_id">Disciplina</label>
                 </div>
@@ -30,17 +30,16 @@
                 <input type="checkbox" v-model="hide_evaluated_students"> Mostrar apenas alunos não avaliados
               </label>
             </div><br>
-            <div class="table">
-              <table>
-                <thead>
+            <super-table>
+              <thead>
                 <tr>
                   <th style="max-width: 33vw">Aluno</th>
                   <th v-for="topic in current_topics" :key="topic.id">{{ topic.name }}</th>
                   <th>Observações Gerais</th>
                   <th></th>
                 </tr>
-                </thead>
-                <tbody v-if="evaluations.length">
+              </thead>
+              <tbody v-if="evaluations.length">
                 <tr v-for="student in studentsInGrade" :key="student.id" :data-student_id="student.id" v-if="!hide_evaluated_students || !studentHasEvaluation(student.id)">
                   <template v-if="!hide_evaluated_students && !studentIsActive(student.id)">
                     <td class="text-striked">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
@@ -69,9 +68,9 @@
                     </td>
                   </template>
                 </tr>
-                </tbody>
-              </table>
-            </div><br>
+              </tbody>
+            </super-table>
+            <br>
             <div class="row">
               <div class="col-md-8">
                 <textarea class="resize-v" name="grade_observation" style="min-width: 300px" minlength="3" placeholder="Observações da turma" v-if="grade_observations.find(grade_observation => grade_observation.grade_id === current_grade_id && grade_observation.subject_id === current_subject_id && grade_observation.council_id === current_council.id && grade_observation.user_id === user.id) !== undefined" v-model="grade_observations.find(grade_observation=> grade_observation.grade_id === current_grade_id && grade_observation.subject_id === current_subject_id && grade_observation.council_id === current_council.id && grade_observation.user_id === user.id).description"></textarea>
@@ -95,8 +94,6 @@
 
 <script>
 /* eslint-disable */
-import superTable from '../assets/superTable'
-
 export default {
   name: 'Evaluate',
   data: function() {
@@ -116,7 +113,22 @@ export default {
     return data
   },
   watch: {
-    current_grade_id: function() { this.update_current() },
+    current_grade_id: function() {
+      if (!this.current_grade_id) {
+        this.current_subject_id = ''
+      } else {
+        let subjects = this.subjectsInGrade.filter(subject =>
+          this.teachers.find(teacher =>
+            teacher.subject_id === subject.id &&
+            teacher.grade_id === this.current_grade_id &&
+            teacher.user_id === this.user.id
+          )
+        )
+        this.current_subject_id = subjects.length === 1 ? subjects[0].id : ''
+      }
+
+      this.update_current()
+    },
     current_subject_id: function() { this.update_current() }
   },
   computed: {
@@ -149,7 +161,7 @@ export default {
     },
     subjectsInGrade () {
       if (!this.current_grade_id) {
-        return undefined
+        return []
       }
       return this.subjects.filter(subject =>
         this.grade_subjects.find(grade_subject =>
@@ -181,12 +193,15 @@ export default {
       }
     },
     update_current() {
+      console.log('update')
       if (!this.current_grade_id || !this.current_subject_id) {
         this.current_evaluations = []
         this.current_student_observations = []
         this.current_student_grades = []
         return
       }
+
+      console.log('proccessing')
 
       this.current_student_observations = this.student_observations.filter(student_observation =>
         student_observation.council_id === this.current_council.id &&
@@ -236,8 +251,6 @@ export default {
       })
 
       this.current_evaluations = evaluations.concat(missing_evaluations)
-
-      setTimeout(superTable, 1000)
     },
     studentGrade (student_id) {
       return this.current_student_grades.find(student_grade =>

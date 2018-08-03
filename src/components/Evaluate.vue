@@ -34,7 +34,7 @@
               <table>
                 <thead>
                 <tr>
-                  <th>Aluno</th>
+                  <th style="max-width: 33vw">Aluno</th>
                   <th v-for="topic in current_topics" :key="topic.id">{{ topic.name }}</th>
                   <th>Observações Gerais</th>
                   <th></th>

@@ -34,14 +34,14 @@
             <table>
               <thead>
               <tr>
-                <th>Aluno</th>
+                <th style="max-width: 33vw">Aluno</th>
                 <th v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
                 <th class="no-wrap">Observações Gerais</th>
               </tr>
               </thead>
               <tbody>
               <tr v-for="student in studentsInGrade" :data-student_id="student.id" :key="student.id">
-                <td class="no-wrap">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
+                <td style="max-width: 33vw">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
                 <td v-for="topic in current_topics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
                 <td>
                   <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>

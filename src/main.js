@@ -18,9 +18,14 @@
 
 import Vue from 'vue'
 import App from './App'
+import Modal from './components/Modal'
+import Prompt from './components/Prompt'
 import router from './router'
 
 Vue.config.productionTip = false
+
+Vue.component('modal', Modal)
+Vue.component('prompt', Prompt)
 
 let app = new Vue({
   el: '#app',

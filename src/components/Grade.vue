@@ -47,174 +47,162 @@
         </div>
       </div>
     </article>
-    <div class="modal" id="modal-new">
-      <div class="modal-header">Nova turma</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-resource="grade" data-success="Turma cadastrada com sucesso" data-error="Não foi possível cadastrar a turma" @submit.prevent="grade_save">
-              <input type="hidden" name="active" value="1"><br>
-              <div class="row">
-                <div class="col-sm-8 input">
-                  <input required placeholder="Ex.: 1° Ano A" name="name">
-                  <label>Nome</label>
-                </div>
-                <div class="col-sm-4 input">
-                  <input type="number" required min="1" placeholder="Ex. 1° ano: 1" name="level">
-                  <label>
-                    Nível
-
-                    <div class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</div>
-                  </label>
-                </div>
-              </div><br>
-              <div class="row">
-                <div class="col-6 col-md-4" v-for="subject in subjects" v-if="subject.active" :key="subject.id">
-                  <label>
-                    <input type="checkbox" name="grade_subject[]" :value="subject.id"> {{ subject.name }}
-                  </label>
-                </div>
-              </div><br><a class="btn-danger" href="#">
-              <div class="material-icons">close</div>  Cancelar</a>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button><br>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div><a class="modal-close" href="#"></a>
-    <div class="modal" id="modal-students">
-      <div class="modal-header">Estudantes - {{ current_grade ? current_grade.name : '' }}</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-resource="grade" data-success="Estudante cadastrado com sucesso" data-error="Não foi possível cadastrar o estudante" @submit.prevent="student_save">
-              <input type="hidden" name="grade_id" :value="current_grade_id"><br>
-              <div class="row">
-                <div class="col-sm-8 input">
-                  <input required placeholder="Ex.: João da Silva" name="name">
-                  <label>Nome</label>
-                </div>
-                <div class="col-sm-4 input">
-                  <input type="number" required min="1" placeholder="Ex.: 5" name="number">
-                  <label>Número</label>
-                </div>
+    <modal anchor="modal-new" title="Nova turma">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-resource="grade" data-success="Turma cadastrada com sucesso" data-error="Não foi possível cadastrar a turma" @submit.prevent="grade_save">
+            <input type="hidden" name="active" value="1"><br>
+            <div class="row">
+              <div class="col-sm-8 input">
+                <input required placeholder="Ex.: 1° Ano A" name="name">
+                <label>Nome</label>
               </div>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button>
-            </form><br>
-            <table class="table" v-if="current_students">
-              <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Número</th>
-              </tr>
-              </thead>
-              <tbody>
-              <tr v-for="student in current_students" :data-student_id="student.id" :key="student.id">
-                <template v-if="studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)">
-                  <td class="text-striked">{{ student.name }}</td>
-                  <td style="max-width: 75px">{{ studentGrade(student.id).number }}</td>
-                  <td class="text-right">
-                    <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="student_toggle(student.id)">
-                      <div class="material-icons">visibility_off</div><span class="d-none d-md-inline"> Ativar e Desativar</span>
-                    </button>
-                  </td>
-                </template>
-                <template v-else>
-                  <td>
-                    <input name="name" :value="student.name">
-                  </td>
-                  <td style="max-width: 75px">
-                    <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number">
-                  </td>
-                  <td class="text-right">
-                    <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="student_update(student.id)">
-                      <div class="material-icons">save</div><span class="d-none d-md-inline"> Salvar</span>
-                    </button>
-                    <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="student_toggle(student.id)">
-                      <div class="material-icons">visibility_off</div><span class="d-none d-md-inline"> Ativar e Desativar</span>
-                    </button>
-                  </td>
-                </template>
-              </tr>
-              </tbody>
-            </table><br><a class="btn-danger" href="#">
-            <div class="material-icons">close</div>  Fechar</a>
-          </div>
-        </div>
-      </div>
-    </div><a class="modal-close" href="#"></a>
-    <div class="modal" id="modal-edit">
-      <div class="modal-header">Editar turma</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-resource="grade" data-success="Turma editada com sucesso" data-error="Não foi possível editar a turma" @submit.prevent="grade_update" v-if="current_grade">
-              <input type="hidden" name="id" :value="current_grade_id"><br>
-              <div class="row">
-                <div class="col-sm-8 input">
-                  <input required :value="current_grade.name" placeholder="Ex.: 1° Ano A" name="name">
-                  <label>Nome</label>
-                </div>
-                <div class="col-sm-4 input">
-                  <input type="number" required :value="current_grade.level" min="1" placeholder="Ex.: 1" name="level">
-                  <label>
-                    Nível
+              <div class="col-sm-4 input">
+                <input type="number" required min="1" placeholder="Ex. 1° ano: 1" name="level">
+                <label>
+                  Nível
 
-                    <div class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</div>
-                  </label>
-                </div>
+                  <div class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</div>
+                </label>
               </div>
-              <div class="row">
-                <div class="col-12 text-center">
-                  <label><br>
-                    <input name="active" value="1" :checked="parseInt(current_grade.active)" type="checkbox">Visível
-                  </label>
-                </div>
-              </div><br><a class="btn-danger" href="#">
-              <div class="material-icons">close</div>  Cancelar</a>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button><br>
-            </form>
-          </div>
+            </div><br>
+            <div class="row">
+              <div class="col-6 col-md-4" v-for="subject in subjects" v-if="subject.active" :key="subject.id">
+                <label>
+                  <input type="checkbox" name="grade_subject[]" :value="subject.id"> {{ subject.name }}
+                </label>
+              </div>
+            </div><br><a class="btn-danger" href="#">
+            <div class="material-icons">close</div>  Cancelar</a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
         </div>
       </div>
-    </div><a class="modal-close" href="#"></a>
-    <div class="modal" id="modal-subjects">
-      <div class="modal-header">Disciplinas - {{ current_grade ? current_grade.name : '' }}</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-success="Disciplina incluída com sucesso" data-error="Não foi possível incluir a disciplina" @submit.prevent="grade_subject_save"><br>
-              <div class="row justify-content-center">
-                <div class="col-12 col-sm-6 input">
-                  <select required name="subject_id">
-                    <option value="" disabled hidden selected>Selecione...</option>
-                    <option v-for="subject in subjects" :value="subject.id" :key="subject.id" :disabled="current_subjects.find(current_subject => current_subject.id === subject.id)">{{ subject.name }}</option>
-                  </select>
-                  <label>Disciplina</label>
-                </div>
-                <div class="col-12 col-sm-3"><br class="d-none d-sm-inline">
-                  <button class="btn-success" type="submit">
-                    <div class="material-icons">check</div> Salvar
+    </modal>
+    <modal anchor="modal-students" :title="'Estudantes - '+(current_grade ? current_grade.name : '')">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-resource="grade" data-success="Estudante cadastrado com sucesso" data-error="Não foi possível cadastrar o estudante" @submit.prevent="student_save">
+            <input type="hidden" name="grade_id" :value="current_grade_id"><br>
+            <div class="row">
+              <div class="col-sm-8 input">
+                <input required placeholder="Ex.: João da Silva" name="name">
+                <label>Nome</label>
+              </div>
+              <div class="col-sm-4 input">
+                <input type="number" required min="1" placeholder="Ex.: 5" name="number">
+                <label>Número</label>
+              </div>
+            </div>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button>
+          </form><br>
+          <table class="table" v-if="current_students">
+            <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Número</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="student in current_students" :data-student_id="student.id" :key="student.id">
+              <template v-if="studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)">
+                <td class="text-striked">{{ student.name }}</td>
+                <td style="max-width: 75px">{{ studentGrade(student.id).number }}</td>
+                <td class="text-right">
+                  <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="student_toggle(student.id)">
+                    <div class="material-icons">visibility_off</div><span class="d-none d-md-inline"> Ativar e Desativar</span>
                   </button>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-6 col-md-4" v-for="subject in current_subjects" :key="subject.id">
-                  <div class="material-icons">check</div> {{ subject.name }}
-                </div>
-              </div><br><a class="btn-danger" href="#">
-                <div class="material-icons">close</div>  Cancelar</a><br>
-            </form>
-          </div>
+                </td>
+              </template>
+              <template v-else>
+                <td>
+                  <input name="name" :value="student.name">
+                </td>
+                <td style="max-width: 75px">
+                  <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number">
+                </td>
+                <td class="text-right">
+                  <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="student_update(student.id)">
+                    <div class="material-icons">save</div><span class="d-none d-md-inline"> Salvar</span>
+                  </button>
+                  <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="student_toggle(student.id)">
+                    <div class="material-icons">visibility_off</div><span class="d-none d-md-inline"> Ativar e Desativar</span>
+                  </button>
+                </td>
+              </template>
+            </tr>
+            </tbody>
+          </table><br><a class="btn-danger" href="#">
+          <div class="material-icons">close</div>  Fechar</a>
         </div>
       </div>
-    </div><a class="modal-close" href="#"></a>
+    </modal>
+    <modal anchor="modal-edit" title="Editar turma">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-resource="grade" data-success="Turma editada com sucesso" data-error="Não foi possível editar a turma" @submit.prevent="grade_update" v-if="current_grade">
+            <input type="hidden" name="id" :value="current_grade_id"><br>
+            <div class="row">
+              <div class="col-sm-8 input">
+                <input required :value="current_grade.name" placeholder="Ex.: 1° Ano A" name="name">
+                <label>Nome</label>
+              </div>
+              <div class="col-sm-4 input">
+                <input type="number" required :value="current_grade.level" min="1" placeholder="Ex.: 1" name="level">
+                <label>
+                  Nível
+
+                  <div class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</div>
+                </label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12 text-center">
+                <label><br>
+                  <input name="active" value="1" :checked="parseInt(current_grade.active)" type="checkbox">Visível
+                </label>
+              </div>
+            </div><br><a class="btn-danger" href="#">
+            <div class="material-icons">close</div>  Cancelar</a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
+        </div>
+      </div>
+    </modal>
+    <modal anchor="modal-subjects" :title="'Disciplinas - '+(current_grade ? current_grade.name : '')">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Disciplina incluída com sucesso" data-error="Não foi possível incluir a disciplina" @submit.prevent="grade_subject_save"><br>
+            <div class="row justify-content-center">
+              <div class="col-12 col-sm-6 input">
+                <select required name="subject_id">
+                  <option value="" disabled hidden selected>Selecione...</option>
+                  <option v-for="subject in subjects" :value="subject.id" :key="subject.id" :disabled="current_subjects.find(current_subject => current_subject.id === subject.id)">{{ subject.name }}</option>
+                </select>
+                <label>Disciplina</label>
+              </div>
+              <div class="col-12 col-sm-3"><br class="d-none d-sm-inline">
+                <button class="btn-success" type="submit">
+                  <div class="material-icons">check</div> Salvar
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6 col-md-4" v-for="subject in current_subjects" :key="subject.id">
+                <div class="material-icons">check</div> {{ subject.name }}
+              </div>
+            </div><br><a class="btn-danger" href="#">
+              <div class="material-icons">close</div>  Cancelar</a><br>
+          </form>
+        </div>
+      </div>
+    </modal>
   </div>
 </template>
 

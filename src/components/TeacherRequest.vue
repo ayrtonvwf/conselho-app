@@ -60,29 +60,15 @@
         </div>
       </div>
     </article>
-    <div class="modal modal-xs modal-danger" id="modal-delete-teacher">
-      <div class="modal-header">Fale com o supervisor</div>
-      <div class="modal-body">
-        <p>Você não pode se desvincular desta turma, pois já recebeu a aprovação do supervisor.</p>
-        <p>Caso seja realmente necessário, solicite ao supervisor que te desvincule.</p>
-      </div>
-      <div class="modal-footer text-right"><a class="btn-danger btn-sm" href="#">
-        <div class="material-icons">check</div>  Entendi</a></div>
-    </div><a class="modal-close" href="#"></a>
-    <div v-for="teacher_request in teacher_requests" :key="teacher_request.id">
-      <div class="modal modal-xs modal-danger" :id="&quot;modal-delete-teacher_request-&quot; + teacher_request.id">
-        <div class="modal-header">Remover solicitação</div>
-        <div class="modal-body">
-          <p>Tem certeza que deseja remover esta solicitação?</p>
-        </div>
-        <div class="modal-footer"><a class="btn-primary btn-sm" href="#">
-          <div class="material-icons">close</div>  Cancelar</a>
-          <button class="btn-danger btn-sm pull-right" @click="teacher_request_delete(teacher_request.id)">
-            <div class="material-icons">check</div>  Remover
-          </button>
-        </div>
-      </div><a class="modal-close" href="#"></a>
-    </div>
+
+    <prompt title="Fale com o supervisor" type="danger" anchor="modal-delete-teacher">
+      <p>Você não pode se desvincular desta turma, pois já recebeu a aprovação do supervisor.</p>
+      <p>Caso seja realmente necessário, solicite ao supervisor que te desvincule.</p>
+    </prompt>
+
+    <prompt v-for="teacher_request in teacher_requests" :key="teacher_request.id" title="Remover solicitação" type="danger" :anchor="'modal-delete-teacher_request-'+teacher_request.id" @accept="teacher_request_delete(teacher_request.id)" accept="Remover">
+      <p>Tem certeza que deseja remover esta solicitação?</p>
+    </prompt>
   </div>
 </template>
 

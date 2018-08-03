@@ -8,6 +8,7 @@
       <template v-if="logged_in">
         <a class="header-button menu-toggle material-icons" href="#menu" v-if="logged_in">menu</a>
         <button class="header-button material-icons" type="button" @click="load_from_api">sync</button>
+
         <div class="header-pane" v-if="userHasPermission('role')">
           <button class="header-button material-icons" type="button">
             notifications

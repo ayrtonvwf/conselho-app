@@ -34,62 +34,54 @@
         </div>
       </div>
     </article>
-    <div class="modal" id="modal-new">
-      <div class="modal-header">Nova disciplina</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-success="Disciplina cadastrada com sucesso" data-error="Não foi possível cadastrar a disciplina" @submit.prevent="subject_save">
-              <input type="hidden" name="active" value="1"><br>
-              <div class="input">
-                <input required name="name" placeholder="Ex.: Matemática">
-                <label>Nome</label>
-              </div>
-              <br>
-              <a class="btn-danger" href="#">
-                <div class="material-icons">close</div> Cancelar
-              </a>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button>
-              <br>
-            </form>
-          </div>
+    <modal anchor="modal-new" title="Nova disciplina">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Disciplina cadastrada com sucesso" data-error="Não foi possível cadastrar a disciplina" @submit.prevent="subject_save">
+            <input type="hidden" name="active" value="1"><br>
+            <div class="input">
+              <input required name="name" placeholder="Ex.: Matemática">
+              <label>Nome</label>
+            </div>
+            <br>
+            <a class="btn-danger" href="#">
+              <div class="material-icons">close</div> Cancelar
+            </a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button>
+            <br>
+          </form>
         </div>
       </div>
-    </div><a class="modal-close" href="#"></a>
-    <div v-for="subject in subjects" :key="subject.id">
-      <div class="modal" :id="&quot;modal-edit-&quot; + subject.id">
-        <div class="modal-header">Editar disciplina</div>
-        <div class="modal-body">
-          <div class="row justify-content-center">
-            <div class="col-sm-11">
-              <form action="#" data-success="Disciplina editada com sucesso" data-error="Não foi possível editar a disciplina" @submit.prevent="subject_update">
-                <input type="hidden" name="id" :value="subject.id"><br>
-                <div class="row">
-                  <div class="input col-12 col-sm-8">
-                    <input required name="name" :value="subject.name" placeholder="Ex.: Matemática">
-                    <label>Nome</label>
-                  </div>
-                  <div class="col-12 col-sm-4">
-                    <label><br>
-                      <input name="active" :value="1" :checked="parseInt(subject.active)" type="checkbox">Visível
-                    </label>
-                  </div>
-                </div>
-                <br>
-                <a class="btn-danger" href="#">
-                  <div class="material-icons">close</div> Cancelar
-                </a>
-                <button class="btn-success pull-right" type="submit">
-                  <div class="material-icons">check</div>  Salvar
-                </button><br>
-              </form>
+    </modal>
+    <modal v-for="subject in subjects" :key="subject.id" :anchor="'modal-edit-'+subject.id" title="Editar disciplina">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Disciplina editada com sucesso" data-error="Não foi possível editar a disciplina" @submit.prevent="subject_update">
+            <input type="hidden" name="id" :value="subject.id"><br>
+            <div class="row">
+              <div class="input col-12 col-sm-8">
+                <input required name="name" :value="subject.name" placeholder="Ex.: Matemática">
+                <label>Nome</label>
+              </div>
+              <div class="col-12 col-sm-4">
+                <label><br>
+                  <input name="active" :value="1" :checked="parseInt(subject.active)" type="checkbox">Visível
+                </label>
+              </div>
             </div>
-          </div>
+            <br>
+            <a class="btn-danger" href="#">
+              <div class="material-icons">close</div> Cancelar
+            </a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
         </div>
-      </div><a class="modal-close" href="#"></a>
-    </div>
+      </div>
+    </modal>
   </div>
 </template>
 

@@ -39,138 +39,126 @@
         </div>
       </div>
     </article>
-    <div class="modal" id="modal-new">
-      <div class="modal-header">Criar novo tópico</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-success="Tópico cadastrado com sucesso" data-error="Não foi possível cadastrar o tópico" @submit.prevent="topic_save"><br>
-              <div class="input">
-                <input required placeholder="Ex.: Tarefas de casa" name="name" minlength="3">
-                <label>Nome</label>
-              </div>
-              <hr>
-              <div class="h4">Opções de resposta</div>
-              <table class="table">
-                <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th class="no-wrap">Valor (0-100)</th>
-                  <th class="text-center">Padrão</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-for="(topic_option, i) in new_topic_options" :key="topic_option.id">
-                  <td>
-                    <div class="input">
-                      <input required style="margin: 0px" placeholder="Ex.: Excelente" v-model="topic_option.name" name="option_name[]" minlength="3">
-                    </div>
-                  </td>
-                  <td>
-                    <div class="input">
-                      <input required type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" v-model="topic_option.value" name="option_value[]">
-                    </div>
-                  </td>
-                  <td class="text-center">
-                    <input type="radio" name="option_default" value="1" v-model="topic_option.default" required>
-                  </td>
-                  <td class="text-right" style="margin-top: -2px">
-                    <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0px 2px" :disabled="new_topic_options.length &lt;= 2" v-on:click="new_topic_options.splice(i, 1)" type="button">
-                      <div class="material-icons">delete</div><span class="d-none d-md-inline"> Remover</span>
-                    </button>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-              <div class="text-center">
-                <button class="btn-primary tooltip" title="Criar uma nova opção de resposta para este tópico" type="button" v-on:click="new_topic_options.push({})">
-                  <div class="material-icons">add</div>Criar nova opção
-                </button>
-              </div><br><br><a class="btn-danger" href="#">
-                <div class="material-icons">close</div>  Cancelar</a>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button><br>
-            </form>
-          </div>
+    <modal anchor="modal-new" title="Criar novo tópico">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Tópico cadastrado com sucesso" data-error="Não foi possível cadastrar o tópico" @submit.prevent="topic_save"><br>
+            <div class="input">
+              <input required placeholder="Ex.: Tarefas de casa" name="name" minlength="3">
+              <label>Nome</label>
+            </div>
+            <hr>
+            <div class="h4">Opções de resposta</div>
+            <table class="table">
+              <thead>
+              <tr>
+                <th>Nome</th>
+                <th class="no-wrap">Valor (0-100)</th>
+                <th class="text-center">Padrão</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(topic_option, i) in new_topic_options" :key="topic_option.id">
+                <td>
+                  <div class="input">
+                    <input required style="margin: 0px" placeholder="Ex.: Excelente" v-model="topic_option.name" name="option_name[]" minlength="3">
+                  </div>
+                </td>
+                <td>
+                  <div class="input">
+                    <input required type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" v-model="topic_option.value" name="option_value[]">
+                  </div>
+                </td>
+                <td class="text-center">
+                  <input type="radio" name="option_default" value="1" v-model="topic_option.default" required>
+                </td>
+                <td class="text-right" style="margin-top: -2px">
+                  <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0px 2px" :disabled="new_topic_options.length &lt;= 2" v-on:click="new_topic_options.splice(i, 1)" type="button">
+                    <div class="material-icons">delete</div><span class="d-none d-md-inline"> Remover</span>
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+            <div class="text-center">
+              <button class="btn-primary tooltip" title="Criar uma nova opção de resposta para este tópico" type="button" v-on:click="new_topic_options.push({})">
+                <div class="material-icons">add</div>Criar nova opção
+              </button>
+            </div><br><br><a class="btn-danger" href="#">
+              <div class="material-icons">close</div>  Cancelar</a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
         </div>
       </div>
-    </div><a class="modal-close" href="#"></a>
-    <div v-for="topic in topics" :key="topic.id">
-      <div class="modal" :id="'modal-' + topic.id">
-        <div class="modal-header">Editar tópico</div>
-        <div class="modal-body">
-          <div class="row justify-content-center">
-            <div class="col-sm-11">
-              <form action="#" data-success="Tópico editado com sucesso" data-error="Não foi possível editar o tópico" @submit.prevent="topic_update">
-                <input type="hidden" name="id" :value="topic.id"><br>
-                <div class="row">
-                  <div class="col-8">
-                    <div class="input">
-                      <input required :value="topic.name" placeholder="Ex.: Tarefas de casa" name="name" minlength="3">
-                      <label>Nome</label>
-                    </div>
-                  </div>
-                  <div class="col-4"><br>
-                    <label>
-                      <input type="checkbox" name="active" value="1" :checked="parseInt(topic.active)"> Visível
-                    </label>
-                  </div>
+    </modal>
+    <modal v-for="topic in topics" :key="topic.id" :anchor="'modal-' + topic.id" title="Editar tópico">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Tópico editado com sucesso" data-error="Não foi possível editar o tópico" @submit.prevent="topic_update">
+            <input type="hidden" name="id" :value="topic.id"><br>
+            <div class="row">
+              <div class="col-8">
+                <div class="input">
+                  <input required :value="topic.name" placeholder="Ex.: Tarefas de casa" name="name" minlength="3">
+                  <label>Nome</label>
                 </div>
-                <hr>
-                <div class="h4">Opções de resposta</div>
-                <table class="table">
-                  <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Valor (0-100)</th>
-                    <th class="text-center">Padrão</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <tr v-for="topic_option in orderedTopicOptions(topic.id)" :key="topic_option.id">
-                    <td>
-                      <input type="hidden" name="option_id[]" :value="topic_option.id">
-                      <div class="input">
-                        <input required :value="topic_option.name" style="margin: 0px" placeholder="Ex.: Excelente" name="option_name[]" minlength="3">
-                      </div>
-                    </td>
-                    <td>
-                      <div class="input">
-                        <input required :value="topic_option.value" type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" name="option_value[]">
-                      </div>
-                    </td>
-                    <td class="text-center">
-                      <input type="radio" name="option_default" value="1" :checked="topic.topic_option_id === topic_option.id" required>
-                    </td>
-                  </tr>
-                  </tbody>
-                </table>
-                <div class="text-center">
-                  <button class="btn-primary tooltip" type="button" title="Criar uma nova opção de resposta para este tópico" v-on:click="topic_options.push({topic_id: topic.id})">
-                    <div class="material-icons">add</div>Criar nova opção
-                  </button>
-                </div><br><br><a class="btn-danger" href="#">
-                <div class="material-icons">close</div>  Cancelar</a>
-                <button class="btn-success pull-right" type="submit">
-                  <div class="material-icons">check</div>  Salvar
-                </button><br>
-              </form>
+              </div>
+              <div class="col-4"><br>
+                <label>
+                  <input type="checkbox" name="active" value="1" :checked="parseInt(topic.active)"> Visível
+                </label>
+              </div>
             </div>
-          </div>
+            <hr>
+            <div class="h4">Opções de resposta</div>
+            <table class="table">
+              <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Valor (0-100)</th>
+                <th class="text-center">Padrão</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="topic_option in orderedTopicOptions(topic.id)" :key="topic_option.id">
+                <td>
+                  <input type="hidden" name="option_id[]" :value="topic_option.id">
+                  <div class="input">
+                    <input required :value="topic_option.name" style="margin: 0px" placeholder="Ex.: Excelente" name="option_name[]" minlength="3">
+                  </div>
+                </td>
+                <td>
+                  <div class="input">
+                    <input required :value="topic_option.value" type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" name="option_value[]">
+                  </div>
+                </td>
+                <td class="text-center">
+                  <input type="radio" name="option_default" value="1" :checked="topic.topic_option_id === topic_option.id" required>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+            <div class="text-center">
+              <button class="btn-primary tooltip" type="button" title="Criar uma nova opção de resposta para este tópico" v-on:click="topic_options.push({topic_id: topic.id})">
+                <div class="material-icons">add</div>Criar nova opção
+              </button>
+            </div>
+            <br><br>
+            <a class="btn-danger" href="#">
+              <div class="material-icons">close</div>
+              Cancelar
+            </a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>
+              Salvar
+            </button>
+            <br>
+          </form>
         </div>
-      </div><a class="modal-close" href="#"></a>
-      <div class="modal modal-xs" :id="'modal-visibility-' + topic.id" :class="topic.active ? 'modal-danger' : 'modal-success'">
-        <div class="modal-header">{{ topic.active ? 'Esconder' : 'Mostrar' }} tópico</div>
-        <div class="modal-body">
-          <p>Tem certeza que deseja {{ topic.active ? 'esconder' : 'mostrar' }} este tópico na criação dos conselhos de classe?</p>
-        </div>
-        <div class="modal-footer"><a class="btn-primary btn-sm" href="#">
-          <div class="material-icons">close</div>  Cancelar</a><a class="btn-danger btn-sm pull-right" href="#" v-if="topic.active">
-          <div class="material-icons">visibility_off</div>  Esconder</a><a class="btn-success btn-sm pull-right" href="#" v-if="!topic.active">
-          <div class="material-icons">visibility</div>  Mostrar</a></div>
-      </div><a class="modal-close" href="#"></a>
-    </div>
+      </div>
+    </modal>
   </div>
 </template>
 

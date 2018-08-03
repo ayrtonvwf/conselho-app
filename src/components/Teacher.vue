@@ -58,100 +58,72 @@
         </table>
       </div>
     </article>
-    <div class="modal" id="modal-grades">
-      <div class="modal-header">Turmas de {{ current_user ? current_user.name : '' }}</div>
-      <div class="modal-body"><br>
-        <form action="#" @submit.prevent="teacher_save" data-success="Professor salvo com sucesso!" data-error="Não foi possível cadastrar">
-          <input type="hidden" name="user_id" :value="current_user_id">
-          <div class="row justify-content-center">
-            <div class="col-12 col-md-9">
-              <div class="row justify-content-center">
-                <div class="input col-6 col-sm-4">
-                  <select id="current_grade_id" name="grade_id" required v-model="current_grade_id">
-                    <option value="" selected hidden disabled>Selecione...</option>
-                    <option v-for="grade in grades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
-                  </select>
-                  <label for="current_grade_id">Turma</label>
-                </div>
-                <div class="input col-6 col-sm-4">
-                  <select id="current_subject_id" name="subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
-                    <option value="" selected hidden disabled>{{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}</option>
-                    <option v-for="subject in subjects" :key="subject.id" v-if="current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined" :value="subject.id" :disabled="teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined">{{ subject.name }} {{ teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined ? ' - '+users.find(user => teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id).user_id === user.id).name : '' }}</option>
-                  </select>
-                  <label for="current_subject_id">Disciplina</label>
-                </div>
-                <div class="col-12 col-sm-3"><br class="d-none d-sm-inline">
-                  <button class="btn-success" type="submit">
-                    <div class="material-icons">check</div> Salvar
-                  </button>
-                </div>
+    <modal anchor="modal-grades" :title="'Turmas de '+(current_user ? current_user.name : '')">
+      <br>
+      <form action="#" @submit.prevent="teacher_save" data-success="Professor salvo com sucesso!" data-error="Não foi possível cadastrar">
+        <input type="hidden" name="user_id" :value="current_user_id">
+        <div class="row justify-content-center">
+          <div class="col-12 col-md-9">
+            <div class="row justify-content-center">
+              <div class="input col-6 col-sm-4">
+                <select id="current_grade_id" name="grade_id" required v-model="current_grade_id">
+                  <option value="" selected hidden disabled>Selecione...</option>
+                  <option v-for="grade in grades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
+                </select>
+                <label for="current_grade_id">Turma</label>
+              </div>
+              <div class="input col-6 col-sm-4">
+                <select id="current_subject_id" name="subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
+                  <option value="" selected hidden disabled>{{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}</option>
+                  <option v-for="subject in subjects" :key="subject.id" v-if="current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined" :value="subject.id" :disabled="teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined">{{ subject.name }} {{ teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined ? ' - '+users.find(user => teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id).user_id === user.id).name : '' }}</option>
+                </select>
+                <label for="current_subject_id">Disciplina</label>
+              </div>
+              <div class="col-12 col-sm-3"><br class="d-none d-sm-inline">
+                <button class="btn-success" type="submit">
+                  <div class="material-icons">check</div> Salvar
+                </button>
               </div>
             </div>
           </div>
-        </form><br>
-        <table class="table" v-if="current_user && teachers.find(teacher => teacher.user_id === current_user.id)">
-          <thead>
-          <tr>
-            <th>Turma</th>
-            <th>Disciplina</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="teacher in teachers" v-if="teacher.user_id === current_user.id" :key="teacher.id">
-            <td>{{ grades.find(grade => grade.id === teacher.grade_id).name }}</td>
-            <td>{{ subjects.find(subject => subject.id === teacher.subject_id).name }}</td>
-            <td class="text-right">
-              <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-remove" title="Remover" @click="current_teacher_id = teacher.id">
-                <div class="material-icons">delete</div>
-                <span class="d-none d-md-inline">Remover</span>
-              </a>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-        <div class="text-center text-muted" v-else><br>
-          <div class="h4">Nenhuma turma aprovada</div><br>
         </div>
+      </form><br>
+      <table class="table" v-if="current_user && teachers.find(teacher => teacher.user_id === current_user.id)">
+        <thead>
+        <tr>
+          <th>Turma</th>
+          <th>Disciplina</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="teacher in teachers" v-if="teacher.user_id === current_user.id" :key="teacher.id">
+          <td>{{ grades.find(grade => grade.id === teacher.grade_id).name }}</td>
+          <td>{{ subjects.find(subject => subject.id === teacher.subject_id).name }}</td>
+          <td class="text-right">
+            <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-remove" title="Remover" @click="current_teacher_id = teacher.id">
+              <div class="material-icons">delete</div>
+              <span class="d-none d-md-inline">Remover</span>
+            </a>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="text-center text-muted" v-else><br>
+        <div class="h4">Nenhuma turma aprovada</div><br>
       </div>
-    </div><a class="modal-close" href="#"></a>
+    </modal>
 
-    <div class="modal modal-xs modal-success" id="modal-accept">
-      <div class="modal-header">Aceitar professor</div>
-      <div class="modal-body">
-        <p>Tem certeza que deseja aceitar este professor?</p>
-      </div>
-      <div class="modal-footer"><a class="btn-primary btn-sm" href="#">
-        <div class="material-icons">close</div>  Cancelar</a>
-        <button class="btn-success btn-sm pull-right" @click="accept_teacher_request">
-          <div class="material-icons">check</div>  Aceitar
-        </button>
-      </div>
-    </div><a class="modal-close" href="#"></a>
-    <div class="modal modal-xs modal-danger" id="modal-deny">
-      <div class="modal-header">Negar professor</div>
-      <div class="modal-body">
-        <p>Tem certeza que deseja negar este professor?</p>
-      </div>
-      <div class="modal-footer"><a class="btn-primary btn-sm" href="#">
-        <div class="material-icons">close</div>  Cancelar</a>
-        <button class="btn-danger btn-sm pull-right" @click="deny_teacher_request">
-          <div class="material-icons">close</div>  Negar
-        </button>
-      </div>
-    </div><a class="modal-close" href="#"></a>
+    <prompt title="Aceitar professor" type="success" anchor="modal-accept" @accept="accept_teacher_request" accept="Aceitar">
+      <p>Tem certeza que deseja aceitar este professor?</p>
+    </prompt>
 
-    <div class="modal modal-xs modal-danger" id="modal-remove">
-      <div class="modal-header">Remover professor</div>
-      <div class="modal-body">
-        <p>Tem certeza que deseja remover este professor?</p>
-      </div>
-      <div class="modal-footer"><a class="btn-primary btn-sm" href="#">
-        <div class="material-icons">close</div>  Cancelar</a>
-        <button class="btn-danger btn-sm pull-right" @click="remove_teacher">
-          <div class="material-icons">delete</div>  Remover
-        </button>
-      </div>
-    </div><a class="modal-close" href="#"></a>
+    <prompt title="Negar professor" type="danger" anchor="modal-deny" @accept="deny_teacher_request" accept="Negar">
+      <p>Tem certeza que deseja negar este professor?</p>
+    </prompt>
+
+    <prompt title="Remover professor" type="danger" anchor="modal-remove" @accept="remove_teacher" accept="Remover">
+      <p>Tem certeza que deseja remover este professor?</p>
+    </prompt>
   </div>
 </template>
 

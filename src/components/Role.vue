@@ -27,50 +27,47 @@
         </table>
       </div>
     </article>
-    <div class="modal" id="modal-new">
-      <div class="modal-header">Novo usuário</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-success="Usuário cadastrado com sucesso" data-error="Não foi possível cadastrar o usuário" @submit="user_save"><br>
-              <div class="row">
-                <div class="col-sm-6 input">
-                  <input required placeholder="Ex.: João da Silva" name="name" minlength="3">
-                  <label>Nome</label>
-                </div>
-                <div class="col-sm-6 input">
-                  <input required placeholder="Ex.: joao@email.com" name="email" type="email" minlength="3">
-                  <label>E-mail</label>
-                </div>
+    <modal anchor="modal-new" title="Novo usuário">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Usuário cadastrado com sucesso" data-error="Não foi possível cadastrar o usuário" @submit="user_save"><br>
+            <div class="row">
+              <div class="col-sm-6 input">
+                <input required placeholder="Ex.: João da Silva" name="name" minlength="3">
+                <label>Nome</label>
               </div>
-              <div class="row">
-                <div class="col-sm-6 input">
-                  <input required placeholder="Ao menos 5 caracteres" name="password" type="password" minlength="5">
-                  <label>Senha</label>
-                </div>
-                <div class="col-sm-6 input">
-                  <input required placeholder="Igual à anterior" name="re_password" type="password" minlength="5">
-                  <label>Repita a senha</label>
-                </div>
+              <div class="col-sm-6 input">
+                <input required placeholder="Ex.: joao@email.com" name="email" type="email" minlength="3">
+                <label>E-mail</label>
               </div>
-              <div class="row justify-content-center">
-                <div class="col-sm-6 input">
-                  <select required name="role_type_id">
-                    <option value="" selected disabled hidden>Selecione...</option>
-                    <option v-for="role_type in role_types" :value="role_type.id" :key="role_type.id">{{ role_type.name }}</option>
-                  </select>
-                  <label>Tipo de usuário</label>
-                </div>
-              </div><br><br><a class="btn-danger" href="#">
-                <div class="material-icons">close</div>  Cancelar</a>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button><br>
-            </form>
-          </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 input">
+                <input required placeholder="Ao menos 5 caracteres" name="password" type="password" minlength="5">
+                <label>Senha</label>
+              </div>
+              <div class="col-sm-6 input">
+                <input required placeholder="Igual à anterior" name="re_password" type="password" minlength="5">
+                <label>Repita a senha</label>
+              </div>
+            </div>
+            <div class="row justify-content-center">
+              <div class="col-sm-6 input">
+                <select required name="role_type_id">
+                  <option value="" selected disabled hidden>Selecione...</option>
+                  <option v-for="role_type in role_types" :value="role_type.id" :key="role_type.id">{{ role_type.name }}</option>
+                </select>
+                <label>Tipo de usuário</label>
+              </div>
+            </div><br><br><a class="btn-danger" href="#">
+              <div class="material-icons">close</div>  Cancelar</a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
         </div>
       </div>
-    </div><a class="modal-close" href="#"></a>
+    </modal>
   </div>
 </template>
 

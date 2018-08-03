@@ -40,95 +40,87 @@
         </div>
       </div>
     </article>
-    <div class="modal" id="modal-new">
-      <div class="modal-header">Novo conselho de classe</div>
-      <div class="modal-body">
-        <div class="row justify-content-center">
-          <div class="col-sm-11">
-            <form action="#" data-success="Conselho de classe criado com sucesso" data-error="Não foi possível criar o conselho de classe" @submit.prevent="council_save"><br>
-              <div class="row">
-                <div class="col-md-4 input">
-                  <input required :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()" name="name">
-                  <label>Nome</label>
-                </div>
-                <div class="col-sm-6 col-md-4 input">
-                  <input type="date" required name="start_date">
-                  <label>
-                    Data inicial
+    <modal anchor="modal-new" title="Novo conselho de classe">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Conselho de classe criado com sucesso" data-error="Não foi possível criar o conselho de classe" @submit.prevent="council_save"><br>
+            <div class="row">
+              <div class="col-md-4 input">
+                <input required :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()" name="name">
+                <label>Nome</label>
+              </div>
+              <div class="col-sm-6 col-md-4 input">
+                <input type="date" required name="start_date">
+                <label>
+                  Data inicial
 
-                    <div class="material-icons tooltip" data-tooltip="Primeiro dia disponível para avaliação">help</div>
-                  </label>
-                </div>
-                <div class="col-sm-6 col-md-4 input">
-                  <input type="date" required name="end_date">
-                  <label>
-                    Data final
+                  <div class="material-icons tooltip" data-tooltip="Primeiro dia disponível para avaliação">help</div>
+                </label>
+              </div>
+              <div class="col-sm-6 col-md-4 input">
+                <input type="date" required name="end_date">
+                <label>
+                  Data final
 
-                    <div class="material-icons tooltip" data-tooltip="Último dia disponível para avaliação">help</div>
-                  </label>
-                </div>
-              </div><br>
-              <div class="row">
-                <div class="col-6 col-md-4" v-for="topic in topics" v-if="topic.active" :key="topic.id">
-                  <label>
-                    <input type="checkbox" name="council_topic[]" :value="topic.id"> {{ topic.name }}
-                  </label>
-                </div>
-              </div><br><a class="btn-danger" href="#">
-                <div class="material-icons">close</div>  Cancelar</a>
-              <button class="btn-success pull-right" type="submit">
-                <div class="material-icons">check</div>  Salvar
-              </button><br>
-            </form>
-          </div>
+                  <div class="material-icons tooltip" data-tooltip="Último dia disponível para avaliação">help</div>
+                </label>
+              </div>
+            </div><br>
+            <div class="row">
+              <div class="col-6 col-md-4" v-for="topic in topics" v-if="topic.active" :key="topic.id">
+                <label>
+                  <input type="checkbox" name="council_topic[]" :value="topic.id"> {{ topic.name }}
+                </label>
+              </div>
+            </div><br><a class="btn-danger" href="#">
+              <div class="material-icons">close</div>  Cancelar</a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
         </div>
       </div>
-    </div><a class="modal-close" href="#"></a>
-    <div v-for="council in councils" :key="council.id">
-      <div class="modal" :id="'modal-edit-' + council.id">
-        <div class="modal-header">Editar conselho de classe</div>
-        <div class="modal-body">
-          <div class="row justify-content-center">
-            <div class="col-sm-11">
-              <form action="#" data-success="Conselho de classe editado com sucesso" data-error="Não foi possível editar o conselho de classe" @submit.prevent="council_update">
-                <input type="hidden" name="id" :value="council.id"><br>
-                <div class="row">
-                  <div class="col-md-4 input">
-                    <input required name="name" :value="council.name" :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()">
-                    <label>Nome</label>
-                  </div>
-                  <div class="col-sm-6 col-md-4 input">
-                    <input type="date" required name="start_date" :value="council.start_date" placeholder="Primeiro dia disponível para avaliação">
-                    <label>
-                      Data inicial
+    </modal>
+    <modal v-for="council in councils" :key="council.id" :anchor="'modal-edit-'+council.id" title="Editar conselho de classe">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Conselho de classe editado com sucesso" data-error="Não foi possível editar o conselho de classe" @submit.prevent="council_update">
+            <input type="hidden" name="id" :value="council.id"><br>
+            <div class="row">
+              <div class="col-md-4 input">
+                <input required name="name" :value="council.name" :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()">
+                <label>Nome</label>
+              </div>
+              <div class="col-sm-6 col-md-4 input">
+                <input type="date" required name="start_date" :value="council.start_date" placeholder="Primeiro dia disponível para avaliação">
+                <label>
+                  Data inicial
 
-                      <div class="material-icons tooltip" data-tooltip="Primeiro dia disponível para avaliação">help</div>
-                    </label>
-                  </div>
-                  <div class="col-sm-6 col-md-4 input">
-                    <input type="date" required name="end_date" :value="council.end_date" placeholder="Primeiro dia disponível para avaliação">
-                    <label>
-                      Data final
+                  <div class="material-icons tooltip" data-tooltip="Primeiro dia disponível para avaliação">help</div>
+                </label>
+              </div>
+              <div class="col-sm-6 col-md-4 input">
+                <input type="date" required name="end_date" :value="council.end_date" placeholder="Primeiro dia disponível para avaliação">
+                <label>
+                  Data final
 
-                      <div class="material-icons tooltip" data-tooltip="Último dia disponível para avaliação">help</div>
-                    </label>
-                  </div>
-                </div><br>
-                <div class="row">
-                  <div class="col-6 col-md-4" v-for="topic in topics" v-if="council_topics.find(council_topic => council_topic.council_id === council.id && council_topic.topic_id === topic.id)" :key="topic.id">
-                    <div class="material-icons">check</div> {{ topic.name }}
-                  </div>
-                </div><br><a class="btn-danger" href="#">
-                <div class="material-icons">close</div>  Cancelar</a>
-                <button class="btn-success pull-right" type="submit">
-                  <div class="material-icons">check</div>  Salvar
-                </button><br>
-              </form>
-            </div>
-          </div>
+                  <div class="material-icons tooltip" data-tooltip="Último dia disponível para avaliação">help</div>
+                </label>
+              </div>
+            </div><br>
+            <div class="row">
+              <div class="col-6 col-md-4" v-for="topic in topics" v-if="council_topics.find(council_topic => council_topic.council_id === council.id && council_topic.topic_id === topic.id)" :key="topic.id">
+                <div class="material-icons">check</div> {{ topic.name }}
+              </div>
+            </div><br><a class="btn-danger" href="#">
+            <div class="material-icons">close</div>  Cancelar</a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>  Salvar
+            </button><br>
+          </form>
         </div>
-      </div><a class="modal-close" href="#"></a>
-    </div>
+      </div>
+    </modal>
   </div>
 </template>
 

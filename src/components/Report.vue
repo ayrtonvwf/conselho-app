@@ -30,16 +30,15 @@
           <div class="h4">Esta turma ainda não recebeu avaliações nesta disciplina.</div><br>
         </div>
         <div v-else>
-          <div class="table">
-            <table>
-              <thead>
+          <super-table>
+            <thead>
               <tr>
                 <th style="max-width: 33vw">Aluno</th>
                 <th v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
                 <th class="no-wrap">Observações Gerais</th>
               </tr>
-              </thead>
-              <tbody>
+            </thead>
+            <tbody>
               <tr v-for="student in studentsInGrade" :data-student_id="student.id" :key="student.id">
                 <td style="max-width: 33vw">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
                 <td v-for="topic in current_topics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
@@ -47,9 +46,9 @@
                   <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
                 </td>
               </tr>
-              </tbody>
-            </table>
-          </div><br>
+            </tbody>
+          </super-table>
+          <br>
           <p v-for="grade_observation in gradeObservations" :key="grade_observation.id"><b>{{ users.find(user => user.id === grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+subjects.find(subject => subject.id === grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
         </div>
       </div>
@@ -59,7 +58,6 @@
 
 <script>
 /* eslint-disable */
-import superTable from '../assets/superTable'
 
 export default {
   name: 'Report',
@@ -111,8 +109,6 @@ export default {
       this.current_student_grades = this.student_grades.filter(student_grade =>
         student_grade.grade_id === this.current_grade_id
       )
-
-      setTimeout(superTable, 1000)
     },
     reportStudentTopic (student_id, topic_id) {
       let topic_options = this.ordered_topic_options.filter(topic_option => topic_option.topic_id === topic_id)

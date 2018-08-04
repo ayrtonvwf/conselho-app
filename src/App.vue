@@ -580,33 +580,6 @@ export default {
         role_type_permission.permission_id === permission.id &&
         role_type_permission.role_type_id === role_type.id
       )
-    },
-
-    // should be removed
-    orderedTopicOptions(topic_id) {
-      let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
-
-      // order by value desc
-      return topic_options.sort((a, b) => {
-        a = parseInt(a.value)
-        b = parseInt(b.value)
-
-        if (a > b) {
-          return -1
-        }
-
-        if (a < b) {
-          return 1
-        }
-
-        return 0
-      })
-    },
-    studentGrade (student_id) {
-      return this.student_grades.find(student_grade =>
-        parseInt(student_grade.grade_id) === parseInt(this.current_grade_id) &&
-        parseInt(student_grade.student_id) === parseInt(student_id)
-      )
     }
   },
   watch: {

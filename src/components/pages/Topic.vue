@@ -167,11 +167,28 @@
 export default {
   name: 'Topic',
   data: function() {
-    let data = this.$parent.$data
-    data.orderedTopicOptions = this.$parent.orderedTopicOptions
-    return data
+    return this.$parent.$data
   },
   methods: {
+    orderedTopicOptions(topic_id) {
+      let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
+
+      // order by value desc
+      return topic_options.sort((a, b) => {
+        a = parseInt(a.value)
+        b = parseInt(b.value)
+
+        if (a > b) {
+          return -1
+        }
+
+        if (a < b) {
+          return 1
+        }
+
+        return 0
+      })
+    },
     topic_save (event) {
       event.preventDefault()
 

@@ -180,7 +180,7 @@ export default {
         councils: 'id',
         council_grades: 'id',
         council_topics: 'id',
-        evaluations: 'id, [council_id+grade_id], [council_id+grade_id+subject_id]',
+        evaluations: 'id',
         grades: 'id',
         grade_subjects: 'id',
         grade_observations: 'id',

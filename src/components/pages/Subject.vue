@@ -166,11 +166,12 @@ export default {
     }
   },
   created() {
+    this.$emit('loading')
     this.db = this.$parent.db
-    this.loading = true
     this.subjects = []
     this.db.subjects.toArray().then(subjects => {
       this.subjects = subjects
+      this.$emit('loaded')
     })
   }
 }

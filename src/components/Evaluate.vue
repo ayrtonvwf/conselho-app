@@ -193,15 +193,12 @@ export default {
       }
     },
     update_current() {
-      console.log('update')
       if (!this.current_grade_id || !this.current_subject_id) {
         this.current_evaluations = []
         this.current_student_observations = []
         this.current_student_grades = []
         return
       }
-
-      console.log('proccessing')
 
       this.current_student_observations = this.student_observations.filter(student_observation =>
         student_observation.council_id === this.current_council.id &&

@@ -21,7 +21,7 @@
                 {{ subject.name }} <span class="text-muted" v-if="!parseInt(subject.active)">(invisível)</span>
               </td>
               <td class="text-right no-wrap">
-                <a class="btn-warning btn-sm tooltip tooltip-end" :href="&quot;#modal-edit-&quot; + subject.id" title="Editar disciplina">
+                <a class="btn-warning btn-sm tooltip tooltip-end" href="#modal-edit" title="Editar disciplina" @click="current_subject_id = subject.id">
                   <div class="material-icons">edit</div>
                   <span class="d-none d-md-inline">Editar</span>
                 </a>
@@ -55,19 +55,19 @@
         </div>
       </div>
     </modal>
-    <modal v-for="subject in subjects" :key="subject.id" :anchor="'modal-edit-'+subject.id" title="Editar disciplina">
+    <modal anchor="modal-edit" title="Editar disciplina">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Disciplina editada com sucesso" data-error="Não foi possível editar a disciplina" @submit.prevent="subject_update">
-            <input type="hidden" name="id" :value="subject.id"><br>
+            <br>
             <div class="row">
               <div class="input col-12 col-sm-8">
-                <input required name="name" :value="subject.name" placeholder="Ex.: Matemática">
+                <input required name="name" :value="current_subject.id ? current_subject.name : ''" placeholder="Ex.: Matemática">
                 <label>Nome</label>
               </div>
               <div class="col-12 col-sm-4">
                 <label><br>
-                  <input name="active" :value="1" :checked="parseInt(subject.active)" type="checkbox">Visível
+                  <input name="active" :value="1" :checked="current_subject.id && parseInt(current_subject.active)" type="checkbox">Visível
                 </label>
               </div>
             </div>
@@ -90,61 +90,88 @@
 export default {
   name: 'Subject',
   data: function() {
-    return this.$parent.$data
+    return {
+      'subjects': [],
+      'current_subject_id': undefined,
+      'current_subject': {}
+    }
+  },
+  watch: {
+    current_subject_id() {
+      if (!this.current_subject_id) {
+        this.current_subject = {}
+        return
+      }
+
+      this.current_subject = this.subjects.find(subject =>
+        subject.id === this.current_subject_id
+      )
+    }
   },
   methods: {
     subject_save (event) {
-      event.preventDefault()
+      this.$emit('loading')
 
       let app = this.$parent
 
-      app.loading = true
-
-      document.location.hash = '' // closes the current modal
-
       let form = event.target
-      let subject = app.parseObject({
+
+      let subject = {
         name: form.querySelector('[name=name]').value,
         active: true
-      })
+      }
 
-      return app.save_resource('subject', subject).then(() => {
-        app.loading = false
-        app.notify('Sucesso!', form.dataset.success, 'success')
+      return app.save_resource('subject', subject).then(subject => {
+        document.location.hash = '' // closes the current modal
+
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+
+        this.subjects.push(subject)
       }).catch(error => {
-        app.loading = false
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
-        app.notify('Erro!', form.dataset.error, 'danger')
+      }).finally(() => {
+        this.$emit('loaded')
       })
     },
     subject_update (event) {
-      event.preventDefault()
+      this.$emit('loading')
 
-      let component = this
       let app = this.$parent
 
-      app.loading = true
-
-      document.location.hash = '' // closes the current modal
-
       let form = event.target
-      let subject = app.parseObject({
-        id: form.querySelector('[name=id]').value,
+
+      let subject = {
+        id: this.current_subject_id,
         name: form.querySelector('[name=name]').value,
         active: !!form.querySelector('[name=active]').checked
-      })
+      }
 
-      return app.save_resource('subject', subject).then(() => {
-        app.loading = false
-        app.notify('Sucesso!', form.dataset.success, 'success')
-        component.$forceUpdate()
+      return app.save_resource('subject', subject, true, false).then(subject => {
+        document.location.hash = '' // closes the current modal
+
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+
+        let index = this.subjects.findIndex(subject =>
+          subject.id === this.current_subject_id
+        )
+        this.$set(this.subjects, index, subject)
+        this.current_subject = subject
       }).catch(error => {
-        app.loading = false
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
-        app.notify('Erro!', form.dataset.error, 'danger')
-        component.$forceUpdate()
+      }).finally(() => {
+        this.$emit('loaded')
       })
     }
+  },
+  created() {
+    this.db = this.$parent.db
+    this.loading = true
+    this.subjects = []
+    this.db.subjects.toArray().then(subjects => {
+      this.subjects = subjects
+    })
   }
 }
 </script>

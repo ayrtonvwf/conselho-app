@@ -82,7 +82,7 @@
         </template>
       </nav>
       <main class="content mark-required selection-primary">
-        <router-view></router-view>
+        <router-view @notify="notify" @loading="loading = true" @loaded="loading = false"></router-view>
       </main>
     </div>
     <input class="notification-toggle notification-start-hidden" type="radio" name="notification-toggle" checked>
@@ -378,6 +378,9 @@ export default {
         if (json.updated_at) {
           data.updated_evaluations = json.updated_at
         }
+
+        data = this.parseObject(data)
+
         if (update_view && method === 'POST') {
           app[resource_name + 's'].push(data)
         } else if (update_view && (method === 'PATCH')) {

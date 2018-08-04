@@ -62,12 +62,12 @@
             <br>
             <div class="row">
               <div class="input col-12 col-sm-8">
-                <input required name="name" :value="current_subject.id ? current_subject.name : ''" placeholder="Ex.: Matemática">
+                <input required name="name" :value="current_subject.name" placeholder="Ex.: Matemática" minlength="3">
                 <label>Nome</label>
               </div>
               <div class="col-12 col-sm-4">
                 <label><br>
-                  <input name="active" :value="1" :checked="current_subject.id && parseInt(current_subject.active)" type="checkbox">Visível
+                  <input name="active" :value="1" :checked="parseInt(current_subject.active)" type="checkbox">Visível
                 </label>
               </div>
             </div>
@@ -121,7 +121,7 @@ export default {
         active: true
       }
 
-      return app.save_resource('subject', subject).then(subject => {
+      return app.save_resource('subject', subject, true, false).then(subject => {
         document.location.hash = '' // closes the current modal
 
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
@@ -167,9 +167,13 @@ export default {
   },
   created() {
     this.$emit('loading')
-    this.db = this.$parent.db
+    let db = this.$parent.db
+
     this.subjects = []
-    this.db.subjects.toArray().then(subjects => {
+    this.current_subject_id = ''
+    this.current_subject = {}
+
+    db.subjects.toArray().then(subjects => {
       this.subjects = subjects
       this.$emit('loaded')
     })

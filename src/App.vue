@@ -105,7 +105,7 @@
 <script>
 /* eslint-disable */
 
-import Dexie from '../node_modules/dexie/dist/dexie.min.js'
+import Dexie from 'dexie'
 
 export default {
   name: 'App',

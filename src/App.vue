@@ -517,24 +517,23 @@ export default {
       localStorage.removeItem('token')
       localStorage.removeItem('has_loaded_data')
 
-      let app = this
+      this.token = undefined
+      this.logged_in = false
+      this.loading = true
 
-      app.token = undefined
-      app.logged_in = false
-      app.loading = true
+      this.$router.push('/login')
 
       let promises = []
 
-      app.resources.forEach(resource => {
-        app[resource+'s'] = []
-        promises.push(app.db[resource+'s'].clear())
-      })
+      this.resources.forEach(resource => {
+        this[resource+'s'] = []
+        promises.push(this.db[resource+'s'].clear())
 
+      })
       Promise.all(promises).catch(error => {
         console.log('Error:', error)
       }).finally(() => {
-        app.$router.push('/login')
-        app.loading = false
+        this.loading = false
       })
     },
 

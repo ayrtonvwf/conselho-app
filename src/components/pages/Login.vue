@@ -86,7 +86,7 @@ export default {
         app.logged_in = true
         component.logged_in = true
         component.$forceUpdate()
-        app.seed().then(() => {
+        app.loadFromAPI().then(() => {
           app.$router.push('/')
           app.loading = false
         })

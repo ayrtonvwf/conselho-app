@@ -7,7 +7,7 @@
       <router-link class="header-button main-button" :to="{ name: 'Index' }">Conselho</router-link>
       <template v-if="logged_in">
         <a class="header-button menu-toggle material-icons" href="#menu" v-if="logged_in">menu</a>
-        <button class="header-button material-icons" type="button" @click="load_from_api">sync</button>
+        <button class="header-button material-icons" type="button" @click="loadFromAPI">sync</button>
 
         <div class="header-pane" v-if="userHasPermission('role')">
           <button class="header-button material-icons" type="button">
@@ -109,14 +109,7 @@ import Dexie from 'dexie'
 
 export default {
   name: 'App',
-  data: () => {
-    let token = JSON.parse(localStorage.getItem('token'))
-
-    let api_url = 'https://conselho-api.infomec.net.br/'
-    if (location.href.indexOf('localhost') !== -1 || location.href.indexOf('127.0.0.1') !== -1) {
-      api_url = 'http://localhost/conselho-server/'
-    }
-
+  data() {
     let data = {
       resources: [
         'council',
@@ -144,19 +137,17 @@ export default {
         'user'
       ],
 
-      token: token,
+      token: undefined,
       user: {},
       current_council: {},
       notification: {},
       new_topic_options: [{default: 1}],
       updated_evaluations: '',
-      logged_in: (token && new Date(token.expires_at) > new Date()),
+      logged_in: undefined,
       current_grade_id: '',
       current_subject_id: '',
       loading: true,
       hide_evaluated_students: false,
-      db: new Dexie('conselho'),
-      api_url: api_url,
       current_user_id: undefined // the current user (teacher) being edited
     }
 
@@ -164,37 +155,116 @@ export default {
       data[resource+'s'] = []
     })
 
-    data.db.version(1).stores({
-      councils: 'id',
-      council_grades: 'id',
-      council_topics: 'id',
-      evaluations: 'id, [council_id+grade_id], [council_id+grade_id+subject_id]',
-      grades: 'id',
-      grade_subjects: 'id',
-      grade_observations: 'id',
-      medical_reports: 'id',
-      medical_report_subjects: 'id',
-      permissions: 'id',
-      roles: 'id',
-      role_types: 'id',
-      role_type_permissions: 'id',
-      schools: 'id',
-      students: 'id',
-      student_observations: 'id',
-      student_grades: 'id',
-      subjects: 'id',
-      teachers: 'id',
-      teacher_requests: 'id',
-      topics: 'id',
-      topic_options: 'id',
-      users: 'id'
-    })
-    data.db.open().catch(error => {
-      console.error('Open failed: ' + error.stack)
-    })
     return data
   },
   methods: {
+    // initializing methods
+    setApiUrl() {
+      if (location.href.indexOf('localhost') !== -1 || location.href.indexOf('127.0.0.1') !== -1) {
+        this.api_url = 'http://localhost/conselho-server/'
+      } else {
+        this.api_url = 'https://conselho-api.infomec.net.br/'
+      }
+    },
+    setAuthData() {
+      this.token = JSON.parse(localStorage.getItem('token'))
+      this.logged_in = this.token && new Date(this.token.expires_at) > new Date()
+    },
+
+    openDB() {
+      let db = new Dexie('conselho')
+      db.version(1).stores({
+        councils: 'id',
+        council_grades: 'id',
+        council_topics: 'id',
+        evaluations: 'id, [council_id+grade_id], [council_id+grade_id+subject_id]',
+        grades: 'id',
+        grade_subjects: 'id',
+        grade_observations: 'id',
+        medical_reports: 'id',
+        medical_report_subjects: 'id',
+        permissions: 'id',
+        roles: 'id',
+        role_types: 'id',
+        role_type_permissions: 'id',
+        schools: 'id',
+        students: 'id',
+        student_observations: 'id',
+        student_grades: 'id',
+        subjects: 'id',
+        teachers: 'id',
+        teacher_requests: 'id',
+        topics: 'id',
+        topic_options: 'id',
+        users: 'id'
+      })
+      db.open().catch(error => {
+        console.error('Open failed: ' + error.stack)
+      })
+
+      this.db = db
+    },
+
+    loadData() {
+      if (window.localStorage.getItem('has_loaded_data')) {
+        this.loadFromDB()
+      } else {
+        this.loadFromAPI()
+      }
+    },
+    loadFromAPI () {
+      this.loading = true
+
+      let promises = []
+
+      // if the process breaks, next time will be loaded from API
+      window.localStorage.removeItem('has_loaded_data')
+
+      this.resources.forEach(resource => {
+        let promise = this.get_resource(resource).then(data => {
+          return this.db[resource+'s'].clear().then(() => {
+            return this.db[resource + 's'].bulkPut(this.parseObjects(data))
+          })
+        })
+
+        promises.push(promise)
+      })
+
+      return Promise.all(promises).then(() => {
+        window.localStorage.setItem('has_loaded_data', '1')
+        return this.loadFromDB()
+      }).catch(error => {
+        this.notify('Erro!', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
+        console.log('Error:', error)
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+    loadFromDB() {
+      this.loading = true
+
+      let promises = []
+
+      this.resources.forEach(resource => {
+        let promise = this.db[resource+'s'].toArray().then(data => {
+          this[resource + 's'] = data
+        })
+
+        promises.push(promise)
+      })
+
+      return Promise.all(promises).then(() => {
+        this.user = this.users.find(user =>
+          user.id === this.token.user_id
+        )
+      }).catch(error => {
+        this.notify('Erro!', 'Ocorreu um erro durante o carregamento dos dados. Recarregue a página!', 'danger')
+        console.log('Error:', error)
+      }).finally(() => {
+        this.loading = false
+      })
+    },
+
     orderedTopicOptions(topic_id) {
       let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
 
@@ -248,62 +318,19 @@ export default {
       localStorage.removeItem('token')
       localStorage.removeItem('has_loaded_data')
 
-      let app = this
-
-      app.token = undefined
-      app.logged_in = false
-      app.loading = true
+      this.token = undefined
+      this.logged_in = false
+      this.loading = true
 
       let promises = []
 
-      app.resources.forEach(resource => {
-        promises.push(app.db[resource+'s'].clear())
+      this.resources.forEach(resource => {
+        promises.push(this.db[resource+'s'].clear())
       })
 
-      Promise.all(promises).then(() => {
-        app.$router.push('/login')
-        app.loading = false
-      }).catch(() => {
-        app.$router.push('/login')
-        app.loading = false
-      })
-
-    },
-    seed() {
-      let promises = []
-
-      let fetched_data = {}
-
-      let app = this
-
-      app.resources.forEach(resource => {
-        if (window.localStorage.getItem('has_loaded_data')) {
-          promises.push(app.db[resource + 's'].toArray().then(data => {
-            fetched_data[resource + 's'] = data
-          }))
-        } else {
-          let promise = app.get_resource(resource)
-            .then(data => {
-              fetched_data[resource + 's'] = data
-              return app.db[resource + 's'].bulkPut(app.parseObjects(data))
-            })
-
-          promises.push(promise)
-        }
-      })
-
-      return Promise.all(promises).then(function() {
-        window.localStorage.setItem('has_loaded_data', '1')
-        let app_data = app.$data
-        app.resources.forEach(resource => {
-          app_data[resource + 's'] = fetched_data[resource + 's']
-        })
-
-        app_data.user = app_data.users.find(user => parseInt(user.id) === app.token.user_id)
-
-        app_data.loading = false
-
-        app.$data = app_data
+      Promise.all(promises).finally(() => {
+        this.$router.push('/login')
+        this.loading = false
       })
     },
     get_resource(name) {
@@ -469,45 +496,6 @@ export default {
         }
       }).then(() => data)
     },
-    load_from_api () {
-      this.loading = true
-
-      let promises = []
-
-      let fetched_data = {}
-
-      let app = this
-
-      app.resources.forEach(resource => {
-        let promise = app.get_resource(resource).then(data => {
-          fetched_data[resource + 's'] = data
-          return app.db[resource + 's'].bulkPut(app.parseObjects(data))
-        })
-
-        promises.push(promise)
-      })
-
-      return Promise.all(promises).then(() => {
-        window.localStorage.setItem('has_loaded_data', true)
-        let app_data = app.$data
-
-        app.resources.forEach(resource => {
-          if (resource === 'evaluation') {
-            return
-          }
-          app_data[resource + 's'] = fetched_data[resource + 's']
-        })
-
-        app_data.user = app_data.users.find(user => parseInt(user.id) === app.token.user_id)
-
-        app.$data = app_data
-      }).catch(error => {
-        app.notify('Erro!', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
-        console.log('Error:', error)
-      }).finally(() => {
-        app.loading = false
-      })
-    },
     notify (title, message, style, time) {
       if (time === undefined) {
         time = 5000
@@ -621,13 +609,16 @@ export default {
     }
   },
   created: function() {
+    this.setApiUrl()
+    this.setAuthData()
+    this.openDB()
+
     if (!this.logged_in && this.$route.name !== 'Login') {
-      this.$router.push('/login')
-      this.loading = false
+      this.logout()
       return
     }
 
-    this.seed()
+    this.loadData()
   }
 }
 </script>

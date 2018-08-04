@@ -137,16 +137,19 @@ export default {
         'user'
       ],
 
+      // APP data
       token: undefined,
       user: {},
-      current_council: {},
+      logged_in: undefined,
       notification: {},
+      loading: true,
+
+      //should be removed
+      current_council: {},
       new_topic_options: [{default: 1}],
       updated_evaluations: '',
-      logged_in: undefined,
       current_grade_id: '',
       current_subject_id: '',
-      loading: true,
       hide_evaluated_students: false,
       current_user_id: undefined // the current user (teacher) being edited
     }
@@ -265,114 +268,8 @@ export default {
       })
     },
 
-    orderedTopicOptions(topic_id) {
-      let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
-
-      // order by value desc
-      return topic_options.sort((a, b) => {
-        a = parseInt(a.value)
-        b = parseInt(b.value)
-
-        if (a > b) {
-          return -1
-        }
-
-        if (a < b) {
-          return 1
-        }
-
-        return 0
-      })
-    },
-    role_type (user_id) {
-      let role = this.roles.find(role => role.user_id === user_id && parseInt(role.approved))
-
-      if (!role) {
-        return {}
-      }
-
-      return this.role_types.find(role_type => role_type.id === role.role_type_id)
-    },
-    userHasPermission (permission_reference, user_id) {
-      if (!user_id) {
-        user_id = this.user.id
-      }
-
-      let role_type = this.role_type(user_id)
-
-      if (role_type.id === undefined) {
-        return false
-      }
-
-      let permission = this.permissions.find(permission => permission.reference === permission_reference)
-
-      return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
-    },
-    studentGrade (student_id) {
-      return this.student_grades.find(student_grade =>
-        parseInt(student_grade.grade_id) === parseInt(this.current_grade_id) &&
-        parseInt(student_grade.student_id) === parseInt(student_id)
-      )
-    },
-    logout() {
-      localStorage.removeItem('token')
-      localStorage.removeItem('has_loaded_data')
-
-      this.token = undefined
-      this.logged_in = false
-      this.loading = true
-
-      let promises = []
-
-      this.resources.forEach(resource => {
-        promises.push(this.db[resource+'s'].clear())
-      })
-
-      Promise.all(promises).finally(() => {
-        this.$router.push('/login')
-        this.loading = false
-      })
-    },
-    get_resource(name) {
-      let app = this
-      return app.api_fetch(name)
-        .then(response => response.json())
-        .then(response_data => {
-          let return_data = response_data.results
-
-          let max = parseInt(response_data.max_results_per_page)
-          let total = parseInt(response_data.total_results)
-
-          let remaining_pages = Math.floor(total / max)
-
-          if (total === max || !remaining_pages) {
-            return return_data
-          }
-
-          let remaining_requisitions = []
-          for (let i = 1; i <= remaining_pages; i++) {
-            remaining_requisitions.push(app.api_fetch(name, 'GET', {page: i + 1}).then(remaining_response => remaining_response.json()))
-          }
-
-          return Promise.all(remaining_requisitions).then(remaining_responses => {
-            remaining_responses.forEach(remaining_response_data => {
-              return_data = return_data.concat(remaining_response_data.results)
-            })
-            return return_data
-          })
-        })
-    },
+    // helpers
     api_fetch (path, method, body, headers) {
-      let serialize = obj => {
-        let str = []
-        for (let p in obj) {
-          if (obj.hasOwnProperty(p)) {
-            str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]))
-          }
-        }
-        return str.join('&')
-      }
-
       if (method === undefined) {
         method = 'GET'
       }
@@ -382,9 +279,10 @@ export default {
       } else {
         body.school_id = 1
       }
+
       if (method === 'GET' || method === 'DELETE') {
         if (body !== undefined) {
-          path += '?' + serialize(body)
+          path += '?' + this.serialize(body)
           body = undefined
         }
       } else {
@@ -418,36 +316,35 @@ export default {
         return response
       })
     },
-    delete_resource (resource_name, id, notification, reload_view) {
-      if (notification === undefined) {
-        notification = true
-      }
 
-      if (reload_view === undefined) {
-        reload_view = true
-      }
-
-      this.loading = true
-
+    get_resource(name) {
       let app = this
+      return app.api_fetch(name)
+        .then(response => response.json())
+        .then(response_data => {
+          let return_data = response_data.results
 
-      return this.api_fetch(resource_name + '/' + id, 'DELETE').then(() => {
-        if (reload_view) {
-          let i = app[resource_name + 's'].findIndex(item => parseInt(item.id) === parseInt(id))
-          app[resource_name + 's'].splice(i, 1)
-        }
-        return app.db[resource_name + 's'].delete(id)
-      }).then(() => {
-        if (notification) {
-          app.loading = false
-          app.notify('Sucesso!', 'Excluído com sucesso', 'success')
-        }
-      }).catch(() => {
-        if (notification) {
-          app.loading = false
-          app.notify('Erro!', 'Não foi possível excluir', 'danger')
-        }
-      })
+          let max = parseInt(response_data.max_results_per_page)
+          let total = parseInt(response_data.total_results)
+
+          let remaining_pages = Math.floor(total / max)
+
+          if (total === max || !remaining_pages) {
+            return return_data
+          }
+
+          let remaining_requisitions = []
+          for (let i = 1; i <= remaining_pages; i++) {
+            remaining_requisitions.push(app.api_fetch(name, 'GET', {page: i + 1}).then(remaining_response => remaining_response.json()))
+          }
+
+          return Promise.all(remaining_requisitions).then(remaining_responses => {
+            remaining_responses.forEach(remaining_response_data => {
+              return_data = return_data.concat(remaining_response_data.results)
+            })
+            return return_data
+          })
+        })
     },
     save_resource (resource_name, data, save_to_db, update_view, headers) {
       if (save_to_db === undefined) {
@@ -496,6 +393,68 @@ export default {
         }
       }).then(() => data)
     },
+    delete_resource (resource_name, id, notification, reload_view) {
+      if (notification === undefined) {
+        notification = true
+      }
+
+      if (reload_view === undefined) {
+        reload_view = true
+      }
+
+      this.loading = true
+
+      let app = this
+
+      return this.api_fetch(resource_name + '/' + id, 'DELETE').then(() => {
+        if (reload_view) {
+          let i = app[resource_name + 's'].findIndex(item => parseInt(item.id) === parseInt(id))
+          app[resource_name + 's'].splice(i, 1)
+        }
+        return app.db[resource_name + 's'].delete(id)
+      }).then(() => {
+        if (notification) {
+          app.loading = false
+          app.notify('Sucesso!', 'Excluído com sucesso', 'success')
+        }
+      }).catch(() => {
+        if (notification) {
+          app.loading = false
+          app.notify('Erro!', 'Não foi possível excluir', 'danger')
+        }
+      })
+    },
+
+    serialize(obj) {
+      let str = []
+      for (let p in obj) {
+        if (obj.hasOwnProperty(p)) {
+          str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]))
+        }
+      }
+      return str.join('&')
+    },
+    parseObject (object) {
+      let properties = Object.keys(object)
+      properties.forEach(property => {
+        if (object[property] === null || object[property] === undefined) {
+          return
+        }
+
+        if (object[property].toString() === parseInt(object[property]).toString()) {
+          object[property] = parseInt(object[property]) // "int" to int
+        } else if (object[property].toString() === parseFloat(object[property]).toString()) {
+          object[property] = parseFloat(object[property]) // "float" to float
+        } else if (object[property] === !!object[property]) {
+          object[property] = object[property] ? 1 : 0 // bool to int
+        }
+      })
+      return object
+    },
+    parseObjects (object_array) {
+      return object_array.map(object => this.parseObject(object))
+    },
+
     notify (title, message, style, time) {
       if (time === undefined) {
         time = 5000
@@ -553,25 +512,101 @@ export default {
         }, time)
       }, start_delay)
     },
-    parseObject (object) {
-      let properties = Object.keys(object)
-      properties.forEach(property => {
-        if (object[property] === null || object[property] === undefined) {
-          return
+
+    logout() {
+      localStorage.removeItem('token')
+      localStorage.removeItem('has_loaded_data')
+
+      let app = this
+
+      app.token = undefined
+      app.logged_in = false
+      app.loading = true
+
+      let promises = []
+
+      app.resources.forEach(resource => {
+        app[resource+'s'] = []
+        promises.push(app.db[resource+'s'].clear())
+      })
+
+      Promise.all(promises).catch(error => {
+        console.log('Error:', error)
+      }).finally(() => {
+        app.$router.push('/login')
+        app.loading = false
+      })
+    },
+
+    // APP shell functions
+    role_type (user_id) {
+      let role = this.roles.find(role =>
+        role.user_id === user_id &&
+        parseInt(role.approved)
+      )
+
+      if (!role) {
+        return {}
+      }
+
+      return this.role_types.find(role_type =>
+        role_type.id === role.role_type_id
+      )
+    },
+    userHasPermission (permission_reference, user_id) {
+      if (!this.user) {
+        return false
+      }
+
+      if (!user_id) {
+        user_id = this.user.id
+      }
+
+      let role_type = this.role_type(user_id)
+
+      if (!role_type || !role_type.id) {
+        return false
+      }
+
+      let permission = this.permissions.find(permission =>
+        permission.reference === permission_reference
+      )
+
+      if (!permission || !permission.id) {
+        return false
+      }
+
+      return !!this.role_type_permissions.find(role_type_permission =>
+        role_type_permission.permission_id === permission.id &&
+        role_type_permission.role_type_id === role_type.id
+      )
+    },
+
+    // should be removed
+    orderedTopicOptions(topic_id) {
+      let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
+
+      // order by value desc
+      return topic_options.sort((a, b) => {
+        a = parseInt(a.value)
+        b = parseInt(b.value)
+
+        if (a > b) {
+          return -1
         }
 
-        if (object[property].toString() === parseInt(object[property]).toString()) {
-          object[property] = parseInt(object[property]) // "int" to int
-        } else if (object[property].toString() === parseFloat(object[property]).toString()) {
-          object[property] = parseFloat(object[property]) // "float" to float
-        } else if (object[property] === !!object[property]) {
-          object[property] = object[property] ? 1 : 0 // bool to int
+        if (a < b) {
+          return 1
         }
+
+        return 0
       })
-      return object
     },
-    parseObjects (object_array) {
-      return object_array.map(object => this.parseObject(object))
+    studentGrade (student_id) {
+      return this.student_grades.find(student_grade =>
+        parseInt(student_grade.grade_id) === parseInt(this.current_grade_id) &&
+        parseInt(student_grade.student_id) === parseInt(student_id)
+      )
     }
   },
   watch: {
@@ -618,7 +653,12 @@ export default {
       return
     }
 
-    this.loadData()
+    if (this.$route.name !== 'Login') {
+      this.loadData()
+      return
+    }
+
+    this.loading = false
   }
 }
 </script>

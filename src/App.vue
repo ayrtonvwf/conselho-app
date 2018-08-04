@@ -106,7 +106,6 @@
 /* eslint-disable */
 
 import Dexie from '../node_modules/dexie/dist/dexie.min.js'
-import superTable from './assets/superTable'
 
 export default {
   name: 'App',
@@ -114,7 +113,7 @@ export default {
     let token = JSON.parse(localStorage.getItem('token'))
 
     let api_url = 'https://conselho-api.infomec.net.br/'
-    if (location.href.indexOf('localhost') !== -1) {
+    if (location.href.indexOf('localhost') !== -1 || location.href.indexOf('127.0.0.1') !== -1) {
       api_url = 'http://localhost/conselho-server/'
     }
 
@@ -215,10 +214,6 @@ export default {
         return 0
       })
     },
-    activeCouncil (council_id) {
-      let council = this.councils.find(council => council.id === council_id)
-      return new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()
-    },
     role_type (user_id) {
       let role = this.roles.find(role => role.user_id === user_id && parseInt(role.approved))
 
@@ -243,43 +238,11 @@ export default {
 
       return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
     },
-    reportStudentTopic (student_id, topic_id) {
-      let topic_options = this.orderedTopicOptions(topic_id)
-
-      let evaluations = this.evaluations.filter(evaluation =>
-        evaluation.student_id === student_id &&
-        topic_options.find(topic_option =>
-          topic_option.id === evaluation.topic_option_id
-        ) !== undefined
-      )
-
-      if (!evaluations.length) {
-        return '-'
-      }
-
-      let values = evaluations.map(evaluation =>
-        parseInt(topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id).value)
-      )
-
-      let sum = values.reduce((a, b) => a + b)
-      let avg = parseInt(sum / values.length)
-
-      let topic_options_values = topic_options.map(topic_option => topic_option.value)
-
-      let nearest_value = parseInt(topic_options_values.reduce(function (prev, curr) {
-        return (Math.abs(curr - avg) < Math.abs(prev - avg) ? curr : prev)
-      }))
-
-      return topic_options.find(topic_option => parseInt(topic_option.value) === nearest_value).name + ' (' + avg + '%)'
-    },
     studentGrade (student_id) {
       return this.student_grades.find(student_grade =>
         parseInt(student_grade.grade_id) === parseInt(this.current_grade_id) &&
         parseInt(student_grade.student_id) === parseInt(student_id)
       )
-    },
-    studentHasEvaluation (student_id) {
-      return !!this.evaluations.find(evaluation => evaluation.student_id === student_id && evaluation.id)
     },
     logout() {
       localStorage.removeItem('token')
@@ -337,11 +300,6 @@ export default {
         })
 
         app_data.user = app_data.users.find(user => parseInt(user.id) === app.token.user_id)
-
-        if (document.location.pathname.endsWith('evaluate.html') || document.location.pathname.endsWith('report.html')) {
-          let current_council_id = parseInt(new URL(document.location.href).searchParams.get('id'))
-          app_data.current_council = app_data.councils.find(council => council.id === current_council_id)
-        }
 
         app_data.loading = false
 
@@ -434,8 +392,6 @@ export default {
       })
     },
     delete_resource (resource_name, id, notification, reload_view) {
-      document.location.hash = '' // closes modal
-
       if (notification === undefined) {
         notification = true
       }
@@ -628,68 +584,6 @@ export default {
     },
     parseObjects (object_array) {
       return object_array.map(object => this.parseObject(object))
-    },
-    filter_evaluations () {
-      let app = this
-      let is_evaluation = app.$route.name === 'Evaluation'
-      if (!app.current_grade_id || !app.current_council || !app.current_council.id || (is_evaluation && !app.current_subject_id)) {
-        this.evaluations = []
-        return
-      }
-
-      let index
-      let equals
-      if (app.current_subject_id) {
-        index = '[council_id+grade_id+subject_id]'
-        equals = [app.current_council.id, app.current_grade_id, app.current_subject_id]
-      } else {
-        index = '[council_id+grade_id]'
-        equals = [app.current_council.id, app.current_grade_id]
-      }
-
-      app.loading = true
-
-      return app.db.evaluations.where(index).equals(equals).toArray().then(evaluations => {
-        if (is_evaluation) {
-          evaluations = evaluations
-            .filter(evaluation => evaluation.user_id === app.user.id)
-            .map(evaluation => {
-              let topic_option = app.topic_options.find(topic_option => topic_option.id === evaluation.topic_option_id)
-              evaluation.topic_id = topic_option.topic_id
-              return evaluation
-            })
-
-          let missing_evaluations = []
-
-          app.studentsInGrade.forEach(student => {
-            app.councilTopics.forEach(topic => {
-              let evaluation = evaluations.find(evaluation =>
-                evaluation.student_id === student.id &&
-                evaluation.topic_id === topic.id
-              )
-              if (evaluation) {
-                return
-              }
-              missing_evaluations.push({
-                student_id: student.id,
-                topic_id: topic.id,
-                topic_option_id: topic.topic_option_id,
-                council_id: app.current_council.id,
-                user_id: app.user.id,
-                grade_id: app.current_grade_id,
-                subject_id: app.current_subject_id
-              })
-            })
-          })
-
-          evaluations = evaluations.concat(missing_evaluations)
-        }
-
-        app.evaluations = evaluations
-        app.loading = false
-
-        superTable()
-      })
     }
   },
   watch: {
@@ -724,69 +618,6 @@ export default {
       return this.councils.filter(council =>
         new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()
       )
-    },
-    studentsInGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.students
-        .filter(student => this.studentGrade(student.id) !== undefined)
-        .sort((a, b) => {
-          a = this.studentGrade(a.id).number
-          b = this.studentGrade(b.id).number
-
-          if (a < b) {
-            return -1
-          }
-
-          if (a > b) {
-            return 1
-          }
-
-          return 0
-        })
-    },
-    currentGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.grades.find(grade => parseInt(grade.id) === parseInt(this.current_grade_id))
-    },
-    councilTopics () {
-      return this.topics.filter(topic =>
-        this.council_topics.find(council_topic =>
-          council_topic.topic_id === topic.id &&
-          council_topic.council_id === this.current_council.id
-        ) !== undefined
-      )
-    },
-    subjectsInGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.subjects.filter(subject =>
-        this.grade_subjects.find(grade_subject =>
-          grade_subject.subject_id === subject.id &&
-          grade_subject.grade_id === this.current_grade_id
-        )
-      )
-    },
-    gradeObservations () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.grade_observations.filter(grade_observation =>
-        parseInt(grade_observation.grade_id) === parseInt(this.current_grade_id) &&
-        parseInt(grade_observation.council_id) === parseInt(this.current_council.id) &&
-        grade_observation.description.length &&
-        (
-          !this.current_subject_id ||
-          parseInt(grade_observation.subject_id) === parseInt(this.current_subject_id)
-        )
-      )
-    },
-    orderedUsers () {
-      return this.users.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true }))
     }
   },
   created: function() {

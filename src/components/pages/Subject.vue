@@ -165,8 +165,10 @@ export default {
       })
     }
   },
-  created() {
+  beforeCreate() {
     this.$emit('loading')
+  },
+  created() {
     let db = this.$parent.db
 
     this.subjects = []

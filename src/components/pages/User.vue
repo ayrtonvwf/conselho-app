@@ -86,8 +86,10 @@ export default {
       })
     }
   },
-  created() {
+  beforeCreate() {
     this.$emit('loading')
+  },
+  created() {
     this.db = this.$parent.db
 
     let current_user_id = parseInt(this.$parent.token.user_id)

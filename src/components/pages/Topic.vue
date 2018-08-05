@@ -278,13 +278,13 @@ export default {
         topic.topic_option_id = promises_response[default_option_index].id
         return app.save_resource('topic', topic, true, false)
       }).then(topic => {
-        app.notify('Sucesso!', form.dataset.success, 'success')
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
 
         document.location.hash = '' // closes the current modal
 
         this.topics.push(topic)
       }).catch(error => {
-        app.notify('Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')

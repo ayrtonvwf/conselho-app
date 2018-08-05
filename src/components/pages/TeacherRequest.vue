@@ -17,7 +17,7 @@
                 <div class="input col-6 col-sm-4">
                   <select id="current_subject_id" name="subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
                     <option value="" selected hidden disabled>{{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}</option>
-                    <option v-for="subject in subjects" :key="subject.id" v-if="current_grade_id &amp;&amp; grade_subjects.find(grade_subject =&gt; grade_subject.subject_id === subject.id &amp;&amp; grade_subject.grade_id === current_grade_id) !== undefined" :value="subject.id" :disabled="teachers.find(teacher =&gt; teacher.grade_id === current_grade_id &amp;&amp; teacher.subject_id === subject.id) !== undefined">{{ subject.name }}</option>
+                    <option v-for="subject in subjects" :key="subject.id" v-if="current_grade_id && grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id) !== undefined" :value="subject.id" :disabled="teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) !== undefined">{{ subject.name }}</option>
                   </select>
                   <label for="current_subject_id">Disciplina</label>
                 </div>
@@ -30,7 +30,7 @@
             </div>
           </div>
         </form><br>
-        <table class="table" v-if="teachers.find(teacher =&gt; teacher.user_id === user.id) !== undefined || teacher_requests.find(teacher_request =&gt; teacher_request.user_id === user_id) !== undefined">
+        <table class="table" v-if="teachers.find(teacher => teacher.user_id === user.id) !== undefined || teacher_requests.find(teacher_request => teacher_request.user_id === user_id) !== undefined">
           <thead>
           <tr>
             <th>Turma</th>
@@ -42,7 +42,7 @@
             <td>{{ grades.find(grade => grade.id === teacher_request.grade_id).name }}</td>
             <td>{{ subjects.find(subject => subject.id === teacher_request.subject_id).name }}</td>
             <td class="text-muted">Aguardando aprovação</td>
-            <td class="text-right no-wrap"><a class="btn-danger btn-sm tooltip tooltip-end" :href="&quot;#modal-delete-teacher_request-&quot;+teacher_request.id" title="Remover">
+            <td class="text-right no-wrap"><a class="btn-danger btn-sm tooltip tooltip-end" :href="'#modal-delete-teacher_request-'+teacher_request.id" title="Remover">
               <div class="material-icons">delete</div><span class="d-none d-md-inline"> Remover</span></a></td>
           </tr>
           <tr v-for="teacher in teachers" :key="teacher.id" v-if="teacher.user_id === user.id">

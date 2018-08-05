@@ -8,11 +8,11 @@
             <form action="#" data-success="Usuário editado com sucesso" data-error="Não foi possível editar o usuário" @submit.prevent="user_update">
               <div class="row">
                 <div class="input col-sm-6">
-                  <input id="user_name" v-model="user.name" minlength="3" required>
+                  <input id="user_name" name="name" :value="user.name" minlength="3" required>
                   <label for="user_name">Nome completo</label>
                 </div>
                 <div class="input col-sm-6">
-                  <input id="user_email" v-model="user.email" type="email" minlength="3" required>
+                  <input id="user_email" name="email" :value="user.email" type="email" minlength="3" required>
                   <label for="user_email">E-mail</label>
                 </div>
               </div>
@@ -44,27 +44,26 @@
 export default {
   name: 'User',
   data: function() {
-    return this.$parent.$data
+    return {
+      user: {}
+    }
   },
   methods: {
     user_update (event) {
-      event.preventDefault()
-
-      let component = this
       let app = this.$parent
 
       let form = event.target
       let user = {
-        id: app.user.id,
-        name: app.user.name,
-        email: app.user.email
+        id: this.user.id,
+        name: form.querySelector('[name=name]').value,
+        email: form.querySelector('[name=email]').value
       }
 
       let password = form.querySelector('#password').value
       let re_password = form.querySelector('#re_password').value
 
       if (password !== re_password) {
-        app.notify('Erro!', 'Os dois campos de senha devem ser iguais!', 'danger')
+        this.$emit('notify', 'Erro!', 'Os dois campos de senha devem ser iguais!', 'danger')
         return
       }
 
@@ -72,21 +71,33 @@ export default {
         user.password = password
       }
 
-      app.loading = true
+      this.$emit('loading')
 
-      return app.api_fetch('user', 'PATCH', user).then(response => {
+      return app.api_fetch('user', 'PATCH', user).then(() => {
         delete user.password
-        return app.db.users.put(user)
+        return this.db.users.put(user)
       }).then(() => {
-        app.notify('Sucesso!', form.dataset.success, 'success')
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
       }).catch(error => {
-        app.notify('Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
       }).finally(() => {
-        app.loading = false
-        component.$forceUpdate()
+        this.$emit('loaded')
       })
     }
+  },
+  created() {
+    this.$emit('loading')
+    this.db = this.$parent.db
+
+    let current_user_id = parseInt(this.$parent.token.user_id)
+
+    this.user = {}
+
+    this.db.users.get(current_user_id).then(user => {
+      this.user = user
+      this.$emit('loaded')
+    })
   }
 }
 </script>

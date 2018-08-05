@@ -26,9 +26,13 @@
               <span class="text-muted" v-if="!parseInt(topic.active)">(invisível)</span>
             </td>
             <td class="text-right no-wrap">
-              <a class="btn-warning btn-sm tooltip tooltip-end" :href="'#modal-'+topic.id" title="Editar tópico e suas opções de resposta">
+              <a class="btn-warning btn-sm tooltip tooltip-end" href="#modal-edit" title="Editar tópico" @click="current_topic_id = topic.id">
                 <div class="material-icons">edit</div>
                 <span class="d-none d-md-inline">Editar</span>
+              </a>
+              <a class="btn-primary btn-sm tooltip tooltip-end" href="#modal-topic_options" title="Opções de resposta" @click="current_topic_id = topic.id">
+                <div class="material-icons">list</div>
+                <span class="d-none d-md-inline">Opções</span>
               </a>
             </td>
           </tr>
@@ -73,7 +77,7 @@
                   <input type="radio" name="option_default" value="1" v-model="topic_option.default" required>
                 </td>
                 <td class="text-right" style="margin-top: -2px">
-                  <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0px 2px" :disabled="new_topic_options.length &lt;= 2" v-on:click="new_topic_options.splice(i, 1)" type="button">
+                  <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0px 2px" :disabled="new_topic_options.length <= 2" v-on:click="new_topic_options.splice(i, 1)" type="button">
                     <div class="material-icons">delete</div><span class="d-none d-md-inline"> Remover</span>
                   </button>
                 </td>
@@ -93,26 +97,43 @@
         </div>
       </div>
     </modal>
-    <modal v-for="topic in topics" :key="topic.id" :anchor="'modal-' + topic.id" title="Editar tópico">
+    <modal anchor="modal-edit" title="Editar tópico">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Tópico editado com sucesso" data-error="Não foi possível editar o tópico" @submit.prevent="topic_update">
-            <input type="hidden" name="id" :value="topic.id"><br>
+            <br>
             <div class="row">
               <div class="col-8">
                 <div class="input">
-                  <input required :value="topic.name" placeholder="Ex.: Tarefas de casa" name="name" minlength="3">
+                  <input required :value="current_topic.name" placeholder="Ex.: Tarefas de casa" name="name" minlength="3">
                   <label>Nome</label>
                 </div>
               </div>
               <div class="col-4"><br>
                 <label>
-                  <input type="checkbox" name="active" value="1" :checked="parseInt(topic.active)"> Visível
+                  <input type="checkbox" name="active" value="1" :checked="parseInt(current_topic.active)"> Visível
                 </label>
               </div>
             </div>
-            <hr>
-            <div class="h4">Opções de resposta</div>
+            <br><br>
+            <a class="btn-danger" href="#">
+              <div class="material-icons">close</div>
+              Cancelar
+            </a>
+            <button class="btn-success pull-right" type="submit">
+              <div class="material-icons">check</div>
+              Salvar
+            </button>
+            <br>
+          </form>
+        </div>
+      </div>
+    </modal>
+    <modal anchor="modal-topic_options" title="Editar opções de resposta">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <form action="#" data-success="Opções editadas com sucesso" data-error="Não foi possível editar as opções de resposta" @submit.prevent="topic_options_update">
+            <br>
             <table class="table">
               <thead>
               <tr>
@@ -122,26 +143,32 @@
               </tr>
               </thead>
               <tbody>
-              <tr v-for="topic_option in orderedTopicOptions(topic.id)" :key="topic_option.id">
+              <tr v-for="topic_option in current_topic_options" :key="topic_option.id">
                 <td>
-                  <input type="hidden" name="option_id[]" :value="topic_option.id">
                   <div class="input">
-                    <input required :value="topic_option.name" style="margin: 0px" placeholder="Ex.: Excelente" name="option_name[]" minlength="3">
+                    <input required v-model="topic_option.name" style="margin: 0px" placeholder="Ex.: Excelente" name="option_name[]" minlength="3">
                   </div>
                 </td>
                 <td>
                   <div class="input">
-                    <input required :value="topic_option.value" type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" name="option_value[]">
+                    <input required v-model="topic_option.value" type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" name="option_value[]">
                   </div>
                 </td>
                 <td class="text-center">
-                  <input type="radio" name="option_default" value="1" :checked="topic.topic_option_id === topic_option.id" required>
+                  <template v-if="topic_option.id">
+                    <button type="button" class="btn btn-sm btn-success disabled tooltip tooltip-end" title="Esta já é a opção padrão" v-if="current_topic.topic_option_id === topic_option.id">
+                      <span class="material-icons">check</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-warning tooltip tooltip-end" title="Tornar esta a opção padrão" v-else @click="update_default_option(topic_option.id)">
+                      <span class="material-icons">close</span>
+                    </button>
+                  </template>
                 </td>
               </tr>
               </tbody>
             </table>
             <div class="text-center">
-              <button class="btn-primary tooltip" type="button" title="Criar uma nova opção de resposta para este tópico" v-on:click="topic_options.push({topic_id: topic.id})">
+              <button class="btn-primary tooltip" type="button" title="Criar uma nova opção de resposta para este tópico" v-on:click="current_topic_options.push({topic_id: current_topic.id, active: true})">
                 <div class="material-icons">add</div>Criar nova opção
               </button>
             </div>
@@ -167,37 +194,38 @@
 export default {
   name: 'Topic',
   data: function() {
-    return this.$parent.$data
+    return {
+      topics: [],
+      topics_options: [],
+      current_topic_id: undefined,
+      current_topic: {},
+      current_topic_options: [],
+      current_topic_option_index: undefined,
+      new_topic_options: [{}, {}]
+    }
+  },
+  watch: {
+    current_topic_id() {
+      if (!this.current_topic_id) {
+        this.current_topic = {}
+        this.current_topic_options = []
+        return
+      }
+
+      this.current_topic = JSON.parse(JSON.stringify(this.topics.find(topic =>
+        topic.id === this.current_topic_id
+      )))
+
+      this.current_topic_options = JSON.parse(JSON.stringify(this.topic_options.filter(topic_option =>
+        topic_option.topic_id === this.current_topic_id
+      ).sort((a, b) => Math.sign(b.value - a.value)))) // ORDER BY value DESC
+    }
   },
   methods: {
-    orderedTopicOptions(topic_id) {
-      let topic_options = this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
-
-      // order by value desc
-      return topic_options.sort((a, b) => {
-        a = parseInt(a.value)
-        b = parseInt(b.value)
-
-        if (a > b) {
-          return -1
-        }
-
-        if (a < b) {
-          return 1
-        }
-
-        return 0
-      })
-    },
     topic_save (event) {
-      event.preventDefault()
+      this.$emit('loading')
 
-      let component = this
       let app = this.$parent
-
-      document.location.hash = '' // closes the current modal
-
-      app.loading = true
 
       let form = event.target
       let topic = {
@@ -212,7 +240,7 @@ export default {
       let option_value_inputs = form.querySelectorAll('[name="option_value[]"]')
       let option_values = [].map.call(option_value_inputs, input => input.value)
 
-      let option_default_inputs = form.querySelectorAll('[name=option_default]')
+      let option_default_inputs = form.querySelectorAll('[name="option_default"]')
       let option_defaults = [].map.call(option_default_inputs, input => input.checked)
       let default_option_index = option_defaults.indexOf(true)
 
@@ -232,7 +260,13 @@ export default {
 
         options.forEach(option => {
           option.topic_id = response.id
-          save_options.push(app.save_resource('topic_option', option, true, false))
+
+          let promise = app.save_resource('topic_option', option, true, false).then(topic_option => {
+            this.topic_options.push(topic_option)
+            return topic_option
+          })
+
+          save_options.push(promise)
         })
 
         return Promise.all(save_options)
@@ -242,90 +276,145 @@ export default {
         }
 
         topic.topic_option_id = promises_response[default_option_index].id
-        return app.save_resource('topic', topic)
-      }).then(() => {
-        return Promise.all([
-          app.db.topics.toArray().then(data => app.topics = data),
-          app.db.topic_options.toArray().then(data => app.topic_options = data)
-        ])
-      }).then(() => {
-        app.loading = false
+        return app.save_resource('topic', topic, true, false)
+      }).then(topic => {
         app.notify('Sucesso!', form.dataset.success, 'success')
-        component.$forceUpdate()
+
+        document.location.hash = '' // closes the current modal
+
+        this.topics.push(topic)
       }).catch(error => {
-        app.loading = false
-        console.log('Error:', error)
         app.notify('Erro!', form.dataset.error, 'danger')
-        component.$forceUpdate()
+        console.log('Error:', error)
+      }).finally(() => {
+        this.$emit('loaded')
       })
     },
     topic_update (event) {
-      event.preventDefault()
+      this.$emit('loading')
 
-      let component = this
       let app = this.$parent
-
-      document.location.hash = '' // closes the current modal
-
-      app.loading = true
 
       let form = event.target
 
-      let option_id_inputs = form.querySelectorAll('[name="option_id[]"]')
-      let option_ids = [].map.call(option_id_inputs, input => input.value)
-
-      let option_name_inputs = form.querySelectorAll('[name="option_name[]"]')
-      let option_names = [].map.call(option_name_inputs, input => input.value)
-
-      let option_value_inputs = form.querySelectorAll('[name="option_value[]"]')
-      let option_values = [].map.call(option_value_inputs, input => input.value)
-
-      let option_default_inputs = form.querySelectorAll('[name=option_default]')
-      let option_defaults = [].map.call(option_default_inputs, input => input.checked)
-      let default_option_index = option_defaults.indexOf(true)
-
       let topic = {
-        id: form.querySelector('[name=id]').value,
+        id: this.current_topic_id,
         name: form.querySelector('[name=name]').value,
         active: form.querySelector('[name=active]').checked,
-        topic_option_id: option_ids[default_option_index] ? option_ids[default_option_index] : null
+        topic_option_id: this.current_topic.topic_option_id
       }
 
-      let options = []
-      option_names.forEach((name, i) => {
-        options.push({
-          id: option_ids[i],
-          name: name,
-          value: option_values[i],
-          active: true,
-          topic_id: topic.id
-        })
+      return app.save_resource('topic', topic, true, false).then(() => {
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+
+        document.location.hash = '' // closes the current modal
+
+        let index = this.topics.findIndex(topic => topic.id === this.current_topic_id)
+
+        this.$set(this.topics, index, topic)
+
+        this.current_topic = topic
+      }).catch(error => {
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        console.log('Error:', error)
+      }).finally(() => {
+        this.$emit('loaded')
       })
+    },
+    topic_options_update (event) {
+      this.$emit('loading')
+
+      let app = this.$parent
+
+      let form = event.target
+
+      let save_options = []
+
+      this.current_topic_options.forEach(topic_option => {
+        let promise = app.save_resource('topic_option', topic_option, true, false).then(topic_option => {
+          let index = this.topic_options.findIndex(find_topic_option =>
+            find_topic_option.id === topic_option.id
+          )
+
+          if (index === -1) {
+            this.topic_options.push(topic_option)
+          } else {
+            this.$set(this.topic_options, index, topic_option)
+          }
+
+          return topic_option
+        })
+
+        save_options.push(promise)
+      })
+
+      return Promise.all(save_options).then(() => {
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+
+        this.current_topic_options = JSON.parse(JSON.stringify(this.topic_options.filter(topic_option =>
+          topic_option.topic_id === this.current_topic_id
+        ).sort((a, b) => Math.sign(b.value - a.value)))) // ORDER BY value DESC
+      }).catch(error => {
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        console.log('Error:', error)
+      }).finally(() => {
+        this.$emit('loaded')
+      })
+    },
+    update_default_option(topic_option_id) {
+      this.$emit('loading')
+
+      let app = this.$parent
+
+      let form = event.target
+
+      let topic = {
+        id: this.current_topic_id,
+        name: this.current_topic.name,
+        active: this.current_topic.active,
+        topic_option_id: topic_option_id
+      }
 
       return app.save_resource('topic', topic, true, false).then(() => {
-        let save_options = []
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
 
-        options.forEach(option => {
-          save_options.push(app.save_resource('topic_option', option, true, false))
-        })
+        let index = this.topics.findIndex(topic => topic.id === this.current_topic_id)
 
-        return Promise.all(save_options)
-      }).then(() => {
-        return Promise.all([
-          app.db.topics.toArray().then(data => app.topics = data),
-          app.db.topic_options.toArray().then(data => app.topic_options = data)
-        ])
-      }).then(() => {
-        app.loading = false
-        app.notify('Sucesso!', form.dataset.success, 'success')
-        component.$forceUpdate()
+        this.$set(this.topics, index, topic)
+
+        this.current_topic = topic
       }).catch(error => {
-        app.loading = false
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
-        app.notify('Erro!', form.dataset.error, 'danger')
-        component.$forceUpdate()
+      }).finally(() => {
+        this.$emit('loaded')
       })
     }
+  },
+  created() {
+    this.$emit('loading')
+
+    let db = this.$parent.db
+
+    this.topics = []
+    this.topics_options = []
+    this.current_topic_id = undefined
+    this.current_topic = {}
+    this.current_topic_options = []
+    this.current_topic_option_index = undefined
+    this.new_topic_options = [{}, {}]
+
+    let promises = []
+    promises.push(db.topics.toArray().then(topics => {
+      this.topics = topics
+    }))
+    promises.push(db.topic_options.toArray().then(topic_options => {
+      this.topic_options = topic_options
+    }))
+
+    Promise.all(promises).then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

@@ -4,7 +4,7 @@
       <div class="col-auto">
         <h1 class="content-title"><i class="material-icons">people</i>Usuários</h1>
       </div>
-      <div class="col text-right"><a class="btn-success btn-sm no-wra" href="#modal-new">
+      <div class="col text-right"><a class="btn-success btn-sm no-wrap" href="#modal-new">
         <div class="material-icons">add</div> Criar novo usuário</a></div>
     </div>
     <article class="box">
@@ -18,7 +18,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="user in orderedUsers" :key="user.id">
+          <tr v-for="user in users" :key="user.id">
             <td>{{ user.name }}</td>
             <td>{{ role_type(user.id).name }}</td>
             <td>{{ user.email }}</td>
@@ -30,7 +30,7 @@
     <modal anchor="modal-new" title="Novo usuário">
       <div class="row justify-content-center">
         <div class="col-sm-11">
-          <form action="#" data-success="Usuário cadastrado com sucesso" data-error="Não foi possível cadastrar o usuário" @submit="user_save"><br>
+          <form action="#" data-success="Usuário cadastrado com sucesso" data-error="Não foi possível cadastrar o usuário" @submit.prevent="user_save"><br>
             <div class="row">
               <div class="col-sm-6 input">
                 <input required placeholder="Ex.: João da Silva" name="name" minlength="3">
@@ -76,11 +76,10 @@
 export default {
   name: 'Role',
   data: function() {
-    return this.$parent.$data
-  },
-  computed: {
-    orderedUsers () {
-      return this.users.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true }))
+    return {
+      users: [],
+      role_types: [],
+      roles: []
     }
   },
   methods: {
@@ -94,14 +93,11 @@ export default {
       return this.role_types.find(role_type => role_type.id === role.role_type_id)
     },
     user_save (event) {
-      event.preventDefault()
-
-      let component = this
       let app = this.$parent
 
       let form = event.target
 
-      let data = {
+      let user = {
         name: form.querySelector('[name=name]').value,
         email: form.querySelector('[name=email]').value,
         password: form.querySelector('[name=password]').value
@@ -111,36 +107,67 @@ export default {
         role_type_id: form.querySelector('[name=role_type_id]').value
       }
 
-      if (data.password !== form.querySelector('[name=re_password]').value) {
-        app.notify('Erro!', 'As senhas informadas devem ser iguais!', 'danger')
+      if (user.password !== form.querySelector('[name=re_password]').value) {
+        this.$emit('notify', 'Erro!', 'As senhas informadas devem ser iguais!', 'danger')
         return
       }
 
-      app.loading = true
+      this.$emit('loading')
 
-      app.save_resource('user', data).then(response => {
-        data.id = response.id
-        role.user_id = response.id
-        return app.api_fetch('user_token', 'POST', data)
-      }).then(response => {
-        return response.json()
-      }).then(response => {
-        return app.save_resource('role', role, true, true, { Token: response.value })
-      }).then(response => {
-        role.id = response.id
+      app.save_resource('user', user, true, false).then(saved_user => {
+        user = saved_user
+        role.user_id = user.id
+        this.users.push(user)
+        let user_token = {
+          email: user.email,
+          password: user.password
+        }
+        return app.api_fetch('user_token', 'POST', user_token).then(response => response.json())
+      }).then(user_token => {
+        return app.save_resource('role', role, true, false, { Token: user_token.value })
+      }).then(saved_role => {
+        role = saved_role
         role.approved = true
-        return app.save_resource('role', role)
-      }).then(() => {
-        app.notify('Sucesso!', form.dataset.success, 'success')
+        return app.save_resource('role', role, true, false)
+      }).then(role => {
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
         document.location.hash = ''
+        this.roles.push(role)
       }).catch(error => {
-        app.notify('Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
       }).finally(() => {
-        app.loading = false
-        component.$forceUpdate()
+        this.$emit('loaded')
       })
     }
+  },
+  beforeCreate() {
+    this.$emit('loading')
+  },
+  created() {
+    let db = this.$parent.db
+
+    this.users = []
+    this.role_types = []
+    this.roles = []
+
+    let promises = []
+
+    promises.push(db.users.toArray().then(users =>
+      this.users = users.sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+      )
+    ))
+    promises.push(db.role_types.toArray().then(role_types =>
+      this.role_types = role_types
+    ))
+    promises.push(db.roles.toArray().then(roles =>
+      this.roles = roles
+    ))
+
+    Promise.all(promises).then(() =>
+      this.$emit('loaded')
+    )
   }
 }
 </script>

@@ -4,7 +4,7 @@
       <div class="col-auto">
         <h1 class="content-title"><i class="material-icons">book</i>Disciplinas</h1>
       </div>
-      <div class="col text-right"><a class="btn-success btn-sm no-wra" href="#modal-new">
+      <div class="col text-right"><a class="btn-success btn-sm no-wrap" href="#modal-new">
         <div class="material-icons">add</div> Criar nova disciplina</a></div>
     </div>
     <article class="box">

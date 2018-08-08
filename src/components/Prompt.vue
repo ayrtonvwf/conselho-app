@@ -10,7 +10,7 @@
           <div class="material-icons">close</div>
           Cancelar
         </a>
-        <a v-if="accept" class="btn-success btn-sm pull-right" @click.once="$emit('accept')" href="#">
+        <a v-if="accept" class="btn-success btn-sm pull-right" @click="$emit('accept')" href="#">
           <div class="material-icons">check</div>
           {{ accept }}
         </a>

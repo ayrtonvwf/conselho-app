@@ -1,3 +1,30 @@
+<style scoped>
+  #loading {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: rgba(0, 0, 0, .7);
+    color: white;
+    line-height: 100vh;
+    text-align: center;
+    z-index: 100;
+  }
+  #loading>.material-icons {
+    font-size: 35px;
+    animation: loading 1.5s 0s infinite linear;
+  }
+  @keyframes loading {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+</style>
+
 <template>
   <div id="app">
     <form id="form-valid-support-helper">
@@ -637,33 +664,3 @@ export default {
   }
 }
 </script>
-
-<style>
-  .table>table>thead, .table>table>tbody>tr>td:first-child {
-    background-color: #f0f0f0;
-  }
-  #loading {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    background-color: rgba(0, 0, 0, .7);
-    color: white;
-    line-height: 100vh;
-    text-align: center;
-    z-index: 100;
-  }
-  #loading>.material-icons {
-    font-size: 35px;
-    animation: loading 1.5s 0s infinite linear;
-  }
-  @keyframes loading {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(-360deg);
-    }
-  }
-</style>

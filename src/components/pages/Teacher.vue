@@ -45,7 +45,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="user in usersWhoEvaluate" :key="user.id">
+          <tr v-for="user in users" :key="user.id">
             <td>{{ user.name }}</td>
             <td class="text-right no-wrap">
               <a class="btn-primary btn-sm tooltip tooltip-end" href="#modal-grades" title="Turmas" @click="current_user_id = user.id">
@@ -58,7 +58,7 @@
         </table>
       </div>
     </article>
-    <modal anchor="modal-grades" :title="'Turmas de '+(current_user ? current_user.name : '')">
+    <modal anchor="modal-grades" :title="'Turmas de '+current_user.name">
       <br>
       <form action="#" @submit.prevent="teacher_save" data-success="Professor salvo com sucesso!" data-error="Não foi possível cadastrar">
         <input type="hidden" name="user_id" :value="current_user_id">
@@ -132,22 +132,69 @@
 export default {
   name: 'Teacher',
   data: function() {
-    let data = this.$parent.$data
-    data.current_teacher_request_id = undefined
-    data.current_teacher_id = undefined
-    data.current_user_id = undefined
-    data.current_user = undefined
-    return data
+    return {
+      users: [],
+      permissions: [],
+      role_types: [],
+      subjects: [],
+      grades: [],
+
+      roles: [],
+      teachers: [],
+      teacher_requests: [],
+      grade_subjects: [],
+      role_type_permissions: [],
+
+      current_user_id: undefined,
+      current_user: {},
+      current_teachers: [],
+
+      current_grade_id: '',
+      current_subject_id: '',
+      current_subjects: [],
+
+      current_teacher_request_id: undefined, // teacher request to be accepted or denied
+      current_teacher_id: undefined // teacher to be deleted
+    }
   },
   watch: {
-    current_user_id: function() { this.update_current() }
-  },
-  computed: {
-    orderedUsers () {
-      return this.users.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true }))
+    current_user_id() {
+      this.current_subjects = []
+      this.current_grade_id = ''
+      this.current_subject_id = ''
+
+      if (!this.current_user_id) {
+        this.current_user = {}
+        this.current_teachers = []
+        return
+      }
+
+      this.current_user = this.users.find(user =>
+        user.id === this.current_user_id
+      )
+
+      this.current_teachers = this.teachers.filter(teacher =>
+        teacher.user_id === this.current_user_id
+      )
     },
-    usersWhoEvaluate() {
-      return this.orderedUsers.filter(user => this.userHasPermission('evaluate', user.id))
+    current_grade_id() {
+      this.current_subjects = []
+      this.current_subject_id = ''
+
+      if (!this.current_grade_id) {
+        return
+      }
+
+      let grade_subjects = this.grade_subjects.filter(grade_subject =>
+        grade_subject.grade_id === this.current_grade_id
+      )
+
+      grade_subjects.forEach(grade_subject => {
+        let subject = this.subjects.find(subject =>
+          subject.id === grade_subject.subject_id
+        )
+        this.current_subjects.push(subject)
+      })
     }
   },
   methods: {
@@ -176,41 +223,42 @@ export default {
       return !!this.role_type_permissions.find(role_type_permission => role_type_permission.permission_id === permission.id && role_type_permission.role_type_id === role_type.id)
     },
     teacher_save (event) {
-      event.preventDefault()
+      this.$emit('loading')
 
-      let component = this
       let app = this.$parent
 
-      app.loading = true
-
       let form = event.target
-      let data = {
-        grade_id: form.querySelector('[name=grade_id]').value,
-        subject_id: form.querySelector('[name=subject_id]').value,
-        user_id: form.querySelector('[name=user_id]').value,
+      let teacher = {
+        grade_id: this.current_grade_id,
+        subject_id: this.current_subject_id,
+        user_id: this.current_user_id,
         start_date: '2018-01-01',
         end_date: '2018-12-31'
       }
 
-      app.save_resource('teacher', data).then(() => {
-        app.current_subject_id = ''
-        app.current_grade_id = ''
-        app.notify('Sucesso!', form.dataset.success, 'success')
+      app.save_resource('teacher', teacher, true, false).then(() => {
+        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+
+        this.teachers.push(teacher)
+        this.current_teachers.push(teacher)
+
+        this.current_subject_id = ''
+        this.current_grade_id = ''
       }).catch(error => {
-        app.notify('Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
       }).finally(() => {
-        app.loading = false
-        component.$forceUpdate()
+        this.$emit('loaded')
       })
     },
     accept_teacher_request () {
-      let component = this
+      this.$emit('loading')
+
       let app = this.$parent
 
-      app.loading = true
-
-      let teacher_request = app.teacher_requests.find(teacher_request => teacher_request.id === component.current_teacher_request_id)
+      let teacher_request = app.teacher_requests.find(teacher_request =>
+        teacher_request.id === this.current_teacher_request_id
+      )
 
       let teacher = {
         user_id: teacher_request.user_id,
@@ -219,66 +267,143 @@ export default {
         start_date: '2018-01-01',
         end_date: '2018-12-31'
       }
-      app.save_resource('teacher', teacher).then(() => {
-        return app.delete_resource('teacher_request', component.current_teacher_request_id)
+
+      app.save_resource('teacher', teacher, true, false).then(() => {
+        this.teachers.push(teacher)
+        return app.delete_resource('teacher_request', this.current_teacher_request_id, false, false)
       }).then(() => {
-        app.notify('Sucesso!', 'Professor aceitado com sucesso', 'success')
+        this.$emit('notify', 'Sucesso!', 'Professor aceitado com sucesso', 'success')
+
+        let index = this.teacher_requests.findIndex(teacher_request =>
+          teacher_request.id === this.current_teacher_request_id
+        )
+        this.$delete(this.teacher_requests, index)
       }).catch(error => {
-        app.notify('Erro!', 'Não foi possível aceitar o professor', 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível aceitar o professor', 'danger')
         console.log('Error:', error)
       }).finally(() => {
-        app.loading = false
-        component.$forceUpdate()
+        this.$emit('loaded')
       })
     },
     deny_teacher_request () {
-      let component = this
+      this.$emit('loading')
+
       let app = this.$parent
 
-      app.loading = true
+      app.delete_resource('teacher_request', this.current_teacher_request_id, false, false).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Professor negado com sucesso', 'success')
 
-      app.delete_resource('teacher_request', component.current_teacher_request_id).then(() => {
-        app.notify('Sucesso!', 'Professor negado com sucesso', 'success')
+        let index = this.teacher_requests.findIndex(teacher_request =>
+          teacher_request.id === this.current_teacher_request_id
+        )
+        this.$delete(this.teacher_requests, index)
       }).catch(error => {
-        app.notify('Erro!', 'Não foi possível negar o professor', 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível negar o professor', 'danger')
         console.log('Error:', error)
       }).finally(() => {
-        app.loading = false
-        component.$forceUpdate()
+        this.$emit('loaded')
       })
     },
     remove_teacher () {
-      let component = this
+      this.$emit('loading')
+
       let app = this.$parent
 
-      app.loading = true
+      app.delete_resource('teacher', this.current_teacher_id, false, false).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Professor removido com sucesso', 'success')
 
-      app.delete_resource('teacher', component.current_teacher_id).then(() => {
-        app.notify('Sucesso!', 'Professor removido com sucesso', 'success')
+        let index = this.teachers.findIndex(teacher =>
+          teacher.id === this.current_teacher_id
+        )
+        this.$delete(this.teachers, index)
+
+        let current_index = this.current_teachers.findIndex(teacher =>
+          teacher.id === this.current_teacher_id
+        )
+        this.$delete(this.current_teachers, current_index)
       }).catch(error => {
-        app.notify('Erro!', 'Não foi possível remover o professor', 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível remover o professor', 'danger')
         console.log('Error:', error)
       }).finally(() => {
-        app.loading = false
-        component.$forceUpdate()
+        this.$emit('loaded')
       })
-    },
-    update_current() {
-      if (!this.current_user_id) {
-        this.current_user = undefined
-        return
-
-      }
-      this.current_user = this.users.find(user => user.id === this.current_user_id)
     }
   },
+  beforeCreate() {
+    this.$emit('loading')
+  },
   created: function() {
+    this.users = []
+    this.role_types = []
+    this.subjects = []
+    this.grades = []
+    this.permissions = []
+    this.role_type_permissions = []
+
+    this.roles = []
+    this.teachers = []
+    this.teacher_requests = []
+    this.grade_subjects = []
+
+    this.current_subjects = []
+    this.current_teachers = []
     this.current_grade_id = ''
-    this.current_subject_id = ''
     this.current_teacher_request_id = undefined
     this.current_teacher_id = undefined
     this.current_user_id = undefined
-    this.current_user = undefined
+    this.current_subject_id = ''
+    this.current_user = {}
+
+    let db = this.$parent.db
+    let promises = []
+    promises.push(db.permissions.toArray().then(permissions =>
+      this.permissions = permissions
+    ))
+    promises.push(db.users.toArray().then(users =>
+      this.users = users
+    ))
+    promises.push(db.role_types.toArray().then(role_types =>
+      this.role_types = role_types
+    ))
+    promises.push(db.subjects.toArray().then(subjects =>
+      this.subjects = subjects.sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+      )
+    ))
+    promises.push(db.grades.toArray().then(grades =>
+      this.grades = grades.sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+      )
+    ))
+
+    Promise.all(promises).then(() => {
+      let promises = []
+      promises.push(db.roles.toArray().then(roles =>
+        this.roles = roles
+      ))
+      promises.push(db.role_type_permissions.toArray().then(role_type_permissions =>
+        this.role_type_permissions = role_type_permissions
+      ))
+      promises.push(db.teachers.toArray().then(teachers =>
+        this.teachers = teachers
+      ))
+      promises.push(db.teacher_requests.toArray().then(teacher_requests =>
+        this.teacher_requests = teacher_requests
+      ))
+      promises.push(db.grade_subjects.toArray().then(grade_subjects =>
+        this.grade_subjects = grade_subjects
+      ))
+
+      return Promise.all(promises)
+    }).then(() => {
+      this.users = this.users.filter(user =>
+        this.userHasPermission('evaluate', user.id)
+      ).sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+      )
+
+      this.$emit('loaded')
+    })
   }
 }
 </script>

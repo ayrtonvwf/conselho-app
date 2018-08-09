@@ -271,7 +271,9 @@ export default {
       app.save_resource('teacher', teacher, true, false).then(() => {
         this.teachers.push(teacher)
         return app.delete_resource('teacher_request', this.current_teacher_request_id, false, false)
-      }).then(() => {
+      }).then(() =>
+        app.loadData()
+      ).then(() => {
         this.$emit('notify', 'Sucesso!', 'Professor aceitado com sucesso', 'success')
 
         let index = this.teacher_requests.findIndex(teacher_request =>
@@ -290,7 +292,9 @@ export default {
 
       let app = this.$parent
 
-      app.delete_resource('teacher_request', this.current_teacher_request_id, false, false).then(() => {
+      app.delete_resource('teacher_request', this.current_teacher_request_id, false, false).then(() =>
+        app.loadData()
+      ).then(() => {
         this.$emit('notify', 'Sucesso!', 'Professor negado com sucesso', 'success')
 
         let index = this.teacher_requests.findIndex(teacher_request =>

@@ -639,7 +639,7 @@ export default {
       return
     }
 
-    if (this.$route.name !== 'Login') {
+    if (this.$route.name === 'Login') {
       this.loading = false
       return
     }

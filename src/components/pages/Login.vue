@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!logged_in">
+  <div>
     <div class="row">
       <div class="col-auto">
         <h1 class="content-title"><i class="material-icons">lock</i>Login</h1>
@@ -43,18 +43,11 @@
 /* eslint-disable */
 export default {
   name: 'Login',
-  data: function() {
-    return this.$parent.$data
-  },
   methods: {
     login(event) {
-      let component = this
-      let app = this.$parent
+      this.$emit('loading')
 
-      let headers = new Headers()
-      headers.set('Timezone', '-03:00')
-      headers.set('Accept', 'application/json; charset=UTF-8')
-      headers.set('Content-Type', 'application/json')
+      let app = this.$parent
 
       let form_data = new FormData(event.target)
       let data = {}
@@ -62,37 +55,24 @@ export default {
         data[field] = value
       })
 
-      let url = app.api_url + 'user_token'
-
-      let options = {
-        headers: headers,
-        method: 'POST',
-        mode: 'cors',
-        body: JSON.stringify(data)
-      }
-
-      app.loading = true
-
-      return fetch(url, options).then(function (response) {
-        if (!response.ok) {
-          alert('Não foi possível fazer login. Tente novamente!')
-          throw response
-        }
-
-        return response.json()
-      }).then(token => {
+      return app.api_fetch('user_token', 'POST', data).then(response =>
+        response.json()
+      ).then(token => {
         localStorage.setItem('token', JSON.stringify(token))
-        app.token = token
-        app.logged_in = true
-        component.logged_in = true
-        component.$forceUpdate()
-        app.loadFromAPI().then(() => {
+
+        app.setAuthData()
+
+        return app.loadFromAPI()
+      }).then(() => {
+        app.setAuthData()
+        return app.loadData()
+      }).then(() => {
           app.$router.push('/')
-          app.loading = false
-        })
-      }).catch(() => {
-        app.loading = false
-      })
+      }).catch(error => {
+        console.log('Error:', error)
+      }).finally(() =>
+        this.$emit('loaded')
+      )
     }
   }
 }

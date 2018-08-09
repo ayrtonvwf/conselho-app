@@ -103,7 +103,7 @@
           <router-link class="menu-link" :to="{ name: 'TeacherRequest' }" active-class="menu-active">
             <i class="material-icons">people</i> Turmas
           </router-link>
-          <router-link class="menu-link" v-for="council in activeCouncils" :key='council.id' :to="{ name: 'Evaluate', params: { id: council.id } }" active-class="menu-active">
+          <router-link class="menu-link" v-for="council in councils" :key='council.id' :to="{ name: 'Evaluate', params: { id: council.id } }" active-class="menu-active">
             <i class="material-icons">edit</i> {{ council.name }}
           </router-link>
         </template>
@@ -137,8 +137,22 @@ import Dexie from 'dexie'
 export default {
   name: 'App',
   data() {
-    let data = {
-      resources: [
+    return {
+      users: [], // only users with teacher requests
+      grades: [], // only grades with teacher requests
+      councils: [], // only the active ones
+      subjects: [], // only subjects with teacher_requests
+      permissions: [], // only the permissions that the user has
+      teacher_requests: [],
+
+      user: {},     // only the current user
+      notification: {},
+      token: undefined,
+      logged_in: undefined,
+      loading: true
+    }
+
+    let resources = [
         'council',
         'council_grade',
         'council_topic',
@@ -162,30 +176,8 @@ export default {
         'topic',
         'topic_option',
         'user'
-      ],
-
-      // APP data
-      token: undefined,
-      user: {},
-      logged_in: undefined,
-      notification: {},
-      loading: true,
-
-      //should be removed
-      current_council: {},
-      new_topic_options: [{default: 1}],
-      updated_evaluations: '',
-      current_grade_id: '',
-      current_subject_id: '',
-      hide_evaluated_students: false,
-      current_user_id: undefined // the current user (teacher) being edited
-    }
-
-    data.resources.forEach(resource => {
-      data[resource+'s'] = []
-    })
-
-    return data
+      ]
+    ;
   },
   methods: {
     // initializing methods
@@ -197,10 +189,10 @@ export default {
       }
     },
     setAuthData() {
+      let loaded_data = localStorage.getItem('has_loaded_data')
       this.token = JSON.parse(localStorage.getItem('token'))
-      this.logged_in = this.token && new Date(this.token.expires_at) > new Date()
+      this.logged_in = loaded_data && this.token && new Date(this.token.expires_at) > new Date()
     },
-
     openDB() {
       let db = new Dexie('conselho')
       db.version(1).stores({
@@ -234,14 +226,100 @@ export default {
 
       this.db = db
     },
+    resetData() {
+      this.users = []
+      this.grades = []
+      this.councils = []
+      this.subjects = []
+      this.permissions = []
+      this.teacher_requests = []
 
-    loadData() {
-      if (window.localStorage.getItem('has_loaded_data')) {
-        this.loadFromDB()
-      } else {
-        this.loadFromAPI()
-      }
+      this.user = {}
+      this.notification = {}
     },
+    loadData() {
+      let promises = []
+      promises.push(this.db.users.get(this.token.user_id).then(user =>
+        this.user = user
+      ))
+
+      promises.push(
+        this.db.roles.toArray().then(roles => // get roles from db
+          this.role = roles.find(role =>
+            role.user_id === this.token.user_id // find user role
+          )
+        ).then(() =>
+          this.db.role_types.toArray() // get role types from db
+        ).then(role_types =>
+          this.role_type = role_types.find(role_type =>
+            role_type.id === this.role.role_type_id // find user role type
+          )
+        ).then(() =>
+          this.db.role_type_permissions.toArray() // get role type permissions from db
+        ).then(role_type_permissions =>
+          this.role_type_permissions = role_type_permissions.filter(role_type_permission =>
+            role_type_permission.role_type_id === this.role_type.id // filter user role type permissions
+          )
+        ).then(() =>
+          this.db.permissions.toArray() // get permissions from db
+        ).then(permissions =>
+          this.permissions = permissions.filter(permission =>
+            this.role_type_permissions.find(role_type_permission =>
+              role_type_permission.permission_id === permission.id // filter user permissions
+            )
+          )
+        )
+      )
+
+      promises.push(this.db.councils.toArray().then(councils => // get councils from db
+        this.councils = councils.filter(council => // filter active councils
+          council.active &&
+          new Date(council.start_date) <= new Date() &&
+          new Date(council.end_date) >= new Date()
+        )
+      ))
+
+      promises.push(
+        this.db.teacher_requests.toArray().then(teacher_requests => // get teacher requests from db
+          this.teacher_requests = teacher_requests
+        ).then(() => {
+          let promises = []
+
+          promises.push(
+            this.db.users.toArray().then(users => // get users from db
+              this.users = users.filter(user =>
+                this.teacher_requests.find(teacher_request =>
+                  teacher_request.user_id === user.id // filter users in the teacher requests
+                )
+              )
+            )
+          )
+          promises.push(
+            this.db.grades.toArray().then(grades =>
+              this.grades = grades.filter(grade =>
+                this.teacher_requests.find(teacher_request =>
+                  teacher_request.grade_id === grade.id // filter grades in the teacher requests
+                )
+              )
+            )
+          )
+          promises.push(
+            this.db.subjects.toArray().then(subjects =>
+              this.subjects = subjects.filter(subject =>
+                this.teacher_requests.find(teacher_request =>
+                  teacher_request.subject_id === subject.id // filter subjects in the teacher requests
+                )
+              )
+            )
+          )
+
+          return Promise.all(promises)
+        })
+      )
+
+      return Promise.all(promises)
+    },
+
     loadFromAPI () {
       this.loading = true
 
@@ -250,10 +328,11 @@ export default {
       // if the process breaks, next time will be loaded from API
       window.localStorage.removeItem('has_loaded_data')
 
-      this.resources.forEach(resource => {
+      this.db.tables.forEach(table => {
+        let resource = table.name.slice(0, -1)
         let promise = this.get_resource(resource).then(data => {
-          return this.db[resource+'s'].clear().then(() => {
-            return this.db[resource + 's'].bulkPut(this.parseObjects(data))
+          return table.clear().then(() => {
+            return table.bulkPut(this.parseObjects(data))
           })
         })
 
@@ -262,7 +341,6 @@ export default {
 
       return Promise.all(promises).then(() => {
         window.localStorage.setItem('has_loaded_data', '1')
-        return this.loadFromDB()
       }).catch(error => {
         this.notify('Erro!', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
         console.log('Error:', error)
@@ -270,32 +348,6 @@ export default {
         this.loading = false
       })
     },
-    loadFromDB() {
-      this.loading = true
-
-      let promises = []
-
-      this.resources.forEach(resource => {
-        let promise = this.db[resource+'s'].toArray().then(data => {
-          this[resource + 's'] = data
-        })
-
-        promises.push(promise)
-      })
-
-      return Promise.all(promises).then(() => {
-        this.user = this.users.find(user =>
-          user.id === this.token.user_id
-        )
-      }).catch(error => {
-        this.notify('Erro!', 'Ocorreu um erro durante o carregamento dos dados. Recarregue a página!', 'danger')
-        console.log('Error:', error)
-      }).finally(() => {
-        this.loading = false
-      })
-    },
-
-    // helpers
     api_fetch (path, method, body, headers) {
       if (method === undefined) {
         method = 'GET'
@@ -403,7 +455,7 @@ export default {
           data.created_at = json.created_at
         }
         if (json.updated_at) {
-          data.updated_evaluations = json.updated_at
+          data.updated_at = json.updated_at
         }
 
         data = this.parseObject(data)
@@ -555,9 +607,8 @@ export default {
 
       let promises = []
 
-      this.resources.forEach(resource => {
-        this[resource+'s'] = []
-        promises.push(this.db[resource+'s'].clear())
+      this.db.tables.forEach(table => {
+        promises.push(table.clear())
 
       })
       Promise.all(promises).catch(error => {
@@ -568,84 +619,17 @@ export default {
     },
 
     // APP shell functions
-    role_type (user_id) {
-      let role = this.roles.find(role =>
-        role.user_id === user_id &&
-        parseInt(role.approved)
-      )
-
-      if (!role) {
-        return {}
-      }
-
-      return this.role_types.find(role_type =>
-        role_type.id === role.role_type_id
-      )
-    },
-    userHasPermission (permission_reference, user_id) {
+    userHasPermission (permission_reference) {
       if (!this.user) {
         return false
       }
 
-      if (!user_id) {
-        user_id = this.user.id
-      }
-
-      let role_type = this.role_type(user_id)
-
-      if (!role_type || !role_type.id) {
-        return false
-      }
-
-      let permission = this.permissions.find(permission =>
+      return !!this.permissions.find(permission =>
         permission.reference === permission_reference
       )
-
-      if (!permission || !permission.id) {
-        return false
-      }
-
-      return !!this.role_type_permissions.find(role_type_permission =>
-        role_type_permission.permission_id === permission.id &&
-        role_type_permission.role_type_id === role_type.id
-      )
     }
   },
-  watch: {
-    current_grade_id: function(new_grade_id) {
-      let app = this
-      if (app.$route.name !== 'Evaluation') {
-        return
-      }
-
-      let teachers = app.teachers.filter(teacher =>
-        teacher.user_id === app.user.id &&
-        teacher.grade_id === new_grade_id
-      )
-
-      if (teachers.length === 1) {
-        app.current_subject_id = teachers[0].subject_id
-      } else {
-        app.current_subject_id = ''
-      }
-    },
-    current_subject_id: function() {
-      let app = this
-      if (app.$route.name !== 'Evaluation') {
-        return
-      }
-
-      app.filter_evaluations()
-    }
-  },
-  computed: {
-    activeCouncils () {
-      return this.councils.filter(council =>
-        new Date(council.start_date) <= new Date() && new Date(council.end_date) >= new Date()
-      )
-    }
-  },
-  created: function() {
+  created() {
     this.setApiUrl()
     this.setAuthData()
     this.openDB()
@@ -656,11 +640,15 @@ export default {
     }
 
     if (this.$route.name !== 'Login') {
-      this.loadData()
+      this.loading = false
       return
     }
 
-    this.loading = false
+    this.resetData()
+
+    this.loadData().then(() =>
+      this.loading = false
+    )
   }
 }
 </script>

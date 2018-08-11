@@ -49,11 +49,11 @@ export default {
 
       let app = this.$parent
 
-      let form_data = new FormData(event.target)
-      let data = {}
-      form_data.forEach(function (value, field) {
-        data[field] = value
-      })
+      let form = event.target
+      let data = {
+        email: form.querySelector('[name=email]').value,
+        password: form.querySelector('[name=password]').value
+      }
 
       return app.api_fetch('user_token', 'POST', data).then(response =>
         response.json()

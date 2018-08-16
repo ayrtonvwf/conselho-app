@@ -162,6 +162,15 @@ function mountFixedColumn () {
 }
 
 export default function superTable () {
+  table = undefined
+  table_header = undefined
+  horizontal_scroll = undefined
+  fixed_table = undefined
+  fixed_column = undefined
+  right_interval = undefined
+  left_interval = undefined
+  observer = undefined
+
   table = document.querySelector('table:not([data-fixed_table])')
   horizontal_scroll = document.querySelector('.table')
   if (observer) {

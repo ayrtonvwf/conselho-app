@@ -30,26 +30,56 @@
           <div class="h4">Esta turma ainda não recebeu avaliações<span v-if="current_subject_id"> nesta disciplina</span>.</div><br>
         </div>
         <div v-else>
-          <super-table>
-            <thead>
+          <template v-if="!current_student_id">
+            <super-table>
+              <thead>
+                <tr>
+                  <th style="max-width: 33vw">Aluno</th>
+                  <th v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
+                  <th class="no-wrap">Observações Gerais</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="student in current_students" :data-student_id="student.id" :key="student.id">
+                  <td style="max-width: 33vw">
+                    <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
+                  </td>
+                  <td v-for="topic in current_topics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
+                  <td>
+                    <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ $store.state.users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+                  </td>
+                </tr>
+              </tbody>
+            </super-table>
+            <br>
+            <p v-for="grade_observation in current_grade_observations" :key="grade_observation.id"><b>{{ $store.state.users.find(user => user.id === grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
+          </template>
+          <template v-else>
+            <p>
+              <button class="btn-sm btn-primary" @click="current_student_id = undefined">
+                <span class="material-icons">arrow_back</span>
+                Voltar para a turma
+              </button>
+            </p>
+            <p>
+              <b>{{ current_student.id ? studentGrade(current_student.id).number : '' }} - {{ current_student.name }}</b>
+            </p>
+            <super-table>
+              <thead>
               <tr>
-                <th style="max-width: 33vw">Aluno</th>
+                <th style="max-width: 33vw">Matéria</th>
                 <th v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
-                <th class="no-wrap">Observações Gerais</th>
               </tr>
-            </thead>
-            <tbody>
-              <tr v-for="student in current_students" :data-student_id="student.id" :key="student.id">
-                <td style="max-width: 33vw">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
-                <td v-for="topic in current_topics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
-                <td>
-                  <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ $store.state.users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
-                </td>
+              </thead>
+              <tbody>
+              <tr v-for="subject in current_subjects" :key="subject.id">
+                <td>{{ subject.name }}</td>
+                <td v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ reportSubjectTopic(subject.id, topic.id) }}</td>
               </tr>
-            </tbody>
-          </super-table>
-          <br>
-          <p v-for="grade_observation in current_grade_observations" :key="grade_observation.id"><b>{{ $store.state.users.find(user => user.id === grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
+              </tbody>
+            </super-table>
+            <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === current_student_id)" :key="student_observation.id"><b>{{ $store.state.users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+          </template>
         </div>
       </div>
     </article>
@@ -73,11 +103,14 @@ export default {
       current_student_grades: [],
       current_evaluations: [],
       current_student_observations: [],
-      current_grade_observations: []
+      current_grade_observations: [],
+      current_student_id: undefined,
+      current_student: {}
     }
   },
   watch: {
     current_grade_id () {
+      this.current_student_id = undefined
       if (!this.current_grade_id) {
         this.current_subject_id = ''
         this.current_subjects = []
@@ -116,6 +149,16 @@ export default {
     },
     current_subject_id () {
       this.load_evaluations()
+    },
+    current_student_id () {
+      if (!this.current_student_id) {
+        this.current_student = {}
+        return
+      }
+
+      this.current_student = this.current_students.find(student =>
+        student.id === this.current_student_id
+      )
     }
   },
   methods: {
@@ -189,6 +232,28 @@ export default {
       }
 
       return topic_option_name + ' (' + avg + '%)'
+    },
+    reportSubjectTopic (subject_id, topic_id) {
+      let topic_options = this.current_topic_options.filter(topic_option =>
+        topic_option.topic_id === topic_id
+      )
+
+      let evaluation = this.current_evaluations.find(evaluation =>
+        evaluation.student_id === this.current_student_id &&
+        evaluation.subject_id === subject_id &&
+        topic_options.find(topic_option =>
+          topic_option.id === evaluation.topic_option_id &&
+          topic_option.topic_id === topic_id
+        )
+      )
+
+      if (!evaluation) {
+        return '-'
+      }
+
+      return topic_options.find(topic_option =>
+        topic_option.id === evaluation.topic_option_id
+      ).name
     },
     studentGrade (student_id) {
       return this.current_student_grades.find(student_grade =>
@@ -273,6 +338,8 @@ export default {
     this.current_evaluations = []
     this.current_student_observations = []
     this.current_grade_observations = []
+    this.current_student_id = undefined
+    this.current_student = {}
   }
 }
 </script>

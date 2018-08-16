@@ -163,11 +163,11 @@ export default {
   },
   methods: {
     councilStatus (council_id) {
-      let council = this.$store.state.councils.find(council =>
+      const council = this.$store.state.councils.find(council =>
         council.id === council_id
       )
 
-      let today = new Date()
+      const today = new Date()
 
       if (today > new Date(council.end_date)) {
         return 'Finalizado'
@@ -181,11 +181,11 @@ export default {
     },
 
     activeCouncil (council_id) {
-      let council = this.$store.state.councils.find(council =>
+      const council = this.$store.state.councils.find(council =>
         council.id === council_id
       )
 
-      let today = new Date()
+      const today = new Date()
 
       return council.active &&
         today >= new Date(council.start_date) &&
@@ -195,12 +195,12 @@ export default {
     council_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
-      let council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
+      const council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
+      const council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'council',
         data: {
           name: form.querySelector('[name=name]').value,
@@ -210,10 +210,10 @@ export default {
         }
       }
       return this.$store.dispatch('save_resource', save_resource).then(council => {
-        let promises = []
+        const promises = []
 
         council_topic_ids.forEach(topic_id => {
-          let save_resource = {
+          const save_resource = {
             resource_name: 'council_topic',
             data: {
               topic_id: topic_id,
@@ -221,13 +221,13 @@ export default {
             }
           }
 
-          let promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('save_resource', save_resource)
 
           promises.push(promise)
         })
 
         this.$store.state.grades.forEach(grade => {
-          let save_resource = {
+          const save_resource = {
             resource_name: 'council_grade',
             data: {
               grade_id: grade.id,
@@ -235,7 +235,7 @@ export default {
             }
           }
 
-          let promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('save_resource', save_resource)
 
           promises.push(promise)
         })
@@ -261,9 +261,9 @@ export default {
     council_update (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'council',
         data: {
           id: this.current_council_id,

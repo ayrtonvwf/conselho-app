@@ -121,7 +121,7 @@ export default {
         return
       }
 
-      let grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
+      const grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
         grade_subject.grade_id === this.current_grade_id
       )
       this.current_subjects = this.$store.state.subjects.filter(subject =>
@@ -193,11 +193,11 @@ export default {
       )
     },
     reportStudentTopic (student_id, topic_id) {
-      let topic_options = this.current_topic_options.filter(topic_option =>
+      const topic_options = this.current_topic_options.filter(topic_option =>
         topic_option.topic_id === topic_id
       )
 
-      let evaluations = this.current_evaluations.filter(evaluation =>
+      const evaluations = this.current_evaluations.filter(evaluation =>
         evaluation.student_id === student_id &&
         topic_options.find(topic_option =>
           topic_option.id === evaluation.topic_option_id
@@ -208,22 +208,22 @@ export default {
         return '-'
       }
 
-      let values = evaluations.map(evaluation =>
+      const values = evaluations.map(evaluation =>
         topic_options.find(topic_option =>
           topic_option.id === evaluation.topic_option_id
         ).value
       )
 
-      let sum = values.reduce((a, b) => a + b)
-      let avg = parseInt(sum / values.length)
+      const sum = values.reduce((a, b) => a + b)
+      const avg = parseInt(sum / values.length)
 
-      let topic_options_values = topic_options.map(topic_option => topic_option.value)
+      const topic_options_values = topic_options.map(topic_option => topic_option.value)
 
-      let nearest_value = topic_options_values.reduce((prev, curr) =>
+      const nearest_value = topic_options_values.reduce((prev, curr) =>
         Math.abs(curr - avg) < Math.abs(prev - avg) ? curr : prev
       )
 
-      let topic_option_name = topic_options.find(topic_option =>
+      const topic_option_name = topic_options.find(topic_option =>
         topic_option.value === nearest_value
       ).name
 
@@ -234,11 +234,11 @@ export default {
       return topic_option_name + ' (' + avg + '%)'
     },
     reportSubjectTopic (subject_id, topic_id) {
-      let topic_options = this.current_topic_options.filter(topic_option =>
+      const topic_options = this.current_topic_options.filter(topic_option =>
         topic_option.topic_id === topic_id
       )
 
-      let evaluation = this.current_evaluations.find(evaluation =>
+      const evaluation = this.current_evaluations.find(evaluation =>
         evaluation.student_id === this.current_student_id &&
         evaluation.subject_id === subject_id &&
         topic_options.find(topic_option =>
@@ -312,7 +312,7 @@ export default {
     }
   },
   created () {
-    let council_id = parseInt(this.$route.params.id)
+    const council_id = parseInt(this.$route.params.id)
 
     this.current_council = this.$store.state.councils.find(council =>
       council.id === council_id

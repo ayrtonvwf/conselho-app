@@ -46,8 +46,8 @@ export default {
     login (event) {
       this.$emit('loading')
 
-      let form = event.target
-      let data = {
+      const form = event.target
+      const data = {
         email: form.querySelector('[name=email]').value,
         password: form.querySelector('[name=password]').value
       }

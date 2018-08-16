@@ -111,14 +111,14 @@ export default {
     subject_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let subject = {
+      const subject = {
         name: form.querySelector('[name=name]').value,
         active: true
       }
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'subject',
         data: subject
       }
@@ -135,15 +135,15 @@ export default {
     subject_update (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let subject = {
+      const subject = {
         id: this.current_subject_id,
         name: form.querySelector('[name=name]').value,
         active: !!form.querySelector('[name=active]').checked
       }
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'subject',
         data: subject
       }

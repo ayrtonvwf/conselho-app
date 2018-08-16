@@ -223,24 +223,24 @@ export default {
     topic_save (event) {
       this.$emit('loading')
 
-      let form = event.target
-      let topic = {
+      const form = event.target
+      const topic = {
         name: form.querySelector('[name=name]').value,
         active: true,
         topic_option_id: null
       }
 
-      let option_name_inputs = form.querySelectorAll('[name="option_name[]"]')
-      let option_names = [].map.call(option_name_inputs, input => input.value)
+      const option_name_inputs = form.querySelectorAll('[name="option_name[]"]')
+      const option_names = [].map.call(option_name_inputs, input => input.value)
 
-      let option_value_inputs = form.querySelectorAll('[name="option_value[]"]')
-      let option_values = [].map.call(option_value_inputs, input => input.value)
+      const option_value_inputs = form.querySelectorAll('[name="option_value[]"]')
+      const option_values = [].map.call(option_value_inputs, input => input.value)
 
-      let option_default_inputs = form.querySelectorAll('[name="option_default"]')
-      let option_defaults = [].map.call(option_default_inputs, input => input.checked)
-      let default_option_index = option_defaults.indexOf(true)
+      const option_default_inputs = form.querySelectorAll('[name="option_default"]')
+      const option_defaults = [].map.call(option_default_inputs, input => input.checked)
+      const default_option_index = option_defaults.indexOf(true)
 
-      let options = []
+      const options = []
       option_names.forEach((name, i) => {
         options.push({
           name: name,
@@ -249,23 +249,23 @@ export default {
         })
       })
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'topic',
         data: topic
       }
       return this.$store.dispatch('save_resource', save_resource).then(response => {
         topic.id = response.id
 
-        let save_options = []
+        const save_options = []
 
         options.forEach(option => {
           option.topic_id = response.id
 
-          let save_resource = {
+          const save_resource = {
             resource_name: 'topic_option',
             data: option
           }
-          let promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('save_resource', save_resource)
 
           save_options.push(promise)
         })
@@ -278,7 +278,7 @@ export default {
 
         topic.topic_option_id = promises_response[default_option_index].id
 
-        let save_resource = {
+        const save_resource = {
           resource_name: 'topic',
           data: topic
         }
@@ -297,16 +297,16 @@ export default {
     topic_update (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let topic = {
+      const topic = {
         id: this.current_topic_id,
         name: form.querySelector('[name=name]').value,
         active: form.querySelector('[name=active]').checked,
         topic_option_id: this.current_topic.topic_option_id
       }
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'topic',
         data: topic
       }
@@ -324,16 +324,16 @@ export default {
     topic_options_update (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_options = []
+      const save_options = []
 
       this.current_topic_options.forEach(topic_option => {
-        let save_resource = {
+        const save_resource = {
           resource_name: 'topic_option',
           data: topic_option
         }
-        let promise = this.$store.dispatch('save_resource', save_resource)
+        const promise = this.$store.dispatch('save_resource', save_resource)
 
         save_options.push(promise)
       })
@@ -354,16 +354,16 @@ export default {
     update_default_option (topic_option_id) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let topic = {
+      const topic = {
         id: this.current_topic_id,
         name: this.current_topic.name,
         active: this.current_topic.active,
         topic_option_id: topic_option_id
       }
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'topic',
         data: topic
       }
@@ -378,7 +378,7 @@ export default {
       })
     },
     newTopicOption () {
-      let blank_option = {
+      const blank_option = {
         topic_id: this.current_topic_id,
         active: true
       }
@@ -390,7 +390,7 @@ export default {
       }
 
       this.$nextTick(() => {
-        let inputs = document.querySelectorAll('input[name="option_name[]"]')
+        const inputs = document.querySelectorAll('input[name="option_name[]"]')
         inputs[inputs.length - 1].focus()
       })
     }

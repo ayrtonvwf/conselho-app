@@ -50,15 +50,15 @@ export default {
   },
   methods: {
     user_update (event) {
-      let form = event.target
-      let user = {
+      const form = event.target
+      const user = {
         id: this.user.id,
         name: form.querySelector('[name=name]').value,
         email: form.querySelector('[name=email]').value
       }
 
-      let password = form.querySelector('#password').value
-      let re_password = form.querySelector('#re_password').value
+      const password = form.querySelector('#password').value
+      const re_password = form.querySelector('#re_password').value
 
       if (password !== re_password) {
         this.$emit('notify', 'Erro!', 'Os dois campos de senha devem ser iguais!', 'danger')
@@ -71,7 +71,7 @@ export default {
 
       this.$emit('loading')
 
-      let api_fetch = {
+      const api_fetch = {
         path: 'user',
         method: 'PATCH',
         body: user
@@ -91,7 +91,7 @@ export default {
     }
   },
   created () {
-    let current_user_id = parseInt(this.$store.state.token.user_id)
+    const current_user_id = parseInt(this.$store.state.token.user_id)
     this.user = this.$store.state.users.find(user => user.id === current_user_id)
   }
 }

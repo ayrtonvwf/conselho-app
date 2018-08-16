@@ -141,19 +141,19 @@ export default {
   },
   computed: {
     currentUser () {
-      let user = this.$store.state.users.find(user =>
+      const user = this.$store.state.users.find(user =>
         user.id === this.$store.state.token.user_id
       )
       return user || {}
     },
     currentRole () {
-      let role = this.$store.state.roles.find(role =>
+      const role = this.$store.state.roles.find(role =>
         role.user_id === this.$store.state.token.user_id
       )
       return role || {}
     },
     currentRoleType () {
-      let role_type = this.$store.state.role_types.find(role_type =>
+      const role_type = this.$store.state.role_types.find(role_type =>
         role_type.id === this.currentRole.role_type_id
       )
       return role_type || {}
@@ -199,17 +199,15 @@ export default {
         icon = 'info'
       }
 
-      let timestamp = Date.now().toString()
+      const timestamp = Date.now().toString()
 
       document.getElementById('no-notification').checked = true
 
-      let app = this
-
       // it there's already a notification, delay to transition
-      let start_delay = Object.keys(app.notification).length > 0 ? 500 : 0
+      const start_delay = Object.keys(this.notification).length > 0 ? 500 : 0
 
       setTimeout(() => {
-        app.notification = {
+        this.notification = {
           style: style,
           icon: icon,
           title: title,
@@ -220,18 +218,18 @@ export default {
         document.getElementById('notification-shown').checked = true
 
         setTimeout(() => {
-          if (app.notification.timestamp !== timestamp) {
+          if (this.notification.timestamp !== timestamp) {
             return
           }
 
           document.getElementById('no-notification').checked = true
 
           setTimeout(() => { // delay to transition
-            if (app.notification.timestamp !== timestamp) {
+            if (this.notification.timestamp !== timestamp) {
               return
             }
 
-            app.notification = {}
+            this.notification = {}
           }, 500)
         }, time)
       }, start_delay)

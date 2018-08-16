@@ -104,7 +104,7 @@ export default {
         return
       }
 
-      let grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
+      const grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
         grade_subject.grade_id === this.current_grade_id
       )
 
@@ -123,9 +123,9 @@ export default {
     teacher_request_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'teacher_request',
         data: {
           grade_id: this.current_grade_id,
@@ -149,14 +149,14 @@ export default {
     teacher_request_delete () {
       this.$emit('loading')
 
-      let delete_resource = {
+      const delete_resource = {
         resource_name: 'teacher_request',
         id: this.current_teacher_request_id
       }
       this.$store.dispatch('delete_resource', delete_resource).then(() => {
         this.$emit('notify', 'Sucesso!', 'Desvinculado da turma com sucesso.', 'success')
 
-        let index = this.current_teacher_requests.findIndex(teacher_request =>
+        const index = this.current_teacher_requests.findIndex(teacher_request =>
           teacher_request.id === this.current_teacher_request_id
         )
         this.$delete(this.current_teacher_requests, index)

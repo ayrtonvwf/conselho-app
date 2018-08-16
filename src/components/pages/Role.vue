@@ -80,7 +80,7 @@ export default {
   },
   methods: {
     role_type (user_id) {
-      let role = this.$store.state.roles.find(role =>
+      const role = this.$store.state.roles.find(role =>
         role.user_id === user_id &&
         parseInt(role.approved)
       )
@@ -94,15 +94,15 @@ export default {
       )
     },
     user_save (event) {
-      let form = event.target
+      const form = event.target
 
-      let user = {
+      const user = {
         name: form.querySelector('[name=name]').value,
         email: form.querySelector('[name=email]').value,
         password: form.querySelector('[name=password]').value
       }
 
-      let role = {
+      const role = {
         role_type_id: form.querySelector('[name=role_type_id]').value
       }
 
@@ -113,13 +113,13 @@ export default {
 
       this.$emit('loading')
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'user',
         data: user
       }
       this.$store.dispatch('save_resource', save_resource).then(user => {
         role.user_id = user.id
-        let api_fetch = {
+        const api_fetch = {
           path: 'user_token',
           method: 'POST',
           body: {
@@ -131,7 +131,7 @@ export default {
           response.json()
         )
       }).then(user_token => {
-        let save_resource = {
+        const save_resource = {
           resource_name: 'role',
           data: role,
           headers: {
@@ -141,7 +141,7 @@ export default {
         return this.$store.dispatch('save_resource', save_resource)
       }).then(role => {
         role.approved = true
-        let save_resource = {
+        const save_resource = {
           resource_name: 'role',
           data: role
         }

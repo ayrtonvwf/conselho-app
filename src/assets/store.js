@@ -60,7 +60,7 @@ export default new Vuex.Store({
       state[name].push(data)
     },
     updateItem: (state, {name, data}) => {
-      let index = state[name].findIndex(item =>
+      const index = state[name].findIndex(item =>
         item.id === data.id
       )
 
@@ -71,7 +71,7 @@ export default new Vuex.Store({
       Vue.set(state[name], index, data)
     },
     deleteItem: (state, {name, id}) => {
-      let index = state[name].findIndex(item =>
+      const index = state[name].findIndex(item =>
         item.id === id
       )
 
@@ -84,13 +84,13 @@ export default new Vuex.Store({
   },
   actions: {
     loadData: context => {
-      let db = context.state.db
+      const db = context.state.db
 
       // everything loads into this var, then put all at once in the state
       // to prevent multiple DOM updates / computed properties evaluations
-      let data = {}
+      const data = {}
 
-      let promises = []
+      const promises = []
       promises.push(
         db.users.toArray().then(users => {
           data.users = users.sort((a, b) =>
@@ -148,17 +148,17 @@ export default new Vuex.Store({
       })
     },
     loadFromAPI: context => {
-      let state = context.state
-      let db = state.db
+      const state = context.state
+      const db = state.db
 
-      let promises = []
+      const promises = []
 
       // if the process breaks, next time will be loaded from API
       window.localStorage.removeItem('has_loaded_data')
 
       db.tables.forEach(table => {
-        let resource = table.name.slice(0, -1)
-        let promise = context.dispatch('get_resource', resource).then(data => {
+        const resource = table.name.slice(0, -1)
+        const promise = context.dispatch('get_resource', resource).then(data => {
           return table.clear().then(() => {
             return table.bulkPut(parseObjects(data))
           })
@@ -204,8 +204,8 @@ export default new Vuex.Store({
         headers.set('Token', context.state.token.value)
       }
 
-      let url = context.state.api_url + path
-      let options = {
+      const url = context.state.api_url + path
+      const options = {
         headers: headers,
         method: method,
         mode: 'cors',
@@ -225,16 +225,16 @@ export default new Vuex.Store({
         .then(response_data => {
           let return_data = response_data.results
 
-          let max = parseInt(response_data.max_results_per_page)
-          let total = parseInt(response_data.total_results)
+          const max = parseInt(response_data.max_results_per_page)
+          const total = parseInt(response_data.total_results)
 
-          let remaining_pages = Math.floor(total / max)
+          const remaining_pages = Math.floor(total / max)
 
           if (total === max || !remaining_pages) {
             return return_data
           }
 
-          let remaining_requisitions = []
+          const remaining_requisitions = []
           for (let i = 1; i <= remaining_pages; i++) {
             remaining_requisitions.push(context.dispatch('api_fetch', {path: name, method: 'GET', body: {page: i + 1}}).then(remaining_response =>
               remaining_response.json()
@@ -288,7 +288,7 @@ export default new Vuex.Store({
 
         return context.state.db[resource_name + 's'].put(data)
       }).then(() => {
-        let mutation = method === 'PATCH' ? 'updateItem' : 'pushItem'
+        const mutation = method === 'PATCH' ? 'updateItem' : 'pushItem'
         context.commit(mutation, { name: resource_name + 's', data: data })
         return data
       })
@@ -314,7 +314,7 @@ export default new Vuex.Store({
     },
 
     login: (context, {email, password}) => {
-      let options = {
+      const options = {
         path: 'user_token',
         method: 'POST',
         body: {
@@ -336,7 +336,7 @@ export default new Vuex.Store({
 
       context.commit('checkAuth')
 
-      let promises = []
+      const promises = []
 
       context.state.db.tables.forEach(table => {
         promises.push(table.clear())

@@ -270,12 +270,12 @@ export default {
     grade_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let grade_subject_inputs = form.querySelectorAll('[name="grade_subject[]"]:checked')
-      let grade_subject_ids = [].map.call(grade_subject_inputs, input => input.value)
+      const grade_subject_inputs = form.querySelectorAll('[name="grade_subject[]"]:checked')
+      const grade_subject_ids = [].map.call(grade_subject_inputs, input => input.value)
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'grade',
         data: {
           name: form.querySelector('[name=name]').value,
@@ -284,17 +284,17 @@ export default {
         }
       }
       return this.$store.dispatch('save_resource', save_resource).then(grade => {
-        let promises = []
+        const promises = []
 
         grade_subject_ids.forEach(subject_id => {
-          let save_resource = {
+          const save_resource = {
             resource_name: 'grade_subject',
             data: {
               subject_id: subject_id,
               grade_id: grade.id
             }
           }
-          let promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('save_resource', save_resource)
 
           promises.push(promise)
         })
@@ -318,9 +318,9 @@ export default {
     grade_update (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'grade',
         data: {
           id: this.current_grade_id,
@@ -343,16 +343,16 @@ export default {
     student_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let student_grade = {
+      const student_grade = {
         grade_id: this.current_grade_id,
         number: form.querySelector('[name=number]').value,
         start_date: '2018-01-01',
         end_date: '2018-12-31'
       }
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'student',
         data: {
           name: form.querySelector('[name=name]').value,
@@ -363,7 +363,7 @@ export default {
         this.current_students.push(student)
         student_grade.student_id = student.id
 
-        let save_resource = {
+        const save_resource = {
           resource_name: 'student_grade',
           data: student_grade
         }
@@ -384,10 +384,10 @@ export default {
     student_toggle (student_id) {
       this.$emit('loading')
 
-      let student_grade = this.studentGrade(student_id)
+      const student_grade = this.studentGrade(student_id)
       student_grade.end_date = new Date(student_grade.end_date) <= new Date() ? '2018-12-31' : new Date().toISOString().slice(0, 10)
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'student_grade',
         data: student_grade
       }
@@ -400,7 +400,7 @@ export default {
         }
         this.$emit('notify', 'Sucesso!', message, 'success')
 
-        let index = this.current_student_grades.findIndex(find_student_grade =>
+        const index = this.current_student_grades.findIndex(find_student_grade =>
           find_student_grade.id === student_grade.id
         )
         this.$set(this.current_student_grades, index, student_grade)
@@ -420,9 +420,9 @@ export default {
     grade_subject_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'grade_subject',
         data: {
           grade_id: this.current_grade_id,
@@ -432,7 +432,7 @@ export default {
       this.$store.dispatch('save_resource', save_resource).then(grade_subject => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
         this.current_grade_subjects.push(grade_subject)
-        let subject = this.$store.state.subjects.find(subject =>
+        const subject = this.$store.state.subjects.find(subject =>
           subject.id === grade_subject.subject_id
         )
         this.current_subjects.push(subject)
@@ -445,11 +445,11 @@ export default {
       })
     },
     student_update (student_id) {
-      let tr = document.querySelector('[data-student_id="' + student_id + '"]')
+      const tr = document.querySelector('[data-student_id="' + student_id + '"]')
 
       this.$emit('loading')
 
-      let promises = []
+      const promises = []
 
       let save_resource = {
         resource_name: 'student',
@@ -459,7 +459,7 @@ export default {
         }
       }
       promises.push(this.$store.dispatch('save_resource', save_resource).then(student => {
-        let index = this.current_students.findIndex(find_student =>
+        const index = this.current_students.findIndex(find_student =>
           find_student.id === student.id
         )
         this.$set(this.current_students, index, student)
@@ -475,7 +475,7 @@ export default {
         }
       }
       promises.push(this.$store.dispatch('save_resource', save_resource).then(student_grade => {
-        let index = this.current_student_grades.findIndex(find_student_grade =>
+        const index = this.current_student_grades.findIndex(find_student_grade =>
           find_student_grade.id === student_grade.id
         )
         this.$set(this.current_student_grades, index, student_grade)

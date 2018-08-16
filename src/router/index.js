@@ -15,7 +15,7 @@ import Evaluate from '@/components/pages/Evaluate'
 
 Vue.use(Router)
 
-let router = new Router({
+const router = new Router({
   routes: [
     {
       path: '/login',

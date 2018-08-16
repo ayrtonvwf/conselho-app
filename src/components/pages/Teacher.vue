@@ -182,12 +182,12 @@ export default {
         return
       }
 
-      let grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
+      const grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
         grade_subject.grade_id === this.current_grade_id
       )
 
       grade_subjects.forEach(grade_subject => {
-        let subject = this.$store.state.subjects.find(subject =>
+        const subject = this.$store.state.subjects.find(subject =>
           subject.id === grade_subject.subject_id
         )
         this.current_subjects.push(subject)
@@ -196,7 +196,7 @@ export default {
   },
   methods: {
     role_type (user_id) {
-      let role = this.$store.state.roles.find(role =>
+      const role = this.$store.state.roles.find(role =>
         role.user_id === user_id &&
         parseInt(role.approved)
       )
@@ -211,13 +211,13 @@ export default {
     },
 
     userHasPermission (permission_reference, user_id) {
-      let role_type = this.role_type(user_id)
+      const role_type = this.role_type(user_id)
 
       if (!role_type.id) {
         return false
       }
 
-      let permission = this.$store.state.permissions.find(permission =>
+      const permission = this.$store.state.permissions.find(permission =>
         permission.reference === permission_reference
       )
 
@@ -229,9 +229,9 @@ export default {
     teacher_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'teacher',
         data: {
           grade_id: this.current_grade_id,
@@ -258,11 +258,11 @@ export default {
     accept_teacher_request () {
       this.$emit('loading')
 
-      let teacher_request = this.$store.state.teacher_requests.find(teacher_request =>
+      const teacher_request = this.$store.state.teacher_requests.find(teacher_request =>
         teacher_request.id === this.current_teacher_request_id
       )
 
-      let save_resource = {
+      const save_resource = {
         resource_name: 'teacher',
         data: {
           user_id: teacher_request.user_id,
@@ -274,7 +274,7 @@ export default {
       }
 
       this.$store.dispatch('save_resource', save_resource).then(() => {
-        let delete_resource = {
+        const delete_resource = {
           resource_name: 'teacher_request',
           id: this.current_teacher_request_id
         }
@@ -291,7 +291,7 @@ export default {
     deny_teacher_request () {
       this.$emit('loading')
 
-      let delete_resource = {
+      const delete_resource = {
         resource_name: 'teacher_request',
         id: this.current_teacher_request_id
       }
@@ -307,14 +307,14 @@ export default {
     remove_teacher () {
       this.$emit('loading')
 
-      let delete_resource = {
+      const delete_resource = {
         resource_name: 'teacher',
         id: this.current_teacher_id
       }
       this.$store.dispatch('delete_resource', delete_resource).then(() => {
         this.$emit('notify', 'Sucesso!', 'Professor removido com sucesso', 'success')
 
-        let current_index = this.current_teachers.findIndex(teacher =>
+        const current_index = this.current_teachers.findIndex(teacher =>
           teacher.id === this.current_teacher_id
         )
         this.$delete(this.current_teachers, current_index)

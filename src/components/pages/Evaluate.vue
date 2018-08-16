@@ -163,7 +163,7 @@ export default {
         return
       }
 
-      let current_evaluations = this.current_user_evaluations.filter(evaluation =>
+      const current_evaluations = this.current_user_evaluations.filter(evaluation =>
         evaluation.grade_id === this.current_grade_id &&
         evaluation.subject_id === this.current_subject_id
       ).map(evaluation => {
@@ -177,7 +177,7 @@ export default {
       })
       this.current_students.forEach(student => {
         this.current_topics.forEach(topic => {
-          let evaluation = current_evaluations.find(evaluation =>
+          const evaluation = current_evaluations.find(evaluation =>
             evaluation.student_id === student.id &&
             evaluation.topic_id === topic.id
           )
@@ -223,7 +223,7 @@ export default {
   methods: {
     set_confirm_redirect () {
       window.onbeforeunload = event => {
-        let dialogText = 'Tem certeza que deseja sair da página? Você perderá o que não foi salvo'
+        const dialogText = 'Tem certeza que deseja sair da página? Você perderá o que não foi salvo'
         event.returnValue = dialogText
         return dialogText
       }
@@ -250,20 +250,20 @@ export default {
     student_evaluation_save (student_id) {
       this.$emit('loading')
 
-      let save_promises = []
+      const save_promises = []
 
-      let current_user_evaluations = this.current_evaluations.filter(evaluation =>
+      const current_user_evaluations = this.current_evaluations.filter(evaluation =>
         evaluation.student_id === student_id
       )
 
       current_user_evaluations.forEach(evaluation => {
-        let prev_evaluation = evaluation
-        let save_resource = {
+        const prev_evaluation = evaluation
+        const save_resource = {
           resource_name: 'evaluation',
           data: evaluation
         }
         save_promises.push(this.$store.dispatch('save_resource', save_resource).then(evaluation => {
-          let current_index = this.current_evaluations.findIndex(current_evaluation =>
+          const current_index = this.current_evaluations.findIndex(current_evaluation =>
             (
               prev_evaluation.id &&
               current_evaluation.id === prev_evaluation.id
@@ -279,22 +279,22 @@ export default {
             return
           }
 
-          let index = this.current_user_evaluations.findIndex(evaluation =>
+          const index = this.current_user_evaluations.findIndex(evaluation =>
             evaluation.id === prev_evaluation.id
           )
           this.$set(this.current_user_evaluations, index, evaluation)
         }))
       })
 
-      let observation = document.querySelector('tr[data-student_id="' + student_id + '"] textarea').value
+      const observation = document.querySelector('tr[data-student_id="' + student_id + '"] textarea').value
 
       if (observation.length) {
-        let previous_observation = this.current_student_observations.find(existent_observation =>
+        const previous_observation = this.current_student_observations.find(existent_observation =>
           existent_observation.student_id === student_id
         )
 
         if (!previous_observation || previous_observation.description !== observation) {
-          let save_resource = {
+          const save_resource = {
             resource_name: 'student_observation',
             data: {
               council_id: this.current_council.id,
@@ -313,12 +313,12 @@ export default {
               return
             }
 
-            let index = this.current_user_student_observations.findIndex(student_observation =>
+            const index = this.current_user_student_observations.findIndex(student_observation =>
               student_observation.id === previous_observation.id
             )
             this.$set(this.current_user_student_observations, index, student_observation)
 
-            let current_index = this.current_student_observations.findIndex(current_student_observation =>
+            const current_index = this.current_student_observations.findIndex(current_student_observation =>
               current_student_observation.id === previous_observation.id
             )
             this.$set(this.current_student_observations, current_index, student_observation)
@@ -338,11 +338,11 @@ export default {
     evaluation_save (event) {
       this.$emit('loading')
 
-      let form = event.target
+      const form = event.target
 
-      let save_promises = []
+      const save_promises = []
 
-      let student_rows = form.querySelectorAll('[data-student_id]')
+      const student_rows = form.querySelectorAll('[data-student_id]')
       student_rows.forEach(student_row => {
         let observation = student_row.querySelector('textarea')
         if (!observation || !observation.value) {
@@ -350,7 +350,7 @@ export default {
         }
         observation = observation.value
 
-        let previous_observation = this.current_student_observations.find(existent_observation =>
+        const previous_observation = this.current_student_observations.find(existent_observation =>
           existent_observation.student_id === parseInt(student_row.dataset.student_id)
         )
 
@@ -358,7 +358,7 @@ export default {
           return
         }
 
-        let save_resource = {
+        const save_resource = {
           resource_name: 'student_observation',
           data: {
             council_id: this.current_council.id,
@@ -377,22 +377,22 @@ export default {
             return
           }
 
-          let index = this.current_user_student_observations.findIndex(student_observation =>
+          const index = this.current_user_student_observations.findIndex(student_observation =>
             student_observation.id === previous_observation.id
           )
           this.$set(this.current_user_student_observations, index, student_observation)
 
-          let current_index = this.current_student_observations.findIndex(current_student_observation =>
+          const current_index = this.current_student_observations.findIndex(current_student_observation =>
             current_student_observation.id === previous_observation.id
           )
           this.$set(this.current_student_observations, current_index, student_observation)
         }))
       })
 
-      let grade_observation_description = form.querySelector('[name=grade_observation]').value
+      const grade_observation_description = form.querySelector('[name=grade_observation]').value
 
       if (grade_observation_description.length) {
-        let save_resource = {
+        const save_resource = {
           resource_name: 'grade_observation',
           data: {
             council_id: this.current_council.id,
@@ -405,7 +405,7 @@ export default {
         }
         save_promises.push(this.$store.dispatch('save_resource', save_resource).then(grade_observation => {
           if (this.current_grade_observation) {
-            let index = this.current_user_grade_observations.findIndex(grade_observation =>
+            const index = this.current_user_grade_observations.findIndex(grade_observation =>
               grade_observation.id === this.current_grade_observation.id
             )
             this.$set(this.current_user_grade_observations, index, grade_observation)
@@ -418,13 +418,13 @@ export default {
       }
 
       this.current_evaluations.forEach(evaluation => {
-        let prev_evaluation = evaluation
-        let save_resource = {
+        const prev_evaluation = evaluation
+        const save_resource = {
           resource_name: 'evaluation',
           data: evaluation
         }
         save_promises.push(this.$store.dispatch('save_resource', save_resource).then(evaluation => {
-          let current_index = this.current_evaluations.findIndex(evaluation =>
+          const current_index = this.current_evaluations.findIndex(evaluation =>
             (
               prev_evaluation.id &&
               evaluation.id === prev_evaluation.id
@@ -440,7 +440,7 @@ export default {
             return
           }
 
-          let index = this.current_user_evaluations.findIndex(evaluation =>
+          const index = this.current_user_evaluations.findIndex(evaluation =>
             evaluation.id === prev_evaluation.id
           )
           this.$set(this.current_user_evaluations, index, evaluation)
@@ -459,7 +459,7 @@ export default {
     }
   },
   created () {
-    let council_id = parseInt(this.$route.params.id)
+    const council_id = parseInt(this.$route.params.id)
 
     this.current_user_id = this.$store.state.token.user_id
 
@@ -511,7 +511,7 @@ export default {
         student_grade.student_id === student.id
       )
     ).map(student => {
-      let student_grade = this.current_user_student_grades.find(student_grade =>
+      const student_grade = this.current_user_student_grades.find(student_grade =>
         student_grade.student_id === student.id
       )
 

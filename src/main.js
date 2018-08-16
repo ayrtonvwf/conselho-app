@@ -15,7 +15,7 @@ Vue.component('prompt', Prompt)
 Vue.component('super-table', SuperTable)
 
 /* eslint-disable-next-line */
-let app = new Vue({
+const app = new Vue({
   el: '#app',
   router,
   store,

@@ -1,6 +1,6 @@
 export function serialize (obj) {
-  let str = []
-  for (let p in obj) {
+  const str = []
+  for (const p in obj) {
     if (obj.hasOwnProperty(p)) {
       str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]))
     }
@@ -9,7 +9,7 @@ export function serialize (obj) {
 }
 
 export function parseObject (object) {
-  let properties = Object.keys(object)
+  const properties = Object.keys(object)
   properties.forEach(property => {
     if (object[property] === null || object[property] === undefined) {
       return

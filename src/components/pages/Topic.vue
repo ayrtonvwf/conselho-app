@@ -190,10 +190,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Topic',
-  data: function() {
+  data () {
     return {
       current_topic_id: undefined,
       current_topic: {},
@@ -203,7 +203,7 @@ export default {
     }
   },
   watch: {
-    current_topic_id() {
+    current_topic_id () {
       if (!this.current_topic_id) {
         this.current_topic = {}
         this.current_topic_options = []
@@ -343,7 +343,7 @@ export default {
 
         this.current_topic_options = JSON.parse(JSON.stringify(this.$store.state.topic_options.filter(topic_option =>
           topic_option.topic_id === this.current_topic_id
-        ))) // ORDER BY value DESC
+        )))
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -351,7 +351,7 @@ export default {
         this.$emit('loaded')
       })
     },
-    update_default_option(topic_option_id) {
+    update_default_option (topic_option_id) {
       this.$emit('loading')
 
       let form = event.target
@@ -395,7 +395,7 @@ export default {
       })
     }
   },
-  created() {
+  created () {
     this.current_topic_id = undefined
     this.current_topic = {}
     this.current_topic_options = []

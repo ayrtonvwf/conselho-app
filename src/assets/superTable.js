@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint camelcase: 0 */
 
 let table
 let table_header
@@ -10,18 +10,18 @@ let left_interval
 let is_touching = false
 let observer
 
-function dettectTouchStart() {
+function detectTouchStart () {
   is_touching = true
-  window.removeEventListener('touchstart', dettectTouchStart)
+  window.removeEventListener('touchstart', detectTouchStart)
 }
-window.addEventListener('touchstart', dettectTouchStart)
+window.addEventListener('touchstart', detectTouchStart)
 
-function scrollOnMousePosition(event) {
+function scrollOnMousePosition (event) {
   let left = horizontal_scroll.getBoundingClientRect().left
   let width = horizontal_scroll.offsetWidth
   let x = event.clientX
 
-  if (x < left+100) {
+  if (x < left + 100) {
     if (right_interval) {
       clearInterval(right_interval)
       right_interval = undefined
@@ -35,7 +35,7 @@ function scrollOnMousePosition(event) {
       }, 100)
       horizontal_scroll.style.cursor = 'w-resize'
     }
-  } else if (left+width - x < 100) {
+  } else if (left + width - x < 100) {
     if (left_interval) {
       clearInterval(left_interval)
       left_interval = undefined
@@ -63,7 +63,7 @@ function scrollOnMousePosition(event) {
   }
 }
 
-function stopScrollOnMouseOut() {
+function stopScrollOnMouseOut () {
   if (left_interval) {
     clearInterval(left_interval)
     left_interval = undefined
@@ -76,7 +76,7 @@ function stopScrollOnMouseOut() {
   }
 }
 
-function positionTableHeader() {
+function positionTableHeader () {
   let offset = table.getBoundingClientRect().top
   if (offset > 0) {
     fixed_table.style.display = 'none'
@@ -84,10 +84,10 @@ function positionTableHeader() {
   }
 
   fixed_table.style.display = 'table'
-  fixed_table.style.marginTop = (-offset)+'px'
+  fixed_table.style.marginTop = (-offset) + 'px'
 }
 
-function positionTableCol() {
+function positionTableCol () {
   if (!fixed_column) {
     return
   }
@@ -99,20 +99,20 @@ function positionTableCol() {
   }
 
   fixed_column.style.display = 'table'
-  fixed_column.style.marginLeft = offset+'px'
+  fixed_column.style.marginLeft = offset + 'px'
 }
 
-function calculateTableHeaderWidth() {
+function calculateTableHeaderWidth () {
   let ths = table_header.querySelectorAll('th')
   ths.forEach((th, i) => {
-    let pos = i+1
-    let width = th.offsetWidth+'px'
-    fixed_table.querySelector('th:nth-child('+pos+')').style.minWidth = width
-    fixed_table.querySelector('th:nth-child('+pos+')').style.maxWidth = width
+    let pos = i + 1
+    let width = th.offsetWidth + 'px'
+    fixed_table.querySelector('th:nth-child(' + pos + ')').style.minWidth = width
+    fixed_table.querySelector('th:nth-child(' + pos + ')').style.maxWidth = width
   })
 }
 
-function mountFixedColumn() {
+function mountFixedColumn () {
   let prev_fixed_col = document.querySelector('[data-fixed_column]')
   if (prev_fixed_col) {
     horizontal_scroll.removeChild(prev_fixed_col)
@@ -132,9 +132,9 @@ function mountFixedColumn() {
     let fixed_column_thead_th = fixed_table.querySelector('th').cloneNode(true)
     let original_th = table.querySelector('th')
 
-    fixed_column.style.width = original_th.offsetWidth+'px'
+    fixed_column.style.width = original_th.offsetWidth + 'px'
 
-    let height = original_th.offsetHeight+'px'
+    let height = original_th.offsetHeight + 'px'
 
     fixed_column_thead_th.style.height = height
     fixed_column_thead_th.style.minHeight = height
@@ -144,10 +144,10 @@ function mountFixedColumn() {
     fixed_column_thead.appendChild(fixed_column_thead_tr)
     fixed_column.appendChild(fixed_column_thead).cloneNode()
     table.querySelectorAll('tbody>tr').forEach((tr, i) => {
-      let pos = i+1
+      let pos = i + 1
       let fixed_column_tbody_tr = tr.cloneNode()
       let fixed_column_tbody_td = tr.querySelector('td').cloneNode(true)
-      let height = table.querySelector('tbody>tr:nth-child('+pos+')>td').offsetHeight+'px'
+      let height = table.querySelector('tbody>tr:nth-child(' + pos + ')>td').offsetHeight + 'px'
 
       fixed_column_tbody_td.style.height = height
       fixed_column_tbody_td.style.minHeight = height
@@ -161,7 +161,7 @@ function mountFixedColumn() {
   }
 }
 
-export default function superTable() {
+export default function superTable () {
   table = document.querySelector('table:not([data-fixed_table])')
   horizontal_scroll = document.querySelector('.table')
   if (observer) {

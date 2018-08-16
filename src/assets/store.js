@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint camelcase: 0 */
 
 import Vue from 'vue'
 import Vuex from 'vuex'
@@ -52,9 +52,9 @@ export default new Vuex.Store({
       state.logged_in = state.token && new Date(state.token.expires_at) > new Date()
     },
     injectData: (state, payload) => {
-      Object.keys(payload).forEach((resource) =>
+      Object.keys(payload).forEach(resource => {
         state[resource] = payload[resource]
-      )
+      })
     },
     pushItem: (state, {name, data}) => {
       state[name].push(data)
@@ -65,7 +65,7 @@ export default new Vuex.Store({
       )
 
       if (index < 0) {
-        throw 'Tried to update '+name+', but id '+data.id+' was not found.'
+        throw new Error('Tried to update ' + name + ', but id ' + data.id + ' was not found.')
       }
 
       Vue.set(state[name], index, data)
@@ -76,7 +76,7 @@ export default new Vuex.Store({
       )
 
       if (index < 0) {
-        throw 'Tried to delete '+name+', but id '+id+' was not found.'
+        throw new Error('Tried to delete ' + name + ', but id ' + id + ' was not found.')
       }
 
       Vue.delete(state[name], index)
@@ -92,56 +92,56 @@ export default new Vuex.Store({
 
       let promises = []
       promises.push(
-        db.users.toArray().then(users =>
+        db.users.toArray().then(users => {
           data.users = users.sort((a, b) =>
-            a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+            a.name.localeCompare(b.name, 'pt-BR', {ignorePunctuation: true})
           )
-        )
+        })
       )
 
       promises.push(
-        db.grades.toArray().then(grades =>
+        db.grades.toArray().then(grades => {
           data.grades = grades.sort((a, b) =>
-            a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+            a.name.localeCompare(b.name, 'pt-BR', {ignorePunctuation: true})
           )
-        )
+        })
       )
 
       promises.push(
-        db.subjects.toArray().then(subjects =>
+        db.subjects.toArray().then(subjects => {
           data.subjects = subjects.sort((a, b) =>
-            a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
+            a.name.localeCompare(b.name, 'pt-BR', {ignorePunctuation: true})
           )
-        )
+        })
       )
 
       promises.push(
-        db.topic_options.toArray().then(topic_options =>
+        db.topic_options.toArray().then(topic_options => {
           data.topic_options = topic_options.sort((a, b) =>
             Math.sign(b.value - a.value)
           )
-        )
+        })
       )
 
-      promises.push( db.councils.toArray().then(councils => data.councils = councils) )
-      promises.push( db.council_grades.toArray().then(council_grades => data.council_grades = council_grades) )
-      promises.push( db.council_topics.toArray().then(council_topics => data.council_topics = council_topics) )
-      promises.push( db.evaluations.toArray().then(evaluations => data.evaluations = evaluations) )
-      promises.push( db.grade_subjects.toArray().then(grade_subjects => data.grade_subjects = grade_subjects) )
-      promises.push( db.grade_observations.toArray().then(grade_observations => data.grade_observations = grade_observations) )
-      promises.push( db.medical_reports.toArray().then(medical_reports => data.medical_reports = medical_reports) )
-      promises.push( db.medical_report_subjects.toArray().then(medical_report_subjects => data.medical_report_subjects = medical_report_subjects) )
-      promises.push( db.permissions.toArray().then(permissions => data.permissions = permissions) )
-      promises.push( db.roles.toArray().then(roles => data.roles = roles) )
-      promises.push( db.role_types.toArray().then(role_types => data.role_types = role_types) )
-      promises.push( db.role_type_permissions.toArray().then(role_type_permissions => data.role_type_permissions = role_type_permissions) )
-      promises.push( db.schools.toArray().then(schools => data.schools = schools) )
-      promises.push( db.students.toArray().then(students => data.students = students) )
-      promises.push( db.student_observations.toArray().then(student_observations => data.student_observations = student_observations) )
-      promises.push( db.student_grades.toArray().then(student_grades => data.student_grades = student_grades) )
-      promises.push( db.teachers.toArray().then(teachers => data.teachers = teachers) )
-      promises.push( db.teacher_requests.toArray().then(teacher_requests => data.teacher_requests = teacher_requests) )
-      promises.push( db.topics.toArray().then(topics => data.topics = topics) )
+      promises.push(db.councils.toArray().then(councils => { data.councils = councils }))
+      promises.push(db.council_grades.toArray().then(council_grades => { data.council_grades = council_grades }))
+      promises.push(db.council_topics.toArray().then(council_topics => { data.council_topics = council_topics }))
+      promises.push(db.evaluations.toArray().then(evaluations => { data.evaluations = evaluations }))
+      promises.push(db.grade_subjects.toArray().then(grade_subjects => { data.grade_subjects = grade_subjects }))
+      promises.push(db.grade_observations.toArray().then(grade_observations => { data.grade_observations = grade_observations }))
+      promises.push(db.medical_reports.toArray().then(medical_reports => { data.medical_reports = medical_reports }))
+      promises.push(db.medical_report_subjects.toArray().then(medical_report_subjects => { data.medical_report_subjects = medical_report_subjects }))
+      promises.push(db.permissions.toArray().then(permissions => { data.permissions = permissions }))
+      promises.push(db.roles.toArray().then(roles => { data.roles = roles }))
+      promises.push(db.role_types.toArray().then(role_types => { data.role_types = role_types }))
+      promises.push(db.role_type_permissions.toArray().then(role_type_permissions => { data.role_type_permissions = role_type_permissions }))
+      promises.push(db.schools.toArray().then(schools => { data.schools = schools }))
+      promises.push(db.students.toArray().then(students => { data.students = students }))
+      promises.push(db.student_observations.toArray().then(student_observations => { data.student_observations = student_observations }))
+      promises.push(db.student_grades.toArray().then(student_grades => { data.student_grades = student_grades }))
+      promises.push(db.teachers.toArray().then(teachers => { data.teachers = teachers }))
+      promises.push(db.teacher_requests.toArray().then(teacher_requests => { data.teacher_requests = teacher_requests }))
+      promises.push(db.topics.toArray().then(topics => { data.topics = topics }))
 
       return Promise.all(promises).then(() => {
         context.commit('injectData', data)
@@ -177,7 +177,7 @@ export default new Vuex.Store({
       }
 
       if (!body) {
-        body = { school_id: 1}
+        body = { school_id: 1 }
       } else {
         body.school_id = 1
       }

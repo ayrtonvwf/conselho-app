@@ -40,10 +40,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'User',
-  data: function() {
+  data () {
     return {
       user: {}
     }
@@ -90,7 +90,7 @@ export default {
       })
     }
   },
-  created() {
+  created () {
     let current_user_id = parseInt(this.$store.state.token.user_id)
     this.user = this.$store.state.users.find(user => user.id === current_user_id)
   }

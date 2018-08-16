@@ -40,11 +40,10 @@
 </template>
 
 <script>
-/* eslint-disable */
 export default {
   name: 'Login',
   methods: {
-    login(event) {
+    login (event) {
       this.$emit('loading')
 
       let form = event.target

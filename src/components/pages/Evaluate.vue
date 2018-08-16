@@ -93,10 +93,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Evaluate',
-  data: function() {
+  data () {
     return {
       hide_evaluated_students: false,
 
@@ -124,7 +124,7 @@ export default {
     }
   },
   watch: {
-    current_grade_id() {
+    current_grade_id () {
       this.current_subject_id = ''
 
       if (!this.current_grade_id) {
@@ -155,7 +155,7 @@ export default {
         this.current_subject_id = this.current_subjects[0].id
       }
     },
-    current_subject_id() {
+    current_subject_id () {
       if (!this.current_subject_id) {
         this.current_evaluations = []
         this.current_student_observations = []
@@ -221,7 +221,7 @@ export default {
     }
   },
   methods: {
-    set_confirm_redirect() {
+    set_confirm_redirect () {
       window.onbeforeunload = event => {
         let dialogText = 'Tem certeza que deseja sair da página? Você perderá o que não foi salvo'
         event.returnValue = dialogText
@@ -242,7 +242,7 @@ export default {
     studentIsActive (student_id) {
       return this.studentGrade(student_id).end_date > new Date().toISOString().slice(0, 10)
     },
-    topicOptions(topic_id) {
+    topicOptions (topic_id) {
       return this.current_topic_options.filter(topic_option =>
         topic_option.topic_id === topic_id
       )
@@ -458,7 +458,7 @@ export default {
       })
     }
   },
-  created: function() {
+  created () {
     let council_id = parseInt(this.$route.params.id)
 
     this.current_user_id = this.$store.state.token.user_id

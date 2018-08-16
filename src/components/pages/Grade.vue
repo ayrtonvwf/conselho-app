@@ -213,10 +213,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Grade',
-  data: function() {
+  data () {
     return {
       current_grade_id: undefined,
       current_grade: {},
@@ -227,7 +227,7 @@ export default {
     }
   },
   watch: {
-    current_grade_id: function() {
+    current_grade_id () {
       if (!this.current_grade_id) {
         this.current_grade = {}
         this.current_grade_subjects = []
@@ -254,7 +254,7 @@ export default {
         student_grade.grade_id === this.current_grade_id
       )
       this.current_students = this.$store.state.students.filter(student =>
-       this.studentGrade(student.id)
+        this.studentGrade(student.id)
       ).sort((a, b) =>
         Math.sign(this.studentGrade(a.id).number - this.studentGrade(b.id).number)
       )
@@ -304,9 +304,9 @@ export default {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
         form.querySelector('[name=name]').value = ''
         form.querySelector('[name=level]').value = ''
-        grade_subject_inputs.forEach(input =>
+        grade_subject_inputs.forEach(input => {
           input.checked = false
-        )
+        })
         this.$refs.modalNew.close()
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
@@ -494,7 +494,7 @@ export default {
       })
     }
   },
-  created() {
+  created () {
     this.current_grade_id = undefined
     this.current_grade = {}
     this.current_grade_subjects = []

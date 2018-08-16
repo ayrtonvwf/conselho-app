@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import Vue from 'vue'
 import store from './assets/store'
 import router from './router'
@@ -16,6 +14,7 @@ Vue.component('modal', Modal)
 Vue.component('prompt', Prompt)
 Vue.component('super-table', SuperTable)
 
+/* eslint-disable-next-line */
 let app = new Vue({
   el: '#app',
   router,

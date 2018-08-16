@@ -57,11 +57,10 @@
 </template>
 
 <script>
-/* eslint-disable */
-
+/* eslint camelcase: 0 */
 export default {
   name: 'Report',
-  data: function() {
+  data () {
     return {
       current_council: {},
       current_grades: [],
@@ -78,7 +77,7 @@ export default {
     }
   },
   watch: {
-    current_grade_id() {
+    current_grade_id () {
       if (!this.current_grade_id) {
         this.current_subject_id = ''
         this.current_subjects = []
@@ -115,12 +114,12 @@ export default {
         this.load_evaluations()
       }
     },
-    current_subject_id() {
+    current_subject_id () {
       this.load_evaluations()
     }
   },
   methods: {
-    load_evaluations() {
+    load_evaluations () {
       if (!this.current_grade_id) {
         this.current_evaluations = []
         this.current_grade_observations = []
@@ -241,7 +240,7 @@ export default {
       )
     }
   },
-  created: function() {
+  created () {
     let council_id = parseInt(this.$route.params.id)
 
     this.current_council = this.$store.state.councils.find(council =>

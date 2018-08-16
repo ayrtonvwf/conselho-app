@@ -131,10 +131,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Council',
-  data: function() {
+  data () {
     return {
       current_council_id: undefined,
       current_council: {},
@@ -142,7 +142,7 @@ export default {
     }
   },
   watch: {
-    current_council_id() {
+    current_council_id () {
       if (!this.current_council_id) {
         this.current_council = []
         this.current_topics = []
@@ -248,9 +248,9 @@ export default {
         form.querySelector('[name=name]').value = ''
         form.querySelector('[name=start_date]').value = ''
         form.querySelector('[name=end_date]').value = ''
-        council_topic_inputs.forEach(input =>
+        council_topic_inputs.forEach(input => {
           input.checked = false
-        )
+        })
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -285,7 +285,7 @@ export default {
       })
     }
   },
-  created() {
+  created () {
     this.current_council_id = undefined
     this.current_council = {}
     this.current_topics = []

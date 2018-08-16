@@ -86,17 +86,17 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Subject',
-  data: function() {
+  data () {
     return {
       'current_subject_id': undefined,
       'current_subject': {}
     }
   },
   watch: {
-    current_subject_id() {
+    current_subject_id () {
       if (!this.current_subject_id) {
         this.current_subject = {}
         return
@@ -159,7 +159,7 @@ export default {
       })
     }
   },
-  created() {
+  created () {
     this.current_subject_id = ''
     this.current_subject = {}
   }

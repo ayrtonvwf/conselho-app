@@ -130,50 +130,47 @@
 <style src="../node_modules/material-design-icons/iconfont/material-icons.css" type="text/css"></style>
 
 <script>
-/* eslint-disable */
-
-// import Dexie from 'dexie'
-
+/* eslint camelcase: 0 */
 export default {
   name: 'App',
-  data() {
+  data () {
     return {
       notification: {},
       loading: true
     }
   },
   computed: {
-    currentUser() {
+    currentUser () {
       let user = this.$store.state.users.find(user =>
         user.id === this.$store.state.token.user_id
       )
-      return user ? user : {}
+      return user || {}
     },
-    currentRole() {
+    currentRole () {
       let role = this.$store.state.roles.find(role =>
         role.user_id === this.$store.state.token.user_id
       )
-      return role ? role : {}
+      return role || {}
     },
-    currentRoleType() {
+    currentRoleType () {
       let role_type = this.$store.state.role_types.find(role_type =>
         role_type.id === this.currentRole.role_type_id
       )
-      return role_type ? role_type : {}
+      return role_type || {}
     },
-    currentRoleTypePermissions() {
+    currentRoleTypePermissions () {
       return this.$store.state.role_type_permissions.filter(role_type_permission =>
         role_type_permission.role_type_id === this.currentRoleType.id
       )
     },
-    currentPermissions() {
+    currentPermissions () {
       return this.$store.state.permissions.filter(permission =>
         this.currentRoleTypePermissions.find(role_type_permission =>
           role_type_permission.permission_id === permission.id
         )
       )
     },
-    activeCouncils() {
+    activeCouncils () {
       return this.$store.state.councils.filter(council =>
         council.active &&
         new Date(council.start_date) <= new Date() &&
@@ -240,7 +237,7 @@ export default {
       }, start_delay)
     },
 
-    logout() {
+    logout () {
       this.loading = true
       this.$store.dispatch('logout').then(() => {
         this.$router.push('/login')
@@ -258,7 +255,7 @@ export default {
       )
     },
 
-    sync() {
+    sync () {
       this.loading = true
 
       this.$store.dispatch('loadFromAPI').then(() =>
@@ -266,12 +263,12 @@ export default {
       ).catch(error => {
         this.notify('Erro', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
         console.log(error)
-      }).finally(() =>
+      }).finally(() => {
         this.loading = false
-      )
+      })
     }
   },
-  created() {
+  created () {
     this.$store.commit('checkAuth')
 
     if (!this.$store.state.logged_in && this.$route.name !== 'Login') {
@@ -284,10 +281,9 @@ export default {
       return
     }
 
-
-    this.$store.dispatch('loadData').then(() =>
+    this.$store.dispatch('loadData').then(() => {
       this.loading = false
-    )
+    })
   }
 }
 </script>

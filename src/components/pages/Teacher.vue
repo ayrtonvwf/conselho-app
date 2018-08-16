@@ -130,10 +130,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Teacher',
-  data: function() {
+  data () {
     return {
       current_user_id: undefined,
       current_user: {},
@@ -148,14 +148,14 @@ export default {
     }
   },
   computed: {
-    usersWhoEvaluate() {
+    usersWhoEvaluate () {
       return this.$store.state.users.filter(user =>
         this.userHasPermission('evaluate', user.id)
       )
     }
   },
   watch: {
-    current_user_id() {
+    current_user_id () {
       this.current_subjects = []
       this.current_grade_id = ''
       this.current_subject_id = ''
@@ -174,7 +174,7 @@ export default {
         teacher.user_id === this.current_user_id
       )
     },
-    current_grade_id() {
+    current_grade_id () {
       this.current_subjects = []
       this.current_subject_id = ''
 
@@ -327,7 +327,7 @@ export default {
       })
     }
   },
-  created: function() {
+  created () {
     this.current_subjects = []
     this.current_teachers = []
     this.current_grade_id = ''

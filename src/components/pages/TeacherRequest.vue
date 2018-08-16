@@ -81,10 +81,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'TeacherRequest',
-  data: function() {
+  data () {
     return {
       current_teacher_requests: [],
       current_user_teachers: [],
@@ -96,7 +96,7 @@ export default {
     }
   },
   watch: {
-    current_grade_id() {
+    current_grade_id () {
       if (!this.current_grade_id) {
         this.current_subject_id = ''
         this.current_subjects = []
@@ -146,7 +146,7 @@ export default {
         this.$emit('loaded')
       })
     },
-    teacher_request_delete() {
+    teacher_request_delete () {
       this.$emit('loading')
 
       let delete_resource = {

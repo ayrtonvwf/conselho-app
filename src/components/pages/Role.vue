@@ -72,10 +72,10 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint camelcase: 0 */
 export default {
   name: 'Role',
-  data: function() {
+  data () {
     return {}
   },
   methods: {

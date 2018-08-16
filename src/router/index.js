@@ -15,7 +15,6 @@ import Evaluate from '@/components/pages/Evaluate'
 
 Vue.use(Router)
 
-// export default new Router({
 let router = new Router({
   routes: [
     {
@@ -90,4 +89,5 @@ router.beforeEach((to, from, next) => {
   document.location.hash = '' // closes modal
   next()
 })
+
 export default router

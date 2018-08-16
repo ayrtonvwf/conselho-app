@@ -180,9 +180,15 @@ export default {
         Math.abs(curr - avg) < Math.abs(prev - avg) ? curr : prev
       )
 
-      return topic_options.find(topic_option =>
+      let topic_option_name = topic_options.find(topic_option =>
         topic_option.value === nearest_value
-      ).name + ' (' + avg + '%)'
+      ).name
+
+      if (this.current_subject_id) {
+        return topic_option_name
+      }
+
+      return topic_option_name + ' (' + avg + '%)'
     },
     studentGrade (student_id) {
       return this.current_student_grades.find(student_grade =>

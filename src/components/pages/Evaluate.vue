@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="content-title"><i class="material-icons">edit</i>Avaliar - {{ council.name }}</h1>
+    <h1 class="content-title"><i class="material-icons">edit</i>Avaliar - {{ current_council.name }}</h1>
     <article class="box">
       <div class="box-body">
         <form action="#" data-success="Avaliação salva com sucesso" data-error="Não foi possível salvar a avaliação" @submit.prevent="evaluation_save"><br>
@@ -10,7 +10,7 @@
                 <div class="input col-12 col-sm-6">
                   <select id="current_grade_id" name="current_grade_id" required v-model="current_grade_id">
                     <option value="" selected hidden disabled>Selecione...</option>
-                    <option v-for="grade in grades" :key="grade.id" :value="grade.id">{{ grade.name }}</option>
+                    <option v-for="grade in current_grades" :key="grade.id" :value="grade.id">{{ grade.name }}</option>
                   </select>
                   <label for="current_grade_id">Turma</label>
                 </div>
@@ -34,7 +34,7 @@
               <thead>
                 <tr>
                   <th style="max-width: 33vw">Aluno</th>
-                  <th v-for="topic in topics" :key="topic.id">{{ topic.name }}</th>
+                  <th v-for="topic in current_topics" :key="topic.id">{{ topic.name }}</th>
                   <th>Observações Gerais</th>
                   <th></th>
                 </tr>
@@ -43,7 +43,7 @@
                 <tr v-for="student in current_students" :key="student.id" :data-student_id="student.id" v-if="!hide_evaluated_students || !studentHasEvaluation(student.id)">
                   <template v-if="!hide_evaluated_students && !studentIsActive(student.id)">
                     <td class="text-striked">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
-                    <td v-for="topic in topics" :key="topic.id">-</td>
+                    <td v-for="topic in current_topics" :key="topic.id">-</td>
                     <td>-</td>
                     <td>-</td>
                   </template>
@@ -52,7 +52,7 @@
                       {{ studentGrade(student.id).number }} - {{ student.name }}
                       <span class="text-muted" v-if="!studentHasEvaluation(student.id)"> (não avaliado)</span>
                     </td>
-                    <td v-for="topic in topics" :key="topic.id">
+                    <td v-for="topic in current_topics" :key="topic.id">
                       <select required @change="set_confirm_redirect" :data-topic_id="topic.id" v-model="current_evaluations.find(evaluation => evaluation.student_id === student.id && evaluation.topic_id === topic.id).topic_option_id">
                         <option v-for="topic_option in topicOptions(topic.id)" :key="topic_option.id" :value="topic_option.id">{{ topic_option.name }}</option>
                       </select>
@@ -98,22 +98,19 @@ export default {
   name: 'Evaluate',
   data: function() {
     return {
-      council: {},
-      council_topics: [],
-      council_grades: [],
-      topics: [], // only the ones in the council
-      grades: [], // only related to the current user and in the council
-      subjects: [], // only related to the current user
-      teachers: [], // only related to the current user,
-      students: [], // only related to the current user
-      evaluations: [], // only related to the current user and in the council
-      student_observations: [], // only related to the current user and in the council
-      grade_observations: [], // only related to the current user and in the council
-      grade_subjects: [],
-      student_grades: [],
-      topic_options: [],
-
       hide_evaluated_students: false,
+
+      current_council: {},
+      current_topics_options: [],
+      current_topics: [],
+      current_grades: [],
+      current_user_subjects: [],
+      current_teachers: [],
+      current_user_student_grades: [],
+      current_user_students: [],
+      current_user_evaluations: [],
+      current_user_student_observations: [],
+      current_user_grade_observations: [],
 
       current_user_id: undefined,
       current_grade_id: '',
@@ -131,23 +128,24 @@ export default {
       this.current_subject_id = ''
 
       if (!this.current_grade_id) {
+        this.current_student_grades = []
         this.current_students = []
         this.current_subjects = []
         return
       }
 
-      this.current_student_grades = this.student_grades.filter(student_grade =>
+      this.current_student_grades = this.current_user_student_grades.filter(student_grade =>
         student_grade.grade_id === this.current_grade_id
       )
 
-      this.current_students = this.students.filter(student =>
+      this.current_students = this.current_user_students.filter(student =>
         this.current_student_grades.find(student_grade =>
           student_grade.student_id === student.id
         )
       )
 
-      this.current_subjects = this.subjects.filter(subject =>
-        this.teachers.find(teacher =>
+      this.current_subjects = this.current_user_subjects.filter(subject =>
+        this.current_teachers.find(teacher =>
           teacher.grade_id === this.current_grade_id &&
           teacher.subject_id === subject.id
         )
@@ -165,13 +163,21 @@ export default {
         return
       }
 
-      let evaluations = this.evaluations.filter(evaluation =>
+      let current_evaluations = this.current_user_evaluations.filter(evaluation =>
         evaluation.grade_id === this.current_grade_id &&
         evaluation.subject_id === this.current_subject_id
-      )
+      ).map(evaluation => {
+        evaluation.topic_id = this.current_topics.find(topic =>
+          this.current_topic_options.find(topic_option =>
+            topic_option.id === evaluation.topic_option_id &&
+            topic_option.topic_id === topic.id
+          )
+        ).id
+        return evaluation
+      })
       this.current_students.forEach(student => {
-        this.topics.forEach(topic => {
-          let evaluation = evaluations.find(evaluation =>
+        this.current_topics.forEach(topic => {
+          let evaluation = current_evaluations.find(evaluation =>
             evaluation.student_id === student.id &&
             evaluation.topic_id === topic.id
           )
@@ -179,26 +185,26 @@ export default {
             return
           }
 
-          // create pre-evaluations
-          evaluations.push({
+          // create pre-current_user_evaluations
+          current_evaluations.push({
             user_id: this.current_user_id,
             grade_id: this.current_grade_id,
             subject_id: this.current_subject_id,
-            council_id: this.council.id,
+            council_id: this.current_council.id,
             topic_id: topic.id,
             student_id: student.id,
             topic_option_id: topic.topic_option_id
           })
         })
       })
-      this.current_evaluations = evaluations
+      this.current_evaluations = current_evaluations
 
-      this.current_student_observations = this.student_observations.filter(student_observation =>
+      this.current_student_observations = this.current_user_student_observations.filter(student_observation =>
         student_observation.grade_id === this.current_grade_id &&
         student_observation.subject_id === this.current_subject_id
       )
 
-      this.current_grade_observation = this.grade_observations.find(grade_observation =>
+      this.current_grade_observation = this.current_user_grade_observations.find(grade_observation =>
         grade_observation.grade_id === this.current_grade_id &&
         grade_observation.subject_id === this.current_subject_id
       )
@@ -209,7 +215,9 @@ export default {
       if (!this.current_grade_id) {
         return undefined
       }
-      return this.grades.find(grade => parseInt(grade.id) === parseInt(this.current_grade_id))
+      return this.current_grades.find(grade =>
+        grade.id === this.current_grade_id
+      )
     }
   },
   methods: {
@@ -235,22 +243,26 @@ export default {
       return this.studentGrade(student_id).end_date > new Date().toISOString().slice(0, 10)
     },
     topicOptions(topic_id) {
-      return this.topic_options.filter(topic_option => topic_option.topic_id === topic_id)
+      return this.current_topic_options.filter(topic_option =>
+        topic_option.topic_id === topic_id
+      )
     },
     student_evaluation_save (student_id) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let save_promises = []
 
-      let evaluations = this.current_evaluations.filter(evaluation =>
+      let current_user_evaluations = this.current_evaluations.filter(evaluation =>
         evaluation.student_id === student_id
       )
 
-      evaluations.forEach(evaluation => {
+      current_user_evaluations.forEach(evaluation => {
         let prev_evaluation = evaluation
-        save_promises.push(app.save_resource('evaluation', evaluation, true, false).then(evaluation => {
+        let save_resource = {
+          resource_name: 'evaluation',
+          data: evaluation
+        }
+        save_promises.push(this.$store.dispatch('save_resource', save_resource).then(evaluation => {
           let current_index = this.current_evaluations.findIndex(current_evaluation =>
             (
               prev_evaluation.id &&
@@ -263,14 +275,14 @@ export default {
           this.$set(this.current_evaluations, current_index, evaluation)
 
           if (!prev_evaluation.id) {
-            this.evaluations.push(evaluation)
+            this.current_user_evaluations.push(evaluation)
             return
           }
 
-          let index = this.evaluations.findIndex(evaluation =>
+          let index = this.current_user_evaluations.findIndex(evaluation =>
             evaluation.id === prev_evaluation.id
           )
-          this.$set(this.evaluations, index, evaluation)
+          this.$set(this.current_user_evaluations, index, evaluation)
         }))
       })
 
@@ -282,26 +294,29 @@ export default {
         )
 
         if (!previous_observation || previous_observation.description !== observation) {
-          let student_observation = {
-            council_id: this.council.id,
-            grade_id: this.current_grade_id,
-            subject_id: this.current_subject_id,
-            user_id: this.current_user_id,
-            student_id: student_id,
-            description: observation,
-            id: previous_observation ? previous_observation.id : null
+          let save_resource = {
+            resource_name: 'student_observation',
+            data: {
+              council_id: this.current_council.id,
+              grade_id: this.current_grade_id,
+              subject_id: this.current_subject_id,
+              user_id: this.current_user_id,
+              student_id: student_id,
+              description: observation,
+              id: previous_observation ? previous_observation.id : null
+            }
           }
-          save_promises.push(app.save_resource('student_observation', student_observation, true, false).then(student_observation => {
+          save_promises.push(this.$store.dispatch('save_resource', save_resource).then(student_observation => {
             if (!previous_observation) {
-              this.student_observations.push(student_observation)
+              this.current_user_student_observations.push(student_observation)
               this.current_student_observations.push(student_observation)
               return
             }
 
-            let index = this.student_observations.findIndex(student_observation =>
+            let index = this.current_user_student_observations.findIndex(student_observation =>
               student_observation.id === previous_observation.id
             )
-            this.$set(this.student_observations, index, student_observation)
+            this.$set(this.current_user_student_observations, index, student_observation)
 
             let current_index = this.current_student_observations.findIndex(current_student_observation =>
               current_student_observation.id === previous_observation.id
@@ -323,8 +338,6 @@ export default {
     evaluation_save (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
 
       let save_promises = []
@@ -341,30 +354,33 @@ export default {
           existent_observation.student_id === parseInt(student_row.dataset.student_id)
         )
 
-        if (previous_observation && previous_observation.description === student_observation) {
+        if (previous_observation && previous_observation.description === observation) {
           return
         }
 
-        let student_observation = {
-          council_id: this.council.id,
-          grade_id: this.current_grade_id,
-          subject_id: this.current_subject_id,
-          user_id: this.current_user_id,
-          student_id: parseInt(student_row.dataset.student_id),
-          description: observation,
-          id: previous_observation ? previous_observation.id : null
+        let save_resource = {
+          resource_name: 'student_observation',
+          data: {
+            council_id: this.current_council.id,
+            grade_id: this.current_grade_id,
+            subject_id: this.current_subject_id,
+            user_id: this.current_user_id,
+            student_id: parseInt(student_row.dataset.student_id),
+            description: observation,
+            id: previous_observation ? previous_observation.id : null
+          }
         }
-        save_promises.push(app.save_resource('student_observation', student_observation, true, false).then(student_observation => {
+        save_promises.push(this.$store.dispatch('save_resource', save_resource).then(student_observation => {
           if (!previous_observation) {
-            this.student_observations.push(student_observation)
+            this.current_user_student_observations.push(student_observation)
             this.current_student_observations.push(student_observation)
             return
           }
 
-          let index = this.student_observations.findIndex(student_observation =>
+          let index = this.current_user_student_observations.findIndex(student_observation =>
             student_observation.id === previous_observation.id
           )
-          this.$set(this.student_observations, index, student_observation)
+          this.$set(this.current_user_student_observations, index, student_observation)
 
           let current_index = this.current_student_observations.findIndex(current_student_observation =>
             current_student_observation.id === previous_observation.id
@@ -376,22 +392,25 @@ export default {
       let grade_observation_description = form.querySelector('[name=grade_observation]').value
 
       if (grade_observation_description.length) {
-        let grade_observation = {
-          council_id: this.council.id,
-          grade_id: this.current_grade_id,
-          subject_id: this.current_subject_id,
-          user_id: this.current_user_id,
-          description: grade_observation_description,
-          id: this.current_grade_observation ? this.current_grade_observation.id : null
+        let save_resource = {
+          resource_name: 'grade_observation',
+          data: {
+            council_id: this.current_council.id,
+            grade_id: this.current_grade_id,
+            subject_id: this.current_subject_id,
+            user_id: this.current_user_id,
+            description: grade_observation_description,
+            id: this.current_grade_observation ? this.current_grade_observation.id : null
+          }
         }
-        save_promises.push(app.save_resource('grade_observation', grade_observation, true, false).then(grade_observation => {
+        save_promises.push(this.$store.dispatch('save_resource', save_resource).then(grade_observation => {
           if (this.current_grade_observation) {
-            let index = this.grade_observations.findIndex(grade_observation =>
+            let index = this.current_user_grade_observations.findIndex(grade_observation =>
               grade_observation.id === this.current_grade_observation.id
             )
-            this.$set(this.grade_observations, index, grade_observation)
+            this.$set(this.current_user_grade_observations, index, grade_observation)
           } else {
-            this.grade_observations.push(grade_observation)
+            this.current_user_grade_observations.push(grade_observation)
           }
 
           this.current_grade_observation = grade_observation
@@ -400,7 +419,11 @@ export default {
 
       this.current_evaluations.forEach(evaluation => {
         let prev_evaluation = evaluation
-        save_promises.push(app.save_resource('evaluation', evaluation, true, false).then(evaluation => {
+        let save_resource = {
+          resource_name: 'evaluation',
+          data: evaluation
+        }
+        save_promises.push(this.$store.dispatch('save_resource', save_resource).then(evaluation => {
           let current_index = this.current_evaluations.findIndex(evaluation =>
             (
               prev_evaluation.id &&
@@ -413,14 +436,14 @@ export default {
           this.$set(this.current_evaluations, current_index, evaluation)
 
           if (!prev_evaluation.id) {
-            this.evaluations.push(evaluation)
+            this.current_user_evaluations.push(evaluation)
             return
           }
 
-          let index = this.evaluations.findIndex(evaluation =>
+          let index = this.current_user_evaluations.findIndex(evaluation =>
             evaluation.id === prev_evaluation.id
           )
-          this.$set(this.evaluations, index, evaluation)
+          this.$set(this.current_user_evaluations, index, evaluation)
         }))
       })
 
@@ -435,28 +458,84 @@ export default {
       })
     }
   },
-  beforeCreate() {
-    this.$emit('loading')
-  },
   created: function() {
-    this.council = {}
-    this.council_topics = []
-    this.council_grades = []
-    this.topics = []
-    this.grades = []
-    this.subjects = []
-    this.teachers = []
-    this.students = []
-    this.evaluations = []
-    this.student_observations = []
-    this.grade_observations = []
-    this.grade_subjects = []
-    this.student_grades = []
-    this.topic_options = []
+    let council_id = parseInt(this.$route.params.id)
 
+    this.current_user_id = this.$store.state.token.user_id
+
+    this.current_council = this.$store.state.councils.find(council =>
+      council.id === council_id
+    )
     this.hide_evaluated_students = false
 
-    this.current_user_id = this.$parent.token.user_id
+    this.current_topics = this.$store.state.topics.filter(topic =>
+      this.$store.state.council_topics.find(council_topic =>
+        council_topic.topic_id === topic.id &&
+        council_topic.council_id === council_id
+      )
+    )
+
+    this.current_topic_options = this.$store.state.topic_options.filter(topic_option =>
+      this.current_topics.find(topic =>
+        topic.id === topic_option.topic_id
+      )
+    )
+
+    this.current_teachers = this.$store.state.teachers.filter(teacher =>
+      teacher.user_id === this.current_user_id
+    )
+
+    this.current_grades = this.$store.state.grades.filter(grade =>
+      this.current_teachers.find(teacher =>
+        teacher.grade_id === grade.id
+      ) &&
+      this.$store.state.council_grades.find(council_grade =>
+        council_grade.grade_id === grade.id &&
+        council_grade.council_id === council_id
+      )
+    )
+
+    this.current_user_subjects = this.$store.state.subjects.filter(subject =>
+      this.current_teachers.find(teacher =>
+        teacher.subject_id === subject.id
+      )
+    )
+
+    this.current_user_student_grades = this.$store.state.student_grades.filter(student_grade =>
+      this.current_grades.find(grade =>
+        grade.id === student_grade.grade_id
+      )
+    )
+    this.current_user_students = this.$store.state.students.filter(student =>
+      this.current_user_student_grades.find(student_grade =>
+        student_grade.student_id === student.id
+      )
+    ).map(student => {
+      let student_grade = this.current_user_student_grades.find(student_grade =>
+        student_grade.student_id === student.id
+      )
+
+      student.grade_id = student_grade.grade_id
+      student.number = student_grade.number
+
+      return student
+    }).sort((a, b) =>
+      Math.sign(a.number - b.number)
+    )
+
+    this.current_user_evaluations = this.$store.state.evaluations.filter(evaluation =>
+      evaluation.council_id === council_id &&
+      evaluation.user_id === this.current_user_id
+    )
+    this.current_user_student_observations = this.$store.state.student_observations.filter(student_observation =>
+      student_observation.council_id === council_id &&
+      student_observation.user_id === this.current_user_id
+    )
+    this.current_user_grade_observations = this.$store.state.grade_observations.filter(grade_observation =>
+      grade_observation.council_id === council_id &&
+      grade_observation.user_id === this.current_user_id
+    )
+
     this.current_grade_id = ''
     this.current_subject_id = ''
     this.current_student_grades = []
@@ -465,130 +544,6 @@ export default {
     this.current_evaluations = []
     this.current_student_observations = []
     this.current_grade_observation = undefined
-
-    let council_id = parseInt(this.$route.params.id)
-    let db = this.$parent.db
-    let promises = []
-    promises.push(db.councils.get(council_id).then(council =>
-      this.council = council
-    ))
-    promises.push(db.council_topics.toArray().then(council_topics =>
-      this.council_topics = council_topics.filter(council_topic =>
-        council_topic.council_id === council_id
-      )
-    ))
-    promises.push(db.council_grades.toArray().then(council_grades =>
-      this.council_grades = council_grades.filter(council_grade =>
-        council_grade.council_id === council_id
-      )
-    ))
-    promises.push(db.topics.toArray().then(topics =>
-      this.topics = topics
-    ))
-    promises.push(db.grades.toArray().then(grades =>
-      this.grades = grades
-    ))
-    promises.push(db.subjects.toArray().then(subjects =>
-      this.subjects = subjects
-    ))
-    promises.push(db.teachers.toArray().then(teachers =>
-      this.teachers = teachers.filter(teacher =>
-        teacher.user_id === this.current_user_id
-      )
-    ))
-    promises.push(db.students.toArray().then(students =>
-      this.students = students
-    ))
-    promises.push(db.evaluations.toArray().then(evaluations =>
-      this.evaluations = evaluations.filter(evaluation =>
-        evaluation.council_id === council_id &&
-        evaluation.user_id === this.current_user_id
-      )
-    ))
-    promises.push(db.student_observations.toArray().then(student_observations =>
-      this.student_observations = student_observations.filter(student_observation =>
-        student_observation.council_id === council_id &&
-        student_observation.user_id === this.current_user_id
-      )
-    ))
-    promises.push(db.grade_observations.toArray().then(grade_observations =>
-      this.grade_observations = grade_observations.filter(grade_observation =>
-        grade_observation.council_id === council_id &&
-        grade_observation.user_id === this.current_user_id
-      )
-    ))
-    promises.push(db.grade_subjects.toArray().then(grade_subjects =>
-      this.grade_subjects = grade_subjects
-    ))
-    promises.push(db.student_grades.toArray().then(student_grades =>
-      this.student_grades = student_grades
-    ))
-    promises.push(db.topic_options.toArray().then(topic_options =>
-      this.topic_options = topic_options
-    ))
-
-    Promise.all(promises).then(() => {
-      this.topics = this.topics.filter(topic =>
-        this.council_topics.find(council_topic =>
-          council_topic.topic_id === topic.id // only topics in this council
-        )
-      )
-
-      this.topic_options = this.topic_options.filter(topic_option =>
-        this.topics.find(topic =>
-          topic.id === topic_option.topic_id // only topic_options of the topics in this council
-        )
-      ).sort((a, b) =>
-        Math.sign(a.value - b.value)
-      )
-
-      this.grades = this.grades.filter(grade =>
-        this.council_grades.find(council_grade =>
-          council_grade.grade_id === grade.id // only the grades in the council
-        ) &&
-        this.teachers.find(teacher =>
-          teacher.grade_id === grade.id // only the grades that the user teaches to
-        )
-      ).sort((a, b) =>
-        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
-      )
-
-      this.subjects = this.subjects.filter(subject =>
-        this.teachers.find(teacher =>
-          teacher.subject_id === subject.id &&
-          this.grades.find(grade =>
-            grade.id === teacher.grade_id // only subjects that the user teaches to some grade
-          )
-        )
-      ).sort((a, b) =>
-        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
-      )
-
-      this.grade_subjects = this.grade_subjects.filter(grade_subject =>
-        this.grades.find(grade =>
-          grade.id === grade_subject.grade_id
-        ) &&
-        this.subjects.find(subject =>
-          subject.id === grade_subject.subject_id // only grade_subjects from grades and subjects that the user teaches
-        )
-      )
-
-      this.student_grades = this.student_grades.filter(student_grade =>
-        this.grades.find(grade =>
-          grade.id === student_grade.grade_id // only student_grades of grades that the user teaches to
-        )
-      ).sort((a, b) => Math.sign(a.number - b.number))
-
-      this.students = this.students.filter(student =>
-        this.student_grades.find(student_grade =>
-          student_grade.student_id === student.id  // only student in grades that the user teaches to
-        )
-      ).sort((a, b) =>
-        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
-      )
-
-      this.$emit('loaded')
-    })
   }
 }
 </script>

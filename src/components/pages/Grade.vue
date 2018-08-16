@@ -13,14 +13,14 @@
     </div>
     <article class="box">
       <div class="box-body">
-        <table class="table" v-if="grades.length">
+        <table class="table" v-if="$store.state.grades.length">
           <thead>
             <tr>
               <th>Nome</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="grade in grades" :key="grade.id">
+            <tr v-for="grade in $store.state.grades" :key="grade.id">
               <td :class="!parseInt(grade.active) ? 'text-muted' : ''">
                 {{ grade.name }}
                 <span class="text-muted" v-if="!parseInt(grade.active)">(invisível)</span>
@@ -47,18 +47,18 @@
         </div>
       </div>
     </article>
-    <modal anchor="modal-new" title="Nova turma">
+    <modal anchor="modal-new" title="Nova turma" ref="modalNew">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-resource="grade" data-success="Turma cadastrada com sucesso" data-error="Não foi possível cadastrar a turma" @submit.prevent="grade_save">
             <input type="hidden" name="active" value="1"><br>
             <div class="row">
               <div class="col-sm-8 input">
-                <input required placeholder="Ex.: 1° Ano A" name="name">
+                <input required placeholder="Ex.: 1° Ano A" name="name" minlength="3">
                 <label>Nome</label>
               </div>
               <div class="col-sm-4 input">
-                <input type="number" required min="1" placeholder="Ex. 1° ano: 1" name="level">
+                <input type="number" required min="1" placeholder="Ex. 1° ano: 1" name="level" step="1">
                 <label>
                   Nível
 
@@ -67,7 +67,7 @@
               </div>
             </div><br>
             <div class="row">
-              <div class="col-6 col-md-4" v-for="subject in subjects" v-if="subject.active" :key="subject.id">
+              <div class="col-6 col-md-4" v-for="subject in $store.state.subjects" v-if="subject.active" :key="subject.id">
                 <label>
                   <input type="checkbox" name="grade_subject[]" :value="subject.id"> {{ subject.name }}
                 </label>
@@ -81,18 +81,18 @@
         </div>
       </div>
     </modal>
-    <modal anchor="modal-edit" title="Editar turma">
+    <modal anchor="modal-edit" title="Editar turma" ref="modalEdit">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Turma editada com sucesso" data-error="Não foi possível editar a turma" @submit.prevent="grade_update">
             <br>
             <div class="row">
               <div class="col-sm-8 input">
-                <input required :value="current_grade.name" placeholder="Ex.: 1° Ano A" name="name">
+                <input required :value="current_grade.name" placeholder="Ex.: 1° Ano A" name="name" minlength="3">
                 <label>Nome</label>
               </div>
               <div class="col-sm-4 input">
-                <input type="number" required :value="current_grade.level" min="1" placeholder="Ex.: 1" name="level">
+                <input type="number" required :value="current_grade.level" min="1" placeholder="Ex.: 1" name="level" step="1">
                 <label>
                   Nível
 
@@ -115,18 +115,18 @@
         </div>
       </div>
     </modal>
-    <modal anchor="modal-students" :title="'Estudantes - '+(current_grade ? current_grade.name : '')">
+    <modal anchor="modal-students" :title="'Estudantes - '+(current_grade ? current_grade.name : '')" ref="modalStudents">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-resource="grade" data-success="Estudante cadastrado com sucesso" data-error="Não foi possível cadastrar o estudante" @submit.prevent="student_save">
             <br>
             <div class="row">
               <div class="col-sm-8 input">
-                <input required placeholder="Ex.: João da Silva" name="name">
+                <input required placeholder="Ex.: João da Silva" name="name" minlength="3">
                 <label>Nome</label>
               </div>
               <div class="col-sm-4 input">
-                <input type="number" required min="1" placeholder="Ex.: 5" name="number">
+                <input type="number" required min="1" placeholder="Ex.: 5" name="number" step="1">
                 <label>Número</label>
               </div>
             </div>
@@ -134,7 +134,7 @@
               <div class="material-icons">check</div>  Salvar
             </button>
           </form><br>
-          <table class="table" v-if="current_students">
+          <table class="table" v-if="current_students.length">
             <thead>
             <tr>
               <th>Nome</th>
@@ -154,12 +154,12 @@
               </template>
               <template v-else>
                 <td>
-                  <input name="name" :value="student.name">
+                  <input name="name" :value="student.name" minlength="3" required>
                 </td>
                 <td style="max-width: 75px">
-                  <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number">
+                  <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number" required>
                 </td>
-                <td class="text-right">
+                <td class="text-right no-wrap">
                   <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="student_update(student.id)">
                     <div class="material-icons">save</div><span class="d-none d-md-inline"> Salvar</span>
                   </button>
@@ -170,12 +170,18 @@
               </template>
             </tr>
             </tbody>
-          </table><br><a class="btn-danger" href="#">
+          </table>
+          <div class="text-center text-muted" v-else>
+            <br><br><br>
+            <div class="h4">Ainda não há nenhum estudante cadastrado</div>
+            <br><br>
+          </div>
+          <br><a class="btn-danger" href="#">
           <div class="material-icons">close</div>  Fechar</a>
         </div>
       </div>
     </modal>
-    <modal anchor="modal-subjects" :title="'Disciplinas - '+(current_grade ? current_grade.name : '')">
+    <modal anchor="modal-subjects" :title="'Disciplinas - '+(current_grade ? current_grade.name : '')" ref="modalSubjects">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Disciplina incluída com sucesso" data-error="Não foi possível incluir a disciplina" @submit.prevent="grade_subject_save"><br>
@@ -183,7 +189,7 @@
               <div class="col-12 col-sm-6 input">
                 <select required name="subject_id">
                   <option value="" disabled hidden selected>Selecione...</option>
-                  <option v-for="subject in subjects" :value="subject.id" :key="subject.id" :disabled="current_subjects.find(current_subject => current_subject.id === subject.id)">{{ subject.name }}</option>
+                  <option v-for="subject in $store.state.subjects" :value="subject.id" :key="subject.id" :disabled="current_subjects.find(current_subject => current_subject.id === subject.id)">{{ subject.name }}</option>
                 </select>
                 <label>Disciplina</label>
               </div>
@@ -212,12 +218,6 @@ export default {
   name: 'Grade',
   data: function() {
     return {
-      grades: [],
-      students: [],
-      student_grades: [],
-      subjects: [],
-      grade_subjects: [],
-
       current_grade_id: undefined,
       current_grade: {},
       current_grade_subjects: [],
@@ -237,23 +237,23 @@ export default {
         return
       }
 
-      this.current_grade = this.grades.find(grade => grade.id === this.current_grade_id)
+      this.current_grade = this.$store.state.grades.find(grade =>
+        grade.id === this.current_grade_id
+      )
 
-      this.current_grade_subjects = this.grade_subjects.filter(grade_subject =>
+      this.current_grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
         grade_subject.grade_id === this.current_grade_id
       )
-      this.current_subjects = this.subjects.filter(subject =>
+      this.current_subjects = this.$store.state.subjects.filter(subject =>
         this.current_grade_subjects.find(grade_subject =>
           grade_subject.subject_id === subject.id
         )
-      ).sort((a, b) =>
-        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
       )
 
-      this.current_student_grades = this.student_grades.filter(student_grade =>
+      this.current_student_grades = this.$store.state.student_grades.filter(student_grade =>
         student_grade.grade_id === this.current_grade_id
       )
-      this.current_students = this.students.filter(student =>
+      this.current_students = this.$store.state.students.filter(student =>
        this.studentGrade(student.id)
       ).sort((a, b) =>
         Math.sign(this.studentGrade(a.id).number - this.studentGrade(b.id).number)
@@ -270,39 +270,44 @@ export default {
     grade_save (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
-      let grade = {
-        name: form.querySelector('[name=name]').value,
-        level: form.querySelector('[name=level]').value,
-        active: true
-      }
 
       let grade_subject_inputs = form.querySelectorAll('[name="grade_subject[]"]:checked')
       let grade_subject_ids = [].map.call(grade_subject_inputs, input => input.value)
 
-      return app.save_resource('grade', grade, true, false).then(grade => {
-        this.grades.push(grade)
-
-        let save_grade_subjects = []
+      let save_resource = {
+        resource_name: 'grade',
+        data: {
+          name: form.querySelector('[name=name]').value,
+          level: form.querySelector('[name=level]').value,
+          active: true
+        }
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(grade => {
+        let promises = []
 
         grade_subject_ids.forEach(subject_id => {
-          let grade_subject = {
-            subject_id: subject_id,
-            grade_id: grade.id
+          let save_resource = {
+            resource_name: 'grade_subject',
+            data: {
+              subject_id: subject_id,
+              grade_id: grade.id
+            }
           }
-          let promise = app.save_resource('grade_subject', grade_subject, true, false).then(grade_subject => {
-            this.grade_subjects.push(grade_subject)
-          })
+          let promise = this.$store.dispatch('save_resource', save_resource)
 
-          save_grade_subjects.push(promise)
+          promises.push(promise)
         })
 
-        return Promise.all(save_grade_subjects)
+        return Promise.all(promises)
       }).then(() => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        document.location.hash = '' // closes the current modal
+        form.querySelector('[name=name]').value = ''
+        form.querySelector('[name=level]').value = ''
+        grade_subject_inputs.forEach(input =>
+          input.checked = false
+        )
+        this.$refs.modalNew.close()
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -313,24 +318,21 @@ export default {
     grade_update (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
-      let grade = {
-        id: this.current_grade_id,
-        name: form.querySelector('[name=name]').value,
-        level: form.querySelector('[name=level]').value,
-        active: form.querySelector('[name=active]').checked
-      }
 
-      return app.save_resource('grade', grade, true, false).then(grade => {
+      let save_resource = {
+        resource_name: 'grade',
+        data: {
+          id: this.current_grade_id,
+          name: form.querySelector('[name=name]').value,
+          level: form.querySelector('[name=level]').value,
+          active: form.querySelector('[name=active]').checked
+        }
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(grade => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        document.location.hash = '' // closes the current modal
+        this.$refs.modalEdit.close()
         this.current_grade = grade
-        let index = this.grades.findIndex(find_grade =>
-          find_grade.id === grade.id
-        )
-        this.$set(this.grades, index, grade)
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -341,13 +343,7 @@ export default {
     student_save (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
-      let student = {
-        name: form.querySelector('[name=name]').value,
-        active: true
-      }
 
       let student_grade = {
         grade_id: this.current_grade_id,
@@ -356,14 +352,24 @@ export default {
         end_date: '2018-12-31'
       }
 
-      return app.save_resource('student', student, true, false).then(student => {
-        this.students.push(student)
+      let save_resource = {
+        resource_name: 'student',
+        data: {
+          name: form.querySelector('[name=name]').value,
+          active: true
+        }
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(student => {
         this.current_students.push(student)
         student_grade.student_id = student.id
-        return app.save_resource('student_grade', student_grade, true, false)
+
+        let save_resource = {
+          resource_name: 'student_grade',
+          data: student_grade
+        }
+        return this.$store.dispatch('save_resource', save_resource)
       }).then(student_grade => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        this.student_grades.push(student_grade)
         this.current_student_grades.push(student_grade)
         this.current_students = this.current_students.sort((a, b) =>
           Math.sign(this.studentGrade(a.id).number - this.studentGrade(b.id).number)
@@ -378,12 +384,14 @@ export default {
     student_toggle (student_id) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let student_grade = this.studentGrade(student_id)
       student_grade.end_date = new Date(student_grade.end_date) <= new Date() ? '2018-12-31' : new Date().toISOString().slice(0, 10)
 
-      return app.save_resource('student_grade', student_grade, true, false).then(student_grade => {
+      let save_resource = {
+        resource_name: 'student_grade',
+        data: student_grade
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(student_grade => {
         let message
         if (student_grade.end_date === '2018-12-31') {
           message = 'Estudante desativado com sucesso'
@@ -392,15 +400,10 @@ export default {
         }
         this.$emit('notify', 'Sucesso!', message, 'success')
 
-        let index = this.student_grades.findIndex(find_student_grade =>
+        let index = this.current_student_grades.findIndex(find_student_grade =>
           find_student_grade.id === student_grade.id
         )
-        this.$set(this.student_grades, index, student_grade)
-
-        let current_index = this.current_student_grades.findIndex(find_student_grade =>
-          find_student_grade.id === student_grade.id
-        )
-        this.$set(this.current_student_grades, current_index, student_grade)
+        this.$set(this.current_student_grades, index, student_grade)
       }).catch(error => {
         let message
         if (student_grade.end_date === '2018-12-31') {
@@ -417,22 +420,23 @@ export default {
     grade_subject_save (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
-      let data = {
-        grade_id: this.current_grade_id,
-        subject_id: form.querySelector('[name=subject_id]').value
-      }
 
-      app.save_resource('grade_subject', data, true, false).then(grade_subject => {
+      let save_resource = {
+        resource_name: 'grade_subject',
+        data: {
+          grade_id: this.current_grade_id,
+          subject_id: form.querySelector('[name=subject_id]').value
+        }
+      }
+      this.$store.dispatch('save_resource', save_resource).then(grade_subject => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        this.grade_subjects.push(grade_subject)
         this.current_grade_subjects.push(grade_subject)
-        let subject = this.subjects.find(subject =>
+        let subject = this.$store.state.subjects.find(subject =>
           subject.id === grade_subject.subject_id
         )
         this.current_subjects.push(subject)
+        form.querySelector('[name=subject_id]').value = ''
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -441,56 +445,40 @@ export default {
       })
     },
     student_update (student_id) {
-      let app = this.$parent
-
       let tr = document.querySelector('[data-student_id="' + student_id + '"]')
-
-      let student = {
-        id: student_id,
-        name: tr.querySelector('[name=name]').value
-      }
-
-      if (student.name.length < 3) {
-        this.$emit('notify', 'Erro', 'O nome do aluno precisa de ao menos 3 caracteres', 'error')
-        return
-      }
-
-      let student_grade = {
-        id: this.studentGrade(student_id).id,
-        student_id: student_id,
-        grade_id: this.current_grade_id,
-        number: parseInt(tr.querySelector('[name=number]').value)
-      }
-
-      if (!student_grade.number) {
-        this.$emit('notify', 'Erro', 'O aluno precisa de um número válido')
-        return
-      }
 
       this.$emit('loading')
 
       let promises = []
-      promises.push(app.save_resource('student', student, true, false).then(student => {
-        let index = this.students.findIndex(find_student =>
-          find_student.id === student.id
-        )
-        this.$set(this.students, index, student)
 
-        let current_index = this.current_students.findIndex(find_student =>
+      let save_resource = {
+        resource_name: 'student',
+        data: {
+          id: student_id,
+          name: tr.querySelector('[name=name]').value
+        }
+      }
+      promises.push(this.$store.dispatch('save_resource', save_resource).then(student => {
+        let index = this.current_students.findIndex(find_student =>
           find_student.id === student.id
         )
-        this.$set(this.current_students, current_index, student)
+        this.$set(this.current_students, index, student)
       }))
-      promises.push(app.save_resource('student_grade', student_grade).then(student_grade => {
-        let index = this.student_grades.findIndex(find_student_grade =>
-          find_student_grade.id === student_grade.id
-        )
-        this.$set(this.student_grades, index, student_grade)
 
-        let current_index = this.current_student_grades.findIndex(find_student_grade =>
+      save_resource = {
+        resource_name: 'student_grade',
+        data: {
+          id: this.studentGrade(student_id).id,
+          student_id: student_id,
+          grade_id: this.current_grade_id,
+          number: tr.querySelector('[name=number]').value
+        }
+      }
+      promises.push(this.$store.dispatch('save_resource', save_resource).then(student_grade => {
+        let index = this.current_student_grades.findIndex(find_student_grade =>
           find_student_grade.id === student_grade.id
         )
-        this.$set(this.current_student_grades, current_index, student_grade)
+        this.$set(this.current_student_grades, index, student_grade)
       }))
 
       Promise.all(promises).then(() => {
@@ -506,45 +494,13 @@ export default {
       })
     }
   },
-  beforeCreate() {
-    this.$emit('loading')
-  },
   created() {
-    this.grades = []
-    this.students = []
-    this.student_grades = []
-    this.subjects = []
-    this.grade_subjects = []
-
     this.current_grade_id = undefined
     this.current_grade = {}
     this.current_grade_subjects = []
     this.current_student_grades = []
     this.current_students = []
     this.current_subjects = []
-
-    let db = this.$parent.db
-
-    let promises = []
-    promises.push(db.grades.toArray().then(grades =>
-      this.grades = grades
-    ))
-    promises.push(db.students.toArray().then(students =>
-      this.students = students
-    ))
-    promises.push(db.student_grades.toArray().then(student_grades =>
-      this.student_grades = student_grades
-    ))
-    promises.push(db.subjects.toArray().then(subjects =>
-      this.subjects = subjects
-    ))
-    promises.push(db.grade_subjects.toArray().then(grade_subjects =>
-      this.grade_subjects = grade_subjects
-    ))
-
-    Promise.all(promises).then(() => {
-      this.$emit('loaded')
-    })
   }
 }
 </script>

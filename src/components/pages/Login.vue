@@ -47,32 +47,24 @@ export default {
     login(event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
       let data = {
         email: form.querySelector('[name=email]').value,
         password: form.querySelector('[name=password]').value
       }
 
-      return app.api_fetch('user_token', 'POST', data).then(response =>
-        response.json()
-      ).then(token => {
-        localStorage.setItem('token', JSON.stringify(token))
-
-        app.setAuthData()
-
-        return app.loadFromAPI()
-      }).then(() => {
-        app.setAuthData()
-        return app.loadData()
-      }).then(() => {
-          app.$router.push('/')
-      }).catch(error => {
-        console.log('Error:', error)
-      }).finally(() =>
+      return this.$store.dispatch('login', data).then(() =>
+        this.$store.dispatch('loadFromAPI')
+      ).then(() =>
+        this.$store.dispatch('loadData')
+      ).then(() => {
         this.$emit('loaded')
-      )
+        this.$router.push('/')
+      }).catch(error => {
+        this.$emit('loaded')
+        this.$emit('notify', 'Erro', 'Não foi possível fazer login. Tente novamente!', 'danger')
+        console.log('Error:', error)
+      })
     }
   }
 }

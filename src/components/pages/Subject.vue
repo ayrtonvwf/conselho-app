@@ -9,14 +9,14 @@
     </div>
     <article class="box">
       <div class="box-body">
-        <table class="table" v-if="subjects.length">
+        <table class="table" v-if="$store.state.subjects.length">
           <thead>
             <tr>
               <th>Nome</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="subject in subjects" :key="subject.id">
+            <tr v-for="subject in $store.state.subjects" :key="subject.id">
               <td :class="!parseInt(subject.active) ? 'text-muted' : ''">
                 {{ subject.name }} <span class="text-muted" v-if="!parseInt(subject.active)">(invisível)</span>
               </td>
@@ -34,7 +34,7 @@
         </div>
       </div>
     </article>
-    <modal anchor="modal-new" title="Nova disciplina">
+    <modal anchor="modal-new" title="Nova disciplina" ref="modalNew">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Disciplina cadastrada com sucesso" data-error="Não foi possível cadastrar a disciplina" @submit.prevent="subject_save">
@@ -55,7 +55,7 @@
         </div>
       </div>
     </modal>
-    <modal anchor="modal-edit" title="Editar disciplina">
+    <modal anchor="modal-edit" title="Editar disciplina" ref="modalEdit">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Disciplina editada com sucesso" data-error="Não foi possível editar a disciplina" @submit.prevent="subject_update">
@@ -91,7 +91,6 @@ export default {
   name: 'Subject',
   data: function() {
     return {
-      'subjects': [],
       'current_subject_id': undefined,
       'current_subject': {}
     }
@@ -103,7 +102,7 @@ export default {
         return
       }
 
-      this.current_subject = this.subjects.find(subject =>
+      this.current_subject = this.$store.state.subjects.find(subject =>
         subject.id === this.current_subject_id
       )
     }
@@ -112,8 +111,6 @@ export default {
     subject_save (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
 
       let subject = {
@@ -121,23 +118,22 @@ export default {
         active: true
       }
 
-      return app.save_resource('subject', subject, true, false).then(subject => {
-        document.location.hash = '' // closes the current modal
-
+      let save_resource = {
+        resource_name: 'subject',
+        data: subject
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(() => {
+        form.querySelector('[name=name]').value = ''
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-
-        this.subjects.push(subject)
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
-        console.log('Error:', error)
+        console.log('Error:', error.stack)
       }).finally(() => {
         this.$emit('loaded')
       })
     },
     subject_update (event) {
       this.$emit('loading')
-
-      let app = this.$parent
 
       let form = event.target
 
@@ -147,15 +143,13 @@ export default {
         active: !!form.querySelector('[name=active]').checked
       }
 
-      return app.save_resource('subject', subject, true, false).then(subject => {
-        document.location.hash = '' // closes the current modal
-
+      let save_resource = {
+        resource_name: 'subject',
+        data: subject
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(subject => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-
-        let index = this.subjects.findIndex(subject =>
-          subject.id === this.current_subject_id
-        )
-        this.$set(this.subjects, index, subject)
+        this.$refs.modalEdit.close()
         this.current_subject = subject
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
@@ -165,20 +159,9 @@ export default {
       })
     }
   },
-  beforeCreate() {
-    this.$emit('loading')
-  },
   created() {
-    let db = this.$parent.db
-
-    this.subjects = []
     this.current_subject_id = ''
     this.current_subject = {}
-
-    db.subjects.toArray().then(subjects => {
-      this.subjects = subjects
-      this.$emit('loaded')
-    })
   }
 }
 </script>

@@ -18,7 +18,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-for="user in users" :key="user.id">
+          <tr v-for="user in $store.state.users" :key="user.id">
             <td>{{ user.name }}</td>
             <td>{{ role_type(user.id).name }}</td>
             <td>{{ user.email }}</td>
@@ -27,7 +27,7 @@
         </table>
       </div>
     </article>
-    <modal anchor="modal-new" title="Novo usuário">
+    <modal anchor="modal-new" title="Novo usuário" ref="modalNew">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Usuário cadastrado com sucesso" data-error="Não foi possível cadastrar o usuário" @submit.prevent="user_save"><br>
@@ -55,7 +55,7 @@
               <div class="col-sm-6 input">
                 <select required name="role_type_id">
                   <option value="" selected disabled hidden>Selecione...</option>
-                  <option v-for="role_type in role_types" :value="role_type.id" :key="role_type.id">{{ role_type.name }}</option>
+                  <option v-for="role_type in $store.state.role_types" :value="role_type.id" :key="role_type.id">{{ role_type.name }}</option>
                 </select>
                 <label>Tipo de usuário</label>
               </div>
@@ -76,25 +76,24 @@
 export default {
   name: 'Role',
   data: function() {
-    return {
-      users: [],
-      role_types: [],
-      roles: []
-    }
+    return {}
   },
   methods: {
     role_type (user_id) {
-      let role = this.roles.find(role => role.user_id === user_id && parseInt(role.approved))
+      let role = this.$store.state.roles.find(role =>
+        role.user_id === user_id &&
+        parseInt(role.approved)
+      )
 
       if (!role) {
         return {}
       }
 
-      return this.role_types.find(role_type => role_type.id === role.role_type_id)
+      return this.$store.state.role_types.find(role_type =>
+        role_type.id === role.role_type_id
+      )
     },
     user_save (event) {
-      let app = this.$parent
-
       let form = event.target
 
       let user = {
@@ -114,25 +113,48 @@ export default {
 
       this.$emit('loading')
 
-      app.save_resource('user', user, true, false).then(saved_user => {
-        user = saved_user
+      let save_resource = {
+        resource_name: 'user',
+        data: user
+      }
+      this.$store.dispatch('save_resource', save_resource).then(user => {
         role.user_id = user.id
-        this.users.push(user)
-        let user_token = {
-          email: user.email,
-          password: user.password
+        let api_fetch = {
+          path: 'user_token',
+          method: 'POST',
+          body: {
+            email: user.email,
+            password: user.password
+          }
         }
-        return app.api_fetch('user_token', 'POST', user_token).then(response => response.json())
+        return this.$store.dispatch('api_fetch', api_fetch).then(response =>
+          response.json()
+        )
       }).then(user_token => {
-        return app.save_resource('role', role, true, false, { Token: user_token.value })
-      }).then(saved_role => {
-        role = saved_role
-        role.approved = true
-        return app.save_resource('role', role, true, false)
+        let save_resource = {
+          resource_name: 'role',
+          data: role,
+          headers: {
+            Token: user_token.value
+          }
+        }
+        return this.$store.dispatch('save_resource', save_resource)
       }).then(role => {
+        role.approved = true
+        let save_resource = {
+          resource_name: 'role',
+          data: role
+        }
+        return this.$store.dispatch('save_resource', save_resource)
+      }).then(() => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        document.location.hash = ''
-        this.roles.push(role)
+
+        this.$refs.modalNew.close()
+
+        form.querySelector('[name=name]').value = ''
+        form.querySelector('[name=email]').value = ''
+        form.querySelector('[name=password]').value = ''
+        form.querySelector('[name=role_type_id]').value = ''
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -140,34 +162,6 @@ export default {
         this.$emit('loaded')
       })
     }
-  },
-  beforeCreate() {
-    this.$emit('loading')
-  },
-  created() {
-    let db = this.$parent.db
-
-    this.users = []
-    this.role_types = []
-    this.roles = []
-
-    let promises = []
-
-    promises.push(db.users.toArray().then(users =>
-      this.users = users.sort((a, b) =>
-        a.name.localeCompare(b.name, 'pt-BR', { ignorePunctuation: true })
-      )
-    ))
-    promises.push(db.role_types.toArray().then(role_types =>
-      this.role_types = role_types
-    ))
-    promises.push(db.roles.toArray().then(roles =>
-      this.roles = roles
-    ))
-
-    Promise.all(promises).then(() =>
-      this.$emit('loaded')
-    )
   }
 }
 </script>

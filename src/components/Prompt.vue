@@ -16,13 +16,21 @@
         </a>
       </div>
     </div>
-    <a class="modal-close" href="#"></a>
+    <a class="modal-close" :href="'#'+$route.path"></a>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Prompt',
-  props: ['title', 'anchor', 'type', 'accept']
+  props: ['title', 'anchor', 'type', 'accept'],
+  methods: {
+    open () {
+      document.location.hash = this.anchor
+    },
+    close () {
+      document.location.hash = this.$route.path
+    }
+  }
 }
 </script>

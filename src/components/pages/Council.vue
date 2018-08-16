@@ -9,7 +9,7 @@
     </div>
     <article class="box">
       <div class="box-body">
-        <table class="table" v-if="councils.length">
+        <table class="table" v-if="$store.state.councils.length">
           <thead>
             <tr>
               <th>Nome</th>
@@ -18,7 +18,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="council in councils" :class="activeCouncil(council.id) ? 'text-bold' : ''" :key="council.id">
+            <tr v-for="council in $store.state.councils" :class="activeCouncil(council.id) ? 'text-bold' : ''" :key="council.id">
               <td>{{ council.name }}</td>
               <td class="d-none d-sm-table-cell">{{ new Date(council.start_date).toLocaleDateString('pt-BR') }} - {{ new Date(council.end_date).toLocaleDateString('pt-BR') }}</td>
               <td class="d-none d-lg-table-cell">{{ councilStatus(council.id) }}</td>
@@ -40,7 +40,7 @@
         </div>
       </div>
     </article>
-    <modal anchor="modal-new" title="Novo conselho de classe">
+    <modal anchor="modal-new" title="Novo conselho de classe" ref="modalNew">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Conselho de classe criado com sucesso" data-error="Não foi possível criar o conselho de classe" @submit.prevent="council_save"><br>
@@ -67,7 +67,7 @@
               </div>
             </div><br>
             <div class="row">
-              <div class="col-6 col-md-4" v-for="topic in topics" v-if="topic.active" :key="topic.id">
+              <div class="col-6 col-md-4" v-for="topic in $store.state.topics" v-if="topic.active" :key="topic.id">
                 <label>
                   <input type="checkbox" name="council_topic[]" :value="topic.id"> {{ topic.name }}
                 </label>
@@ -81,7 +81,7 @@
         </div>
       </div>
     </modal>
-    <modal anchor="modal-edit" title="Editar conselho de classe">
+    <modal anchor="modal-edit" title="Editar conselho de classe" ref="modalEdit">
       <div class="row justify-content-center">
         <div class="col-sm-11">
           <form action="#" data-success="Conselho de classe editado com sucesso" data-error="Não foi possível editar o conselho de classe" @submit.prevent="council_update">
@@ -136,9 +136,6 @@ export default {
   name: 'Council',
   data: function() {
     return {
-      councils: [],
-      council_topics: [],
-      topics: [],
       current_council_id: undefined,
       current_council: {},
       current_topics: []
@@ -152,81 +149,108 @@ export default {
         return
       }
 
-      this.current_council = this.councils.find(council =>
+      this.current_council = this.$store.state.councils.find(council =>
         council.id === this.current_council_id
       )
 
-      this.current_topics = this.topics.filter(topic =>
-        this.council_topics.filter(council_topic =>
+      this.current_topics = this.$store.state.topics.filter(topic =>
+        this.$store.state.council_topics.find(council_topic =>
           council_topic.topic_id === topic.id &&
           council_topic.council_id === this.current_council_id
-        ).length
+        )
       )
     }
   },
   methods: {
     councilStatus (council_id) {
-      let council = this.councils.find(council => council.id === council_id)
+      let council = this.$store.state.councils.find(council =>
+        council.id === council_id
+      )
+
       let today = new Date()
+
       if (today > new Date(council.end_date)) {
         return 'Finalizado'
       }
+
       if (today < new Date(council.start_date)) {
         return 'Aguardando início'
       }
+
       return council.active ? 'Acontecendo' : 'Pausado'
     },
+
     activeCouncil (council_id) {
-      let council = this.councils.find(council => council.id === council_id)
+      let council = this.$store.state.councils.find(council =>
+        council.id === council_id
+      )
+
       let today = new Date()
-      return council.active && today >= new Date(council.start_date) && today <= new Date(council.end_date)
+
+      return council.active &&
+        today >= new Date(council.start_date) &&
+        today <= new Date(council.end_date)
     },
 
     council_save (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
-      let council = {
-        name: form.querySelector('[name=name]').value,
-        start_date: form.querySelector('[name=start_date]').value,
-        end_date: form.querySelector('[name=end_date]').value,
-        active: true
-      }
 
       let council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
       let council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
 
-      return app.save_resource('council', council, true, false).then(council => {
-        this.councils.push(council)
-
-        let save_promises = []
+      let save_resource = {
+        resource_name: 'council',
+        data: {
+          name: form.querySelector('[name=name]').value,
+          start_date: form.querySelector('[name=start_date]').value,
+          end_date: form.querySelector('[name=end_date]').value,
+          active: true
+        }
+      }
+      return this.$store.dispatch('save_resource', save_resource).then(council => {
+        let promises = []
 
         council_topic_ids.forEach(topic_id => {
-          let save_promise = app.save_resource('council_topic', {
-            topic_id: topic_id,
-            council_id: council.id
-          }, true, false).then(council_topic => {
-            this.council_topics.push(council_topic)
-          })
+          let save_resource = {
+            resource_name: 'council_topic',
+            data: {
+              topic_id: topic_id,
+              council_id: council.id
+            }
+          }
 
-          save_promises.push(save_promise)
+          let promise = this.$store.dispatch('save_resource', save_resource)
+
+          promises.push(promise)
         })
 
-        this.grades.forEach(grade => {
-          let save_promise = app.save_resource('council_grade', {
-            grade_id: grade.id,
-            council_id: council.id
-          }, true, false)
+        this.$store.state.grades.forEach(grade => {
+          let save_resource = {
+            resource_name: 'council_grade',
+            data: {
+              grade_id: grade.id,
+              council_id: council.id
+            }
+          }
 
-          save_promises.push(save_promise)
+          let promise = this.$store.dispatch('save_resource', save_resource)
+
+          promises.push(promise)
         })
 
-        return Promise.all(save_promises)
+        return Promise.all(promises)
       }).then(() => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        document.location.hash = '' // closes the current modal
+        this.$refs.modalNew.close()
+
+        form.querySelector('[name=name]').value = ''
+        form.querySelector('[name=start_date]').value = ''
+        form.querySelector('[name=end_date]').value = ''
+        council_topic_inputs.forEach(input =>
+          input.checked = false
+        )
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
         console.log('Error:', error)
@@ -237,26 +261,21 @@ export default {
     council_update (event) {
       this.$emit('loading')
 
-      let app = this.$parent
-
       let form = event.target
-      let council = {
-        id: this.current_council_id,
-        name: form.querySelector('[name=name]').value,
-        start_date: form.querySelector('[name=start_date]').value,
-        end_date: form.querySelector('[name=end_date]').value,
-        active: true
+
+      let save_resource = {
+        resource_name: 'council',
+        data: {
+          id: this.current_council_id,
+          name: form.querySelector('[name=name]').value,
+          start_date: form.querySelector('[name=start_date]').value,
+          end_date: form.querySelector('[name=end_date]').value,
+          active: true
+        }
       }
 
-      return app.save_resource('council', council, true, false).then(council => {
-        document.location.hash = '' // closes the current modal
-
+      return this.$store.dispatch('save_resource', save_resource).then(council => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-
-        let index = this.councils.findIndex(council =>
-          council.id === this.current_council_id
-        )
-        this.$set(this.councils, index, council)
         this.current_council = council
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
@@ -266,36 +285,10 @@ export default {
       })
     }
   },
-  beforeCreate() {
-    this.$emit('loading')
-  },
   created() {
-    let db = this.$parent.db
-
-    this.councils = []
-    this.council_topics = []
-    this.topics = []
     this.current_council_id = undefined
     this.current_council = {}
     this.current_topics = []
-
-    let promises = []
-    promises.push(db.councils.toArray().then(councils => {
-      this.councils = councils
-    }))
-    promises.push(db.topics.toArray().then(topics => {
-      this.topics = topics
-    }))
-    promises.push(db.council_topics.toArray().then(council_topics => {
-      this.council_topics = council_topics
-    }))
-    promises.push(db.grades.toArray().then(grades => {
-      this.grades = grades // not defined in data cause don't need to be reactive
-    }))
-
-    Promise.all(promises).finally(() => {
-      this.$emit('loaded')
-    })
   }
 }
 </script>

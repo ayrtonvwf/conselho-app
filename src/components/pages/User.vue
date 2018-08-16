@@ -50,8 +50,6 @@ export default {
   },
   methods: {
     user_update (event) {
-      let app = this.$parent
-
       let form = event.target
       let user = {
         id: this.user.id,
@@ -73,10 +71,16 @@ export default {
 
       this.$emit('loading')
 
-      return app.api_fetch('user', 'PATCH', user).then(() => {
+      let api_fetch = {
+        path: 'user',
+        method: 'PATCH',
+        body: user
+      }
+      return this.$store.dispatch('api_fetch', api_fetch).then(() => {
         delete user.password
-        return this.db.users.put(user)
+        return this.$store.dispatch('db_put', {name: 'users', data: user})
       }).then(() => {
+        this.$store.commit('updateItem', { name: 'users', data: user })
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
@@ -86,20 +90,9 @@ export default {
       })
     }
   },
-  beforeCreate() {
-    this.$emit('loading')
-  },
   created() {
-    this.db = this.$parent.db
-
-    let current_user_id = parseInt(this.$parent.token.user_id)
-
-    this.user = {}
-
-    this.db.users.get(current_user_id).then(user => {
-      this.user = user
-      this.$emit('loaded')
-    })
+    let current_user_id = parseInt(this.$store.state.token.user_id)
+    this.user = this.$store.state.users.find(user => user.id === current_user_id)
   }
 }
 </script>

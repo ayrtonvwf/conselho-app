@@ -32,28 +32,28 @@
     </form>
     <header class="header">
       <router-link class="header-button main-button" :to="{ name: 'Index' }">Conselho</router-link>
-      <template v-if="logged_in">
-        <a class="header-button menu-toggle material-icons" href="#menu" v-if="logged_in">menu</a>
-        <button class="header-button material-icons" type="button" @click="loadFromAPI">sync</button>
+      <template v-if="$store.state.logged_in">
+        <a class="header-button menu-toggle material-icons" href="#menu" v-if="$store.state.logged_in">menu</a>
+        <button class="header-button material-icons" type="button" @click="sync">sync</button>
 
         <div class="header-pane" v-if="userHasPermission('role')">
           <button class="header-button material-icons" type="button">
             notifications
-            <span class="header-button-label-red" v-if="teacher_requests.length">{{ teacher_requests.length }}</span>
+            <span class="header-button-label-red" v-if="$store.state.teacher_requests.length">{{ $store.state.teacher_requests.length }}</span>
           </button>
           <div class="header-pane-popup">
             <div class="header-pane-header"><i class="material-icons">notifications</i>Notificações</div>
             <div class="header-pane-body">
-              <div v-for="(teacher_request, index) in teacher_requests" :key="teacher_request.id">
+              <div v-for="(teacher_request, index) in $store.state.teacher_requests" :key="teacher_request.id">
                 <hr class="margin-h-15" v-if="index">
                 <router-link class="no-link" :to="{ name: 'Teacher' }">
-                  <div class="header-notification-title"><b>{{ users.find(user => user.id === teacher_request.user_id).name }}</b> aguarda sua aprovação</div>
-                  <div class="header-notification-description">{{ grades.find(grade => grade.id === teacher_request.grade_id).name }} - {{ subjects.find(subject => subject.id === teacher_request.subject_id).name }}
+                  <div class="header-notification-title"><b>{{ $store.state.users.find(user => user.id === teacher_request.user_id).name }}</b> aguarda sua aprovação</div>
+                  <div class="header-notification-description">{{ $store.state.grades.find(grade => grade.id === teacher_request.grade_id).name }} - {{ $store.state.subjects.find(subject => subject.id === teacher_request.subject_id).name }}
                     <div class="text-muted">{{ new Date(teacher_request.created_at).toLocaleDateString('pt-BR') }}</div>
                   </div>
                 </router-link>
               </div>
-              <div class="text-center text-muted" v-if="!teacher_requests.length"><br><br>
+              <div class="text-center text-muted" v-if="!$store.state.teacher_requests.length"><br><br>
                 <div class="h5">Não há notificações</div><br><br>
               </div>
             </div>
@@ -61,11 +61,11 @@
         </div>
 
         <div class="header-pane">
-          <button class="header-button" type="button">{{ user ? user.name : ''}}</button>
+          <button class="header-button" type="button">{{ currentUser ? currentUser.name : ''}}</button>
           <div class="header-pane-popup">
             <div class="header-pane-body text-center bg-primary text-white"><br>
               <div class="text-80"><i class="material-icons user-icon">account_circle</i></div>
-              <div class="text-20">{{ user ? user.name : ''}}</div><br><br>
+              <div class="text-20">{{ currentUser ? currentUser.name : ''}}</div><br><br>
             </div>
             <div class="header-pane-footer">
               <router-link class="btn-default btn-sm" :to="{ name: 'User' }">Usuário</router-link>
@@ -76,8 +76,8 @@
       </template>
     </header>
     <div class="container">
-      <nav class="menu" id="menu" v-if="logged_in">
-        <a class="menu-close header-button material-icons" href="#">menu</a>
+      <nav class="menu" id="menu" v-if="$store.state.logged_in">
+        <a class="menu-close header-button material-icons" :href="'#'+$route.path">menu</a>
         <router-link class="menu-link" :to="{ name: 'Index' }" active-class="menu-active" exact>
           <i class="material-icons">home</i> Página Inicial
         </router-link>
@@ -103,7 +103,7 @@
           <router-link class="menu-link" :to="{ name: 'TeacherRequest' }" active-class="menu-active">
             <i class="material-icons">people</i> Turmas
           </router-link>
-          <router-link class="menu-link" v-for="council in councils" :key='council.id' :to="{ name: 'Evaluate', params: { id: council.id } }" active-class="menu-active">
+          <router-link class="menu-link" v-for="council in activeCouncils" :key='council.id' :to="{ name: 'Evaluate', params: { id: council.id } }" active-class="menu-active">
             <i class="material-icons">edit</i> {{ council.name }}
           </router-link>
         </template>
@@ -132,411 +132,56 @@
 <script>
 /* eslint-disable */
 
-import Dexie from 'dexie'
+// import Dexie from 'dexie'
 
 export default {
   name: 'App',
   data() {
     return {
-      users: [], // only users with teacher requests
-      grades: [], // only grades with teacher requests
-      councils: [], // only the active ones
-      subjects: [], // only subjects with teacher_requests
-      permissions: [], // only the permissions that the user has
-      teacher_requests: [],
-
-      user: {},     // only the current user
       notification: {},
-      token: undefined,
-      logged_in: undefined,
       loading: true
     }
-
-    let resources = [
-        'council',
-        'council_grade',
-        'council_topic',
-        'evaluation',
-        'grade',
-        'grade_subject',
-        'grade_observation',
-        'medical_report',
-        'medical_report_subject',
-        'permission',
-        'role',
-        'role_type',
-        'role_type_permission',
-        'school',
-        'student',
-        'student_observation',
-        'student_grade',
-        'subject',
-        'teacher',
-        'teacher_request',
-        'topic',
-        'topic_option',
-        'user'
-      ]
-    ;
+  },
+  computed: {
+    currentUser() {
+      let user = this.$store.state.users.find(user =>
+        user.id === this.$store.state.token.user_id
+      )
+      return user ? user : {}
+    },
+    currentRole() {
+      let role = this.$store.state.roles.find(role =>
+        role.user_id === this.$store.state.token.user_id
+      )
+      return role ? role : {}
+    },
+    currentRoleType() {
+      let role_type = this.$store.state.role_types.find(role_type =>
+        role_type.id === this.currentRole.role_type_id
+      )
+      return role_type ? role_type : {}
+    },
+    currentRoleTypePermissions() {
+      return this.$store.state.role_type_permissions.filter(role_type_permission =>
+        role_type_permission.role_type_id === this.currentRoleType.id
+      )
+    },
+    currentPermissions() {
+      return this.$store.state.permissions.filter(permission =>
+        this.currentRoleTypePermissions.find(role_type_permission =>
+          role_type_permission.permission_id === permission.id
+        )
+      )
+    },
+    activeCouncils() {
+      return this.$store.state.councils.filter(council =>
+        council.active &&
+        new Date(council.start_date) <= new Date() &&
+        new Date(council.end_date) >= new Date()
+      )
+    }
   },
   methods: {
-    // initializing methods
-    setApiUrl() {
-      if (location.href.indexOf('localhost') !== -1 || location.href.indexOf('127.0.0.1') !== -1) {
-        this.api_url = 'http://localhost/conselho-server/'
-      } else {
-        this.api_url = 'https://conselho-api.infomec.net.br/'
-      }
-    },
-    setAuthData() {
-      let loaded_data = localStorage.getItem('has_loaded_data')
-      this.token = JSON.parse(localStorage.getItem('token'))
-      this.logged_in = loaded_data && this.token && new Date(this.token.expires_at) > new Date()
-    },
-    openDB() {
-      let db = new Dexie('conselho')
-      db.version(1).stores({
-        councils: 'id',
-        council_grades: 'id',
-        council_topics: 'id',
-        evaluations: 'id',
-        grades: 'id',
-        grade_subjects: 'id',
-        grade_observations: 'id',
-        medical_reports: 'id',
-        medical_report_subjects: 'id',
-        permissions: 'id',
-        roles: 'id',
-        role_types: 'id',
-        role_type_permissions: 'id',
-        schools: 'id',
-        students: 'id',
-        student_observations: 'id',
-        student_grades: 'id',
-        subjects: 'id',
-        teachers: 'id',
-        teacher_requests: 'id',
-        topics: 'id',
-        topic_options: 'id',
-        users: 'id'
-      })
-      db.open().catch(error => {
-        console.error('Open failed: ' + error.stack)
-      })
-
-      this.db = db
-    },
-    resetData() {
-      this.users = []
-      this.grades = []
-      this.councils = []
-      this.subjects = []
-      this.permissions = []
-      this.teacher_requests = []
-
-      this.user = {}
-      this.notification = {}
-    },
-    loadData() {
-      let promises = []
-      promises.push(this.db.users.get(this.token.user_id).then(user =>
-        this.user = user
-      ))
-
-      promises.push(
-        this.db.roles.toArray().then(roles => // get roles from db
-          this.role = roles.find(role =>
-            role.user_id === this.token.user_id // find user role
-          )
-        ).then(() =>
-          this.db.role_types.toArray() // get role types from db
-        ).then(role_types =>
-          this.role_type = role_types.find(role_type =>
-            role_type.id === this.role.role_type_id // find user role type
-          )
-        ).then(() =>
-          this.db.role_type_permissions.toArray() // get role type permissions from db
-        ).then(role_type_permissions =>
-          this.role_type_permissions = role_type_permissions.filter(role_type_permission =>
-            role_type_permission.role_type_id === this.role_type.id // filter user role type permissions
-          )
-        ).then(() =>
-          this.db.permissions.toArray() // get permissions from db
-        ).then(permissions =>
-          this.permissions = permissions.filter(permission =>
-            this.role_type_permissions.find(role_type_permission =>
-              role_type_permission.permission_id === permission.id // filter user permissions
-            )
-          )
-        )
-      )
-
-      promises.push(this.db.councils.toArray().then(councils => // get councils from db
-        this.councils = councils.filter(council => // filter active councils
-          council.active &&
-          new Date(council.start_date) <= new Date() &&
-          new Date(council.end_date) >= new Date()
-        )
-      ))
-
-      promises.push(
-        this.db.teacher_requests.toArray().then(teacher_requests => // get teacher requests from db
-          this.teacher_requests = teacher_requests
-        ).then(() => {
-          let promises = []
-
-          promises.push(
-            this.db.users.toArray().then(users => // get users from db
-              this.users = users.filter(user =>
-                this.teacher_requests.find(teacher_request =>
-                  teacher_request.user_id === user.id // filter users in the teacher requests
-                )
-              )
-            )
-          )
-          promises.push(
-            this.db.grades.toArray().then(grades =>
-              this.grades = grades.filter(grade =>
-                this.teacher_requests.find(teacher_request =>
-                  teacher_request.grade_id === grade.id // filter grades in the teacher requests
-                )
-              )
-            )
-          )
-          promises.push(
-            this.db.subjects.toArray().then(subjects =>
-              this.subjects = subjects.filter(subject =>
-                this.teacher_requests.find(teacher_request =>
-                  teacher_request.subject_id === subject.id // filter subjects in the teacher requests
-                )
-              )
-            )
-          )
-
-          return Promise.all(promises)
-        })
-      )
-
-      return Promise.all(promises)
-    },
-
-    loadFromAPI () {
-      this.loading = true
-
-      let promises = []
-
-      // if the process breaks, next time will be loaded from API
-      window.localStorage.removeItem('has_loaded_data')
-
-      this.db.tables.forEach(table => {
-        let resource = table.name.slice(0, -1)
-        let promise = this.get_resource(resource).then(data => {
-          return table.clear().then(() => {
-            return table.bulkPut(this.parseObjects(data))
-          })
-        })
-
-        promises.push(promise)
-      })
-
-      return Promise.all(promises).then(() => {
-        window.localStorage.setItem('has_loaded_data', '1')
-      }).catch(error => {
-        this.notify('Erro!', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
-        console.log('Error:', error)
-      }).finally(() => {
-        this.loading = false
-      })
-    },
-    api_fetch (path, method, body, headers) {
-      if (method === undefined) {
-        method = 'GET'
-      }
-
-      if (!body) {
-        body = { school_id: 1}
-      } else {
-        body.school_id = 1
-      }
-
-      if (method === 'GET' || method === 'DELETE') {
-        if (body !== undefined) {
-          path += '?' + this.serialize(body)
-          body = undefined
-        }
-      } else {
-        body = JSON.stringify(this.parseObject(body))
-      }
-
-      if (headers === undefined) {
-        headers = {}
-      }
-
-      headers = new Headers(headers)
-      headers.set('Timezone', '-03:00')
-      headers.set('Accept', 'application/json; charset=UTF-8')
-      headers.set('Content-Type', 'application/json')
-      if (!headers.has('Token') && this.token && this.token.value) {
-        headers.set('Token', this.token.value)
-      }
-
-      let url = this.api_url + path
-      let options = {
-        headers: headers,
-        method: method,
-        mode: 'cors',
-        body: body
-      }
-
-      return fetch(url, options).then(response => {
-        if (!response.ok) {
-          throw response
-        }
-        return response
-      })
-    },
-
-    get_resource(name) {
-      let app = this
-      return app.api_fetch(name)
-        .then(response => response.json())
-        .then(response_data => {
-          let return_data = response_data.results
-
-          let max = parseInt(response_data.max_results_per_page)
-          let total = parseInt(response_data.total_results)
-
-          let remaining_pages = Math.floor(total / max)
-
-          if (total === max || !remaining_pages) {
-            return return_data
-          }
-
-          let remaining_requisitions = []
-          for (let i = 1; i <= remaining_pages; i++) {
-            remaining_requisitions.push(app.api_fetch(name, 'GET', {page: i + 1}).then(remaining_response => remaining_response.json()))
-          }
-
-          return Promise.all(remaining_requisitions).then(remaining_responses => {
-            remaining_responses.forEach(remaining_response_data => {
-              return_data = return_data.concat(remaining_response_data.results)
-            })
-            return return_data
-          })
-        })
-    },
-    save_resource (resource_name, data, save_to_db, update_view, headers) {
-      if (save_to_db === undefined) {
-        save_to_db = true
-      }
-      if (save_to_db && update_view === undefined) {
-        update_view = true
-      }
-
-      let path = resource_name
-      let method = 'POST'
-
-      if (data.id) {
-        path += '/' + data.id
-        method = 'PATCH'
-      } else {
-        delete data.id
-      }
-
-      let app = this
-
-      return this.api_fetch(path, method, data, headers).then(response => {
-        return response.json()
-      }).then((json) => {
-        if (json.id) {
-          data.id = parseInt(json.id)
-        }
-        if (json.created_at) {
-          data.created_at = json.created_at
-        }
-        if (json.updated_at) {
-          data.updated_at = json.updated_at
-        }
-
-        data = this.parseObject(data)
-
-        if (update_view && method === 'POST') {
-          app[resource_name + 's'].push(data)
-        } else if (update_view && (method === 'PATCH')) {
-          let i = app[resource_name + 's'].findIndex(item => parseInt(item.id) === parseInt(data.id))
-          if (i !== undefined) {
-            app[resource_name + 's'][i] = data
-          } else {
-            app[resource_name + 's'].push(data)
-          }
-        }
-        if (save_to_db) {
-          return app.db[resource_name + 's'].put(data)
-        }
-      }).then(() => data)
-    },
-    delete_resource (resource_name, id, notification, reload_view) {
-      if (notification === undefined) {
-        notification = true
-      }
-
-      if (reload_view === undefined) {
-        reload_view = true
-      }
-
-      this.loading = true
-
-      let app = this
-
-      return this.api_fetch(resource_name + '/' + id, 'DELETE').then(() => {
-        if (reload_view) {
-          let i = app[resource_name + 's'].findIndex(item => parseInt(item.id) === parseInt(id))
-          app[resource_name + 's'].splice(i, 1)
-        }
-        return app.db[resource_name + 's'].delete(id)
-      }).then(() => {
-        if (notification) {
-          app.loading = false
-          app.notify('Sucesso!', 'Excluído com sucesso', 'success')
-        }
-      }).catch(() => {
-        if (notification) {
-          app.loading = false
-          app.notify('Erro!', 'Não foi possível excluir', 'danger')
-        }
-      })
-    },
-
-    serialize(obj) {
-      let str = []
-      for (let p in obj) {
-        if (obj.hasOwnProperty(p)) {
-          str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]))
-        }
-      }
-      return str.join('&')
-    },
-    parseObject (object) {
-      let properties = Object.keys(object)
-      properties.forEach(property => {
-        if (object[property] === null || object[property] === undefined) {
-          return
-        }
-
-        if (object[property].toString() === parseInt(object[property]).toString()) {
-          object[property] = parseInt(object[property]) // "int" to int
-        } else if (object[property].toString() === parseFloat(object[property]).toString()) {
-          object[property] = parseFloat(object[property]) // "float" to float
-        } else if (object[property] === !!object[property]) {
-          object[property] = object[property] ? 1 : 0 // bool to int
-        }
-      })
-      return object
-    },
-    parseObjects (object_array) {
-      return object_array.map(object => this.parseObject(object))
-    },
-
     notify (title, message, style, time) {
       if (time === undefined) {
         time = 5000
@@ -596,45 +241,40 @@ export default {
     },
 
     logout() {
-      localStorage.removeItem('token')
-      localStorage.removeItem('has_loaded_data')
-
-      this.token = undefined
-      this.logged_in = false
       this.loading = true
-
-      this.$router.push('/login')
-
-      let promises = []
-
-      this.db.tables.forEach(table => {
-        promises.push(table.clear())
-
-      })
-      Promise.all(promises).catch(error => {
-        console.log('Error:', error)
-      }).finally(() => {
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login')
         this.loading = false
       })
     },
 
-    // APP shell functions
     userHasPermission (permission_reference) {
-      if (!this.user) {
+      if (!this.currentUser) {
         return false
       }
 
-      return !!this.permissions.find(permission =>
+      return !!this.currentPermissions.find(permission =>
         permission.reference === permission_reference
+      )
+    },
+
+    sync() {
+      this.loading = true
+
+      this.$store.dispatch('loadFromAPI').then(() =>
+        this.$store.dispatch('loadData')
+      ).catch(error => {
+        this.notify('Erro', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
+        console.log(error)
+      }).finally(() =>
+        this.loading = false
       )
     }
   },
   created() {
-    this.setApiUrl()
-    this.setAuthData()
-    this.openDB()
+    this.$store.commit('checkAuth')
 
-    if (!this.logged_in && this.$route.name !== 'Login') {
+    if (!this.$store.state.logged_in && this.$route.name !== 'Login') {
       this.logout()
       return
     }
@@ -644,9 +284,8 @@ export default {
       return
     }
 
-    this.resetData()
 
-    this.loadData().then(() =>
+    this.$store.dispatch('loadData').then(() =>
       this.loading = false
     )
   }

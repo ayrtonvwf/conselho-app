@@ -6,13 +6,21 @@
         <slot></slot>
       </div>
     </div>
-    <a class="modal-close" href="#"></a>
+    <a class="modal-close" :href="'#'+$route.path"></a>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Modal',
-  props: ['title', 'anchor']
+  props: ['title', 'anchor'],
+  methods: {
+    open () {
+      document.location.hash = this.anchor
+    },
+    close () {
+      document.location.hash = this.$route.path
+    }
+  }
 }
 </script>

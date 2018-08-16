@@ -60,7 +60,18 @@
                 <span class="material-icons">arrow_back</span>
                 Voltar para a turma
               </button>
+              <span class="pull-right">
+                <button class="btn-sm btn-success" @click="prevStudent">
+                  <span class="material-icons">chevron_left</span>
+                  Estudante anterior
+                </button>
+                <button class="btn-sm btn-success" @click="nextStudent">
+                  Próximo estudante
+                  <span class="material-icons">chevron_right</span>
+                </button>
+              </span>
             </p>
+            <br>
             <p>
               <b>{{ current_student.id ? studentGrade(current_student.id).number : '' }} - {{ current_student.name }}</b>
             </p>
@@ -264,6 +275,30 @@ export default {
       return !!this.current_evaluations.find(evaluation =>
         evaluation.student_id === student_id
       )
+    },
+    prevStudent () {
+      const index = this.current_students.findIndex(student =>
+        student.id === this.current_student_id
+      )
+
+      const prev_student = this.current_students[index - 1]
+      if (!prev_student) {
+        return
+      }
+
+      this.current_student_id = prev_student.id
+    },
+    nextStudent () {
+      const index = this.current_students.findIndex(student =>
+        student.id === this.current_student_id
+      )
+
+      const next_student = this.current_students[index + 1]
+      if (!next_student) {
+        return
+      }
+
+      this.current_student_id = next_student.id
     }
   },
   computed: {

@@ -6,7 +6,7 @@
         <slot></slot>
       </div>
     </div>
-    <a class="modal-close" :href="'#'+$route.path"></a>
+    <a class="modal-close" :href="'#'+$route.path" @click.prevent="close"></a>
   </div>
 </template>
 
@@ -17,9 +17,11 @@ export default {
   methods: {
     open () {
       document.location.hash = this.anchor
+      this.$emit('open')
     },
     close () {
       document.location.hash = this.$route.path
+      this.$emit('close')
     }
   }
 }

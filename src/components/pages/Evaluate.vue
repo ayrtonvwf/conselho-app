@@ -125,9 +125,11 @@ export default {
   },
   watch: {
     current_grade_id () {
+      const prev_subject_id = this.current_subject_id
       this.current_subject_id = ''
 
       if (!this.current_grade_id) {
+        this.current_subject_id = ''
         this.current_student_grades = []
         this.current_students = []
         this.current_subjects = []
@@ -154,8 +156,27 @@ export default {
       if (this.current_subjects.length === 1) {
         this.current_subject_id = this.current_subjects[0].id
       }
+
+      if (prev_subject_id === this.current_subject_id) {
+        this.calculateEvaluations() // need to trigger manually in this case
+      }
     },
     current_subject_id () {
+      this.calculateEvaluations()
+    }
+  },
+  computed: {
+    currentGrade () {
+      if (!this.current_grade_id) {
+        return undefined
+      }
+      return this.current_grades.find(grade =>
+        grade.id === this.current_grade_id
+      )
+    }
+  },
+  methods: {
+    calculateEvaluations () {
       if (!this.current_subject_id) {
         this.current_evaluations = []
         this.current_student_observations = []
@@ -208,19 +229,8 @@ export default {
         grade_observation.grade_id === this.current_grade_id &&
         grade_observation.subject_id === this.current_subject_id
       )
-    }
-  },
-  computed: {
-    currentGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.current_grades.find(grade =>
-        grade.id === this.current_grade_id
-      )
-    }
-  },
-  methods: {
+    },
+
     set_confirm_redirect () {
       window.onbeforeunload = event => {
         const dialogText = 'Tem certeza que deseja sair da página? Você perderá o que não foi salvo'

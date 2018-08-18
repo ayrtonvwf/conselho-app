@@ -27,7 +27,7 @@
                   <div class="material-icons">search</div>
                   <span class="d-none d-md-inline">Relatórios</span>
                 </router-link>
-                <a class="btn-warning btn-sm tooltip tooltip-end" href="#modal-edit" title="Editar informações do conselho" @click="current_council_id = council.id">
+                <a class="btn-warning btn-sm tooltip tooltip-end" href="#modal-edit" title="Editar informações do conselho" @click="setCurrentCouncil(council.id)">
                   <div class="material-icons">edit</div>
                   <span class="d-none d-md-inline">Editar</span>
                 </a>
@@ -43,7 +43,7 @@
     <modal anchor="modal-new" title="Novo conselho de classe" ref="modalNew">
       <div class="row justify-content-center">
         <div class="col-sm-11">
-          <form action="#" data-success="Conselho de classe criado com sucesso" data-error="Não foi possível criar o conselho de classe" @submit.prevent="council_save"><br>
+          <form action="#" data-success="Conselho de classe criado com sucesso" data-error="Não foi possível criar o conselho de classe" @submit.prevent="councilSave"><br>
             <div class="row">
               <div class="col-md-4 input">
                 <input required :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()" name="name">
@@ -81,18 +81,18 @@
         </div>
       </div>
     </modal>
-    <modal anchor="modal-edit" title="Editar conselho de classe" ref="modalEdit">
+    <modal anchor="modal-edit" title="Editar conselho de classe" ref="modalEdit" @close="setCurrentCouncil(undefined)">
       <div class="row justify-content-center">
         <div class="col-sm-11">
-          <form action="#" data-success="Conselho de classe editado com sucesso" data-error="Não foi possível editar o conselho de classe" @submit.prevent="council_update">
+          <form action="#" data-success="Conselho de classe editado com sucesso" data-error="Não foi possível editar o conselho de classe" @submit.prevent="councilUpdate">
             <br>
             <div class="row">
               <div class="col-md-4 input">
-                <input required name="name" :value="current_council.name" :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()">
+                <input required name="name" :value="currentCouncil.name" :placeholder="'Ex.: '+ (~~((new Date().getMonth() + 1)/4)+1)+'° trimestre '+ new Date().getFullYear()">
                 <label>Nome</label>
               </div>
               <div class="col-sm-6 col-md-4 input">
-                <input type="date" required name="start_date" :value="current_council.start_date" placeholder="Primeiro dia disponível para avaliação">
+                <input type="date" required name="start_date" :value="currentCouncil.start_date" placeholder="Primeiro dia disponível para avaliação">
                 <label>
                   Data inicial
 
@@ -100,7 +100,7 @@
                 </label>
               </div>
               <div class="col-sm-6 col-md-4 input">
-                <input type="date" required name="end_date" :value="current_council.end_date" placeholder="Primeiro dia disponível para avaliação">
+                <input type="date" required name="end_date" :value="currentCouncil.end_date" placeholder="Primeiro dia disponível para avaliação">
                 <label>
                   Data final
 
@@ -109,7 +109,7 @@
               </div>
             </div><br>
             <div class="row">
-              <div class="col-6 col-md-4" v-for="topic in current_topics" :key="topic.id">
+              <div class="col-6 col-md-4" v-for="topic in currentTopics" :key="topic.id">
                 <div class="material-icons">check</div> {{ topic.name }}
               </div>
             </div>
@@ -136,24 +136,28 @@ export default {
   name: 'Council',
   data () {
     return {
-      current_council_id: undefined,
-      current_council: {},
-      current_topics: []
+      current_council_id: undefined
     }
   },
-  watch: {
-    current_council_id () {
+  computed: {
+    currentCouncil () {
       if (!this.current_council_id) {
-        this.current_council = []
-        this.current_topics = []
-        return
+        return {}
       }
 
-      this.current_council = this.$store.state.councils.find(council =>
+      const council = this.$store.state.councils.find(council =>
         council.id === this.current_council_id
       )
 
-      this.current_topics = this.$store.state.topics.filter(topic =>
+      return council || {}
+    },
+
+    currentTopics () {
+      if (!this.current_council_id) {
+        return []
+      }
+
+      return this.$store.state.topics.filter(topic =>
         this.$store.state.council_topics.find(council_topic =>
           council_topic.topic_id === topic.id &&
           council_topic.council_id === this.current_council_id
@@ -162,6 +166,7 @@ export default {
     }
   },
   methods: {
+    // getters
     councilStatus (council_id) {
       const council = this.$store.state.councils.find(council =>
         council.id === council_id
@@ -192,7 +197,12 @@ export default {
         today <= new Date(council.end_date)
     },
 
-    council_save (event) {
+    // setters
+    setCurrentCouncil (council_id) {
+      this.current_council_id = council_id
+    },
+
+    councilSave (event) {
       this.$emit('loading')
 
       const form = event.target
@@ -242,7 +252,7 @@ export default {
 
         return Promise.all(promises)
       }).then(() => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+        this.$emit('notify', 'Sucesso!', 'Conselho de classe editado com sucesso!', 'success')
         this.$refs.modalNew.close()
 
         form.querySelector('[name=name]').value = ''
@@ -252,17 +262,17 @@ export default {
           input.checked = false
         })
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível editar o conselho de classe.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
       })
     },
-    council_update (event) {
+
+    councilUpdate (event) {
       this.$emit('loading')
 
       const form = event.target
-
       const save_resource = {
         resource_name: 'council',
         data: {
@@ -274,21 +284,15 @@ export default {
         }
       }
 
-      return this.$store.dispatch('save_resource', save_resource).then(council => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-        this.current_council = council
+      return this.$store.dispatch('save_resource', save_resource).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Conselho de classe criado com sucesso!', 'success')
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível criar o conselho de classe.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
       })
     }
-  },
-  created () {
-    this.current_council_id = undefined
-    this.current_council = {}
-    this.current_topics = []
   }
 }
 </script>

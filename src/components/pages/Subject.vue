@@ -21,7 +21,7 @@
                 {{ subject.name }} <span class="text-muted" v-if="!parseInt(subject.active)">(invisível)</span>
               </td>
               <td class="text-right no-wrap">
-                <a class="btn-warning btn-sm tooltip tooltip-end" href="#modal-edit" title="Editar disciplina" @click="current_subject_id = subject.id">
+                <a class="btn-warning btn-sm tooltip tooltip-end" href="#modal-edit" title="Editar disciplina" @click="setCurrentSubject(subject.id)">
                   <div class="material-icons">edit</div>
                   <span class="d-none d-md-inline">Editar</span>
                 </a>
@@ -37,7 +37,7 @@
     <modal anchor="modal-new" title="Nova disciplina" ref="modalNew">
       <div class="row justify-content-center">
         <div class="col-sm-11">
-          <form action="#" data-success="Disciplina cadastrada com sucesso" data-error="Não foi possível cadastrar a disciplina" @submit.prevent="subject_save">
+          <form action="#" data-success="Disciplina cadastrada com sucesso" data-error="Não foi possível cadastrar a disciplina" @submit.prevent="subjectSave">
             <input type="hidden" name="active" value="1"><br>
             <div class="input">
               <input required name="name" placeholder="Ex.: Matemática">
@@ -55,19 +55,19 @@
         </div>
       </div>
     </modal>
-    <modal anchor="modal-edit" title="Editar disciplina" ref="modalEdit">
+    <modal anchor="modal-edit" title="Editar disciplina" ref="modalEdit" @close="setCurrentSubject(undefined)">
       <div class="row justify-content-center">
         <div class="col-sm-11">
-          <form action="#" data-success="Disciplina editada com sucesso" data-error="Não foi possível editar a disciplina" @submit.prevent="subject_update">
+          <form action="#" data-success="Disciplina editada com sucesso" data-error="Não foi possível editar a disciplina" @submit.prevent="subjectUpdate">
             <br>
             <div class="row">
               <div class="input col-12 col-sm-8">
-                <input required name="name" :value="current_subject.name" placeholder="Ex.: Matemática" minlength="3">
+                <input required name="name" :value="currentSubject.name" placeholder="Ex.: Matemática" minlength="3">
                 <label>Nome</label>
               </div>
               <div class="col-12 col-sm-4">
                 <label><br>
-                  <input name="active" :value="1" :checked="parseInt(current_subject.active)" type="checkbox">Visível
+                  <input name="active" :value="1" :checked="parseInt(currentSubject.active)" type="checkbox">Visível
                 </label>
               </div>
             </div>
@@ -91,24 +91,28 @@ export default {
   name: 'Subject',
   data () {
     return {
-      'current_subject_id': undefined,
-      'current_subject': {}
+      'current_subject_id': undefined
     }
   },
-  watch: {
-    current_subject_id () {
+  computed: {
+    currentSubject () {
       if (!this.current_subject_id) {
-        this.current_subject = {}
-        return
+        return {}
       }
 
-      this.current_subject = this.$store.state.subjects.find(subject =>
+      const subject = this.$store.state.subjects.find(subject =>
         subject.id === this.current_subject_id
       )
+
+      return subject || {}
     }
   },
   methods: {
-    subject_save (event) {
+    setCurrentSubject (subject_id) {
+      this.current_subject_id = subject_id
+    },
+
+    subjectSave (event) {
       this.$emit('loading')
 
       const form = event.target
@@ -124,15 +128,16 @@ export default {
       }
       return this.$store.dispatch('save_resource', save_resource).then(() => {
         form.querySelector('[name=name]').value = ''
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+        this.$emit('notify', 'Sucesso!', 'Disciplina criada com sucesso!', 'success')
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível criar a disciplina.', 'danger')
         console.log('Error:', error.stack)
       }).finally(() => {
         this.$emit('loaded')
       })
     },
-    subject_update (event) {
+
+    subjectUpdate (event) {
       this.$emit('loading')
 
       const form = event.target
@@ -147,21 +152,16 @@ export default {
         resource_name: 'subject',
         data: subject
       }
-      return this.$store.dispatch('save_resource', save_resource).then(subject => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+      return this.$store.dispatch('save_resource', save_resource).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Disciplina editada com sucesso!', 'success')
         this.$refs.modalEdit.close()
-        this.current_subject = subject
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível editar a disciplina.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
       })
     }
-  },
-  created () {
-    this.current_subject_id = ''
-    this.current_subject = {}
   }
 }
 </script>

@@ -8,11 +8,11 @@
             <form action="#" data-success="Usuário editado com sucesso" data-error="Não foi possível editar o usuário" @submit.prevent="user_update">
               <div class="row">
                 <div class="input col-sm-6">
-                  <input id="user_name" name="name" :value="user.name" minlength="3" required>
+                  <input id="user_name" name="name" :value="currentUser.name" minlength="3" required>
                   <label for="user_name">Nome completo</label>
                 </div>
                 <div class="input col-sm-6">
-                  <input id="user_email" name="email" :value="user.email" type="email" minlength="3" required>
+                  <input id="user_email" name="email" :value="currentUser.email" type="email" minlength="3" required>
                   <label for="user_email">E-mail</label>
                 </div>
               </div>
@@ -44,15 +44,20 @@
 export default {
   name: 'User',
   data () {
-    return {
-      user: {}
+    return {}
+  },
+  computed: {
+    currentUser () {
+      return this.$store.state.users.find(user =>
+        user.id === this.$store.state.token.user_id
+      )
     }
   },
   methods: {
     user_update (event) {
       const form = event.target
       const user = {
-        id: this.user.id,
+        id: this.currentUser.id,
         name: form.querySelector('[name=name]').value,
         email: form.querySelector('[name=email]').value
       }
@@ -78,7 +83,7 @@ export default {
       }
       return this.$store.dispatch('api_fetch', api_fetch).then(() => {
         delete user.password
-        return this.$store.dispatch('db_put', {name: 'users', data: user})
+        return this.$store.dispatch('db_put', { name: 'users', data: user })
       }).then(() => {
         this.$store.commit('updateItem', { name: 'users', data: user })
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
@@ -89,10 +94,6 @@ export default {
         this.$emit('loaded')
       })
     }
-  },
-  created () {
-    const current_user_id = parseInt(this.$store.state.token.user_id)
-    this.user = this.$store.state.users.find(user => user.id === current_user_id)
   }
 }
 </script>

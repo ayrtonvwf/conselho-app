@@ -18,11 +18,11 @@
             <td>{{ $store.state.grades.find(grade => grade.id === teacher_request.grade_id).name }}</td>
             <td>{{ $store.state.subjects.find(subject => subject.id === teacher_request.subject_id).name }}</td>
             <td class="text-right no-wrap">
-              <a class="btn-success btn-sm tooltip tooltip-end" href="#modal-accept" title="Aceitar professor" @click="current_teacher_request_id = teacher_request.id">
+              <a class="btn-success btn-sm tooltip tooltip-end" href="#modal-accept" title="Aceitar professor" @click="setCurrentTeacherRequest(teacher_request.id)">
                 <div class="material-icons">check</div>
                 <span class="d-none d-md-inline">Aceitar professor</span>
               </a>
-              <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-deny" title="Negar professor" @click="current_teacher_request_id = teacher_request.id">
+              <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-deny" title="Negar professor" @click="setCurrentTeacherRequest(teacher_request.id)">
                 <div class="material-icons">close</div>
                 <span class="d-none d-md-inline">Negar professor</span>
               </a>
@@ -48,7 +48,7 @@
           <tr v-for="user in usersWhoEvaluate" :key="user.id">
             <td>{{ user.name }}</td>
             <td class="text-right no-wrap">
-              <a class="btn-primary btn-sm tooltip tooltip-end" href="#modal-grades" title="Turmas" @click="current_user_id = user.id">
+              <a class="btn-primary btn-sm tooltip tooltip-end" href="#modal-grades" title="Turmas" @click="setCurrentUser(user.id)">
                 <div class="material-icons">people</div>
                 <span class="d-none d-md-inline">Turmas</span>
               </a>
@@ -58,10 +58,10 @@
         </table>
       </div>
     </article>
-    <modal anchor="modal-grades" :title="'Turmas de '+current_user.name" ref="modalGrades">
+
+    <modal anchor="modal-grades" :title="'Turmas de '+currentUser.name" ref="modalGrades" @close="setCurrentUser(undefined)">
       <br>
-      <form action="#" @submit.prevent="teacher_save" data-success="Professor salvo com sucesso!" data-error="Não foi possível cadastrar">
-        <input type="hidden" name="user_id" :value="current_user_id">
+      <form action="#" @submit.prevent="teacherSave" data-success="Professor salvo com sucesso!" data-error="Não foi possível cadastrar">
         <div class="row justify-content-center">
           <div class="col-12 col-md-9">
             <div class="row justify-content-center">
@@ -75,8 +75,8 @@
               <div class="input col-6 col-sm-4">
                 <select id="current_subject_id" name="subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
                   <option value="" selected hidden disabled>{{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}</option>
-                  <option v-for="subject in $store.state.subjects" :key="subject.id" v-if="current_grade_id && $store.state.grade_subjects.find(grade_subject => grade_subject.subject_id === subject.id && grade_subject.grade_id === current_grade_id)" :value="subject.id" :disabled="$store.state.teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id)">
-                    {{ subject.name }} {{ $store.state.teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id) ? ' - '+$store.state.users.find(user => $store.state.teachers.find(teacher => teacher.grade_id === current_grade_id && teacher.subject_id === subject.id).user_id === user.id).name : '' }}
+                  <option v-for="subject in currentSubjects" :key="subject.id" :value="subject.id" :disabled="currentGradeTeachers.find(teacher => teacher.subject_id === subject.id)">
+                    {{ subject.name }} {{ currentGradeTeachers.find(teacher => teacher.subject_id === subject.id) ? ' - '+ $store.state.users.find(user => currentGradeTeachers.find(teacher => teacher.subject_id === subject.id).user_id === user.id).name : '' }}
                   </option>
                 </select>
                 <label for="current_subject_id">Disciplina</label>
@@ -90,7 +90,7 @@
           </div>
         </div>
       </form><br>
-      <table class="table" v-if="current_user && current_teachers.length">
+      <table class="table" v-if="currentUser && currentTeachers.length">
         <thead>
         <tr>
           <th>Turma</th>
@@ -98,11 +98,11 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="teacher in current_teachers" :key="teacher.id">
+        <tr v-for="teacher in currentTeachers" :key="teacher.id">
           <td>{{ $store.state.grades.find(grade => grade.id === teacher.grade_id).name }}</td>
           <td>{{ $store.state.subjects.find(subject => subject.id === teacher.subject_id).name }}</td>
           <td class="text-right">
-            <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-remove" title="Remover" @click="current_teacher_id = teacher.id">
+            <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-remove" title="Remover" @click="setCurrentTeacher(teacher.id)">
               <div class="material-icons">delete</div>
               <span class="d-none d-md-inline">Remover</span>
             </a>
@@ -115,15 +115,15 @@
       </div>
     </modal>
 
-    <prompt title="Aceitar professor" type="success" anchor="modal-accept" @accept="accept_teacher_request" accept="Aceitar" ref="promptAccept">
+    <prompt title="Aceitar professor" type="success" anchor="modal-accept" @accept="acceptTeacherRequest" accept="Aceitar" ref="promptAccept" @close="setCurrentTeacherRequest(undefined)">
       <p>Tem certeza que deseja aceitar este professor?</p>
     </prompt>
 
-    <prompt title="Negar professor" type="danger" anchor="modal-deny" @accept="deny_teacher_request" accept="Negar" ref="promptDeny">
+    <prompt title="Negar professor" type="danger" anchor="modal-deny" @accept="denyTeacherRequest" accept="Negar" ref="promptDeny" @close="setCurrentTeacherRequest(undefined)">
       <p>Tem certeza que deseja negar este professor?</p>
     </prompt>
 
-    <prompt title="Remover professor" type="danger" anchor="modal-remove" @accept="remove_teacher" accept="Remover" ref="promptRemove">
+    <prompt title="Remover professor" type="danger" anchor="modal-remove" @accept="removeTeacher" accept="Remover" ref="promptRemove" @close="setCurrentTeacher(undefined)">
       <p>Tem certeza que deseja remover este professor?</p>
     </prompt>
   </div>
@@ -136,15 +136,14 @@ export default {
   data () {
     return {
       current_user_id: undefined,
-      current_user: {},
-      current_teachers: [],
-
       current_grade_id: '',
       current_subject_id: '',
-      current_subjects: [],
 
-      current_teacher_request_id: undefined, // teacher request to be accepted or denied
-      current_teacher_id: undefined // teacher to be deleted
+      // teacher request to be accepted or denied
+      current_teacher_request_id: undefined,
+
+      // teacher to be deleted
+      current_teacher_id: undefined
     }
   },
   computed: {
@@ -152,50 +151,80 @@ export default {
       return this.$store.state.users.filter(user =>
         this.userHasPermission('evaluate', user.id)
       )
-    }
-  },
-  watch: {
-    current_user_id () {
-      this.current_subjects = []
-      this.current_grade_id = ''
-      this.current_subject_id = ''
+    },
 
+    currentUser () {
       if (!this.current_user_id) {
-        this.current_user = {}
-        this.current_teachers = []
-        return
+        return {}
       }
 
-      this.current_user = this.$store.state.users.find(user =>
+      const user = this.usersWhoEvaluate.find(user =>
         user.id === this.current_user_id
       )
 
-      this.current_teachers = this.$store.state.teachers.filter(teacher =>
+      return user || {}
+    },
+
+    currentTeachers () {
+      if (!this.current_user_id) {
+        return []
+      }
+
+      return this.$store.state.teachers.filter(teacher =>
         teacher.user_id === this.current_user_id
       )
     },
-    current_grade_id () {
-      this.current_subjects = []
-      this.current_subject_id = ''
 
+    currentGradeSubjects () {
       if (!this.current_grade_id) {
-        return
+        return []
       }
 
-      const grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
+      return this.$store.state.grade_subjects.filter(grade_subject =>
         grade_subject.grade_id === this.current_grade_id
       )
+    },
 
-      grade_subjects.forEach(grade_subject => {
-        const subject = this.$store.state.subjects.find(subject =>
-          subject.id === grade_subject.subject_id
+    currentSubjects () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.state.subjects.filter(subject =>
+        this.currentGradeSubjects.find(grade_subject =>
+          grade_subject.subject_id === subject.id
         )
-        this.current_subjects.push(subject)
-      })
+      )
+    },
+
+    currentGradeTeachers () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.state.teachers.filter(teacher =>
+        teacher.grade_id === this.current_grade_id
+      )
     }
   },
   methods: {
-    role_type (user_id) {
+    setCurrentUser (user_id) {
+      this.current_user_id = user_id
+    },
+
+    setCurrentGrade (grade_id) {
+      this.current_grade_id = grade_id
+    },
+
+    setCurrentTeacher (teacher_id) {
+      this.current_teacher_id = teacher_id
+    },
+
+    setCurrentTeacherRequest (teacher_request_id) {
+      this.current_teacher_request_id = teacher_request_id
+    },
+
+    roleType (user_id) {
       const role = this.$store.state.roles.find(role =>
         role.user_id === user_id &&
         parseInt(role.approved)
@@ -211,7 +240,7 @@ export default {
     },
 
     userHasPermission (permission_reference, user_id) {
-      const role_type = this.role_type(user_id)
+      const role_type = this.roleType(user_id)
 
       if (!role_type.id) {
         return false
@@ -226,7 +255,8 @@ export default {
         role_type_permission.role_type_id === role_type.id
       )
     },
-    teacher_save (event) {
+
+    teacherSave (event) {
       this.$emit('loading')
 
       const form = event.target
@@ -242,11 +272,8 @@ export default {
         }
       }
 
-      this.$store.dispatch('save_resource', save_resource).then(teacher => {
+      this.$store.dispatch('save_resource', save_resource).then(() => {
         this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-
-        this.current_teachers.push(teacher)
-
         this.current_subject_id = ''
       }).catch(error => {
         this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
@@ -255,7 +282,8 @@ export default {
         this.$emit('loaded')
       })
     },
-    accept_teacher_request () {
+
+    acceptTeacherRequest () {
       this.$emit('loading')
 
       const teacher_request = this.$store.state.teacher_requests.find(teacher_request =>
@@ -288,7 +316,8 @@ export default {
         this.$emit('loaded')
       })
     },
-    deny_teacher_request () {
+
+    denyTeacherRequest () {
       this.$emit('loading')
 
       const delete_resource = {
@@ -304,7 +333,8 @@ export default {
         this.$emit('loaded')
       })
     },
-    remove_teacher () {
+
+    removeTeacher () {
       this.$emit('loading')
 
       const delete_resource = {
@@ -313,11 +343,6 @@ export default {
       }
       this.$store.dispatch('delete_resource', delete_resource).then(() => {
         this.$emit('notify', 'Sucesso!', 'Professor removido com sucesso', 'success')
-
-        const current_index = this.current_teachers.findIndex(teacher =>
-          teacher.id === this.current_teacher_id
-        )
-        this.$delete(this.current_teachers, current_index)
       }).catch(error => {
         this.$emit('notify', 'Erro!', 'Não foi possível remover o professor', 'danger')
         console.log('Error:', error)
@@ -328,14 +353,11 @@ export default {
     }
   },
   created () {
-    this.current_subjects = []
-    this.current_teachers = []
-    this.current_grade_id = ''
-    this.current_teacher_request_id = undefined
-    this.current_teacher_id = undefined
     this.current_user_id = undefined
+    this.current_grade_id = ''
     this.current_subject_id = ''
-    this.current_user = {}
+    this.current_teacher_id = undefined
+    this.current_teacher_request_id = undefined
   }
 }
 </script>

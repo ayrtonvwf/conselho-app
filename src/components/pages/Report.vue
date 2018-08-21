@@ -336,9 +336,9 @@ export default {
         return '-'
       }
 
-      const avg = evaluations.reduce((avg, evaluation, i, arr) => {
+      const avg = parseInt(evaluations.reduce((avg, evaluation, i, arr) => {
         return avg + evaluation.value / arr.length
-      }, 0)
+      }, 0))
 
       const nearestTopicOption = topicOptions.reduce((prev, curr) =>
         Math.abs(curr.value - avg) < Math.abs(prev.value - avg) ? curr : prev

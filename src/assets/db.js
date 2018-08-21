@@ -9,8 +9,6 @@ db.version(1).stores({
   grades: 'id',
   grade_subjects: 'id',
   grade_observations: 'id',
-  medical_reports: 'id',
-  medical_report_subjects: 'id',
   permissions: 'id',
   roles: 'id',
   role_types: 'id',

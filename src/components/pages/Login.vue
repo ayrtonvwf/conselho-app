@@ -15,18 +15,18 @@
                   <div class="input">
                     <input name="email" required type="email" id="email">
                     <label for="email">
-                      <div class="material-icons">email</div> E-mail
+                      <span class="material-icons">email</span> E-mail
                     </label>
                   </div>
                   <div class="input">
                     <input name="password" required type="password" id="password">
                     <label for="password">
-                      <div class="material-icons">vpn_key</div> Senha
+                      <span class="material-icons">vpn_key</span> Senha
                     </label>
                   </div>
                   <div class="text-right">
                     <button class="btn-success btn-lg" type="submit">
-                      <div class="material-icons">check</div> Entrar
+                      <span class="material-icons">check</span> Entrar
                     </button>
                   </div>
                 </div>

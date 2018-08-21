@@ -80,7 +80,7 @@
                 </td>
                 <td class="text-right" style="margin-top: -2px">
                   <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0px 2px" :disabled="new_topic_options.length <= 2" @click="removeNewTopicOption(index)" type="button">
-                    <div class="material-icons">delete</div>
+                    <span class="material-icons">delete</span>
                     <span class="d-none d-md-inline">Remover</span>
                   </button>
                 </td>
@@ -89,12 +89,12 @@
             </table>
             <div class="text-center">
               <button class="btn-primary tooltip" title="Criar uma nova opção de resposta para este tópico" type="button" @click="newTopicOption">
-                <div class="material-icons">add</div>Criar nova opção
+                <span class="material-icons">add</span>Criar nova opção
               </button>
             </div><br><br><a class="btn-danger" href="#">
               <div class="material-icons">close</div>  Cancelar</a>
             <button class="btn-success pull-right" type="submit">
-              <div class="material-icons">check</div>  Salvar
+              <span class="material-icons">check</span>  Salvar
             </button><br>
           </form>
         </div>
@@ -125,7 +125,7 @@
               Cancelar
             </a>
             <button class="btn-success pull-right" type="submit">
-              <div class="material-icons">check</div>
+              <span class="material-icons">check</span>
               Salvar
             </button>
             <br>
@@ -151,12 +151,12 @@
                 <tr v-for="(topic_option, index) in editing_topic_options" :key="index">
                   <td>
                     <div class="input">
-                      <input required v-model="topic_option.name" style="margin: 0px" placeholder="Ex.: Excelente" name="topic_option_name[]" minlength="3">
+                      <input required v-model="topic_option.name" style="margin: 0" placeholder="Ex.: Excelente" name="topic_option_name[]" minlength="3">
                     </div>
                   </td>
                   <td>
                     <div class="input">
-                      <input required v-model="topic_option.value" type="number" min="0" max="100" style="margin: 0px" placeholder="0 - 100" name="topic_option_value[]">
+                      <input required v-model="topic_option.value" type="number" min="0" max="100" style="margin: 0" placeholder="0 - 100" name="topic_option_value[]">
                     </div>
                   </td>
                   <td class="text-right">
@@ -168,7 +168,7 @@
                         <span class="material-icons">close</span>
                       </button>
                     </template>
-                    <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0px 2px" @click="removeEditingTopicOption(index)" type="button" v-else>
+                    <button class="btn-danger tooltip tooltip-end" title="Remover opção de resposta" style="margin: 0 2px" @click="removeEditingTopicOption(index)" type="button" v-else>
                       <span class="material-icons">delete</span>
                       <span class="d-none d-md-inline">Remover</span>
                     </button>
@@ -178,16 +178,16 @@
             </table>
             <div class="text-center">
               <button class="btn-primary tooltip" type="button" title="Criar uma nova opção de resposta para este tópico" v-on:click="newTopicOption">
-                <div class="material-icons">add</div>Criar nova opção
+                <span class="material-icons">add</span>Criar nova opção
               </button>
             </div>
             <br><br>
             <a class="btn-danger" href="#">
-              <div class="material-icons">close</div>
+              <span class="material-icons">close</span>
               Cancelar
             </a>
             <button class="btn-success pull-right" type="submit">
-              <div class="material-icons">check</div>
+              <span class="material-icons">check</span>
               Salvar
             </button>
             <br>

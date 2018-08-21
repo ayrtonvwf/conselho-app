@@ -28,7 +28,7 @@
               </div>
               <div class="text-right">
                 <button class="btn-success">
-                  <div class="material-icons">check</div> Salvar
+                  <span class="material-icons">check</span> Salvar
                 </button>
               </div>
             </form>

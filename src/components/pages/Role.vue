@@ -62,7 +62,7 @@
             </div><br><br><a class="btn-danger" href="#">
               <div class="material-icons">close</div>  Cancelar</a>
             <button class="btn-success pull-right" type="submit">
-              <div class="material-icons">check</div>  Salvar
+              <span class="material-icons">check</span>  Salvar
             </button><br>
           </form>
         </div>

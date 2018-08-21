@@ -84,7 +84,7 @@
               </div>
               <div class="col-12 col-sm-3"><br class="d-none d-sm-inline">
                 <button class="btn-success" type="submit">
-                  <div class="material-icons">check</div> Salvar
+                  <span class="material-icons">check</span> Salvar
                 </button>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default {
       )
     },
 
-    teacherSave (event) {
+    teacherSave () {
       this.$emit('loading')
 
       const teacher = {

@@ -63,7 +63,7 @@
                 <label>
                   Nível
 
-                  <div class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</div>
+                  <span class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</span>
                 </label>
               </div>
             </div><br>
@@ -76,7 +76,7 @@
             </div><br><a class="btn-danger" href="#">
             <div class="material-icons">close</div>  Cancelar</a>
             <button class="btn-success pull-right" type="submit">
-              <div class="material-icons">check</div>  Salvar
+              <span class="material-icons">check</span>  Salvar
             </button><br>
           </form>
         </div>
@@ -150,7 +150,7 @@
                 <td style="max-width: 75px">{{ studentGrade(student.id).number }}</td>
                 <td class="text-right">
                   <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="studentToggle(student.id)">
-                    <div class="material-icons">visibility_off</div><span class="d-none d-md-inline"> Ativar e Desativar</span>
+                    <span class="material-icons">visibility_off</span><span class="d-none d-md-inline"> Ativar e Desativar</span>
                   </button>
                 </td>
               </template>
@@ -163,10 +163,10 @@
                 </td>
                 <td class="text-right no-wrap">
                   <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="studentUpdate(student.id)">
-                    <div class="material-icons">save</div><span class="d-none d-md-inline"> Salvar</span>
+                    <span class="material-icons">save</span><span class="d-none d-md-inline"> Salvar</span>
                   </button>
                   <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="studentToggle(student.id)">
-                    <div class="material-icons">visibility_off</div><span class="d-none d-md-inline"> Ativar e Desativar</span>
+                    <span class="material-icons">visibility_off</span><span class="d-none d-md-inline"> Ativar e Desativar</span>
                   </button>
                 </td>
               </template>
@@ -197,7 +197,7 @@
               </div>
               <div class="col-12 col-sm-3"><br class="d-none d-sm-inline">
                 <button class="btn-success" type="submit">
-                  <div class="material-icons">check</div> Salvar
+                  <span class="material-icons">check</span> Salvar
                 </button>
               </div>
             </div>

@@ -108,9 +108,6 @@ export default new Vuex.Store({
 
       const promises = []
 
-      // if the process breaks, next time will be loaded from API
-      window.localStorage.removeItem('has_loaded_data')
-
       db.tables.forEach(table => {
         const resource = table.name.slice(0, -1)
         const promise = context.dispatch('getResource', resource).then(data => {
@@ -122,9 +119,7 @@ export default new Vuex.Store({
         promises.push(promise)
       })
 
-      return Promise.all(promises).then(() => {
-        window.localStorage.setItem('has_loaded_data', '1')
-      })
+      return Promise.all(promises)
     },
 
     getResource: (context, name) => {
@@ -171,7 +166,6 @@ export default new Vuex.Store({
 
     logout: context => {
       localStorage.removeItem('token')
-      localStorage.removeItem('has_loaded_data')
 
       context.commit('checkAuth')
 

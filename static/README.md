@@ -1,9 +1,15 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Conselho</title>
+# Your Favicon Package
+
+This package was generated with [RealFaviconGenerator](https://realfavicongenerator.net/) [v0.16](https://realfavicongenerator.net/change_log#v0.16)
+
+## Install instructions
+
+To install this package:
+
+Extract this package in <code>&lt;web site&gt;/static/</code>. If your site is <code>http://www.example.com</code>, you should be able to access a file named <code>http://www.example.com/static/favicon.ico</code>.
+
+Insert the following code in the `head` section of your pages:
+
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/static/android-chrome-192x192.png">
@@ -17,9 +23,5 @@
     <meta name="msapplication-TileImage" content="/static/mstile-144x144.png">
     <meta name="msapplication-config" content="/static/browserconfig.xml">
     <meta name="theme-color" content="#3c8dbc">
-  </head>
-  <body>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
-</html>
+
+*Optional* - Check your favicon with the [favicon checker](https://realfavicongenerator.net/favicon_checker)

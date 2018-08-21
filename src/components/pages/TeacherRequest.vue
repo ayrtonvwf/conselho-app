@@ -3,21 +3,21 @@
     <h1 class="content-title"><i class="material-icons">people</i>Turmas</h1>
     <article class="box">
       <div class="box-body"><br>
-        <form action="#" @submit.prevent="teacher_request_save" data-success="Aguardando a aprovação do supervisor!" data-error="Não foi possível cadastrar">
+        <form action="#" @submit.prevent="teacherRequestSave" data-success="Aguardando a aprovação do supervisor!" data-error="Não foi possível cadastrar">
           <div class="row justify-content-center">
             <div class="col-12 col-md-9">
               <div class="row justify-content-center">
                 <div class="input col-6 col-sm-4">
                   <select id="current_grade_id" name="grade_id" required v-model="current_grade_id">
                     <option value="" selected hidden disabled>Selecione...</option>
-                    <option v-for="grade in $store.state.grades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
+                    <option v-for="grade in orderedGrades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
                   </select>
                   <label for="current_grade_id">Turma</label>
                 </div>
                 <div class="input col-6 col-sm-4">
                   <select id="current_subject_id" name="subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
                     <option value="" selected hidden disabled>{{ current_grade_id ? 'Selecione...' : 'Selecione a turma...' }}</option>
-                    <option v-for="subject in current_subjects" :key="subject.id" :value="subject.id" :disabled="current_teachers.find(teacher => teacher.subject_id === subject.id) || current_teacher_requests.find(teacher_request => teacher_request.grade_id === current_grade_id && teacher_request.subject_id === subject.id)">{{ subject.name }}</option>
+                    <option v-for="subject in currentSubjects" :key="subject.id" :value="subject.id" :disabled="currentTeachers.find(teacher => teacher.subject_id === subject.id) || currentGradeTeacherRequests.find(teacher_request => teacher_request.subject_id === subject.id)">{{ subject.name }}</option>
                   </select>
                   <label for="current_subject_id">Disciplina</label>
                 </div>
@@ -30,7 +30,7 @@
             </div>
           </div>
         </form><br>
-        <table class="table" v-if="current_user_teachers.length || current_teacher_requests.length">
+        <table class="table" v-if="currentUserTeachers.length || currentTeacherRequests.length">
           <thead>
             <tr>
               <th>Turma</th>
@@ -38,20 +38,20 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="teacher_request in current_teacher_requests" :key="'teacher_request-'+teacher_request.id">
-              <td>{{ $store.state.grades.find(grade => grade.id === teacher_request.grade_id).name }}</td>
-              <td>{{ $store.state.subjects.find(subject => subject.id === teacher_request.subject_id).name }}</td>
+            <tr v-for="teacher_request in currentTeacherRequests" :key="'teacher_request-'+teacher_request.id">
+              <td>{{ getGrade(teacher_request.grade_id).name }}</td>
+              <td>{{ getSubject(teacher_request.subject_id).name }}</td>
               <td class="text-muted">Aguardando aprovação</td>
               <td class="text-right no-wrap">
-                <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-delete-teacher_request" title="Remover" @click="current_teacher_request_id = teacher_request.id">
+                <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-delete-teacher_request" title="Remover" @click="setCurrentTeacherRequest(teacher_request.id)">
                   <div class="material-icons">delete</div>
                   <span class="d-none d-md-inline">Remover</span>
                 </a>
               </td>
             </tr>
-            <tr v-for="teacher in current_user_teachers" :key="'teacher-'+teacher.id">
-              <td>{{ $store.state.grades.find(grade => grade.id === teacher.grade_id).name }}</td>
-              <td>{{ $store.state.subjects.find(subject => subject.id === teacher.subject_id).name }}</td>
+            <tr v-for="teacher in currentUserTeachers" :key="'teacher-'+teacher.id">
+              <td>{{ getGrade(teacher.grade_id).name }}</td>
+              <td>{{ getSubject(teacher.subject_id).name }}</td>
               <td></td>
               <td class="text-right no-wrap">
                 <a class="btn-danger btn-sm tooltip tooltip-end" href="#modal-delete-teacher" title="Remover">
@@ -74,109 +74,131 @@
       <p>Caso seja realmente necessário, solicite ao supervisor que te desvincule.</p>
     </prompt>
 
-    <prompt title="Remover solicitação" type="danger" anchor="modal-delete-teacher_request" @accept="teacher_request_delete" accept="Remover">
+    <prompt title="Remover solicitação" type="danger" anchor="modal-delete-teacher_request" @accept="teacherRequestDelete" accept="Remover" @close="setCurrentTeacherRequest(undefined)">
       <p>Tem certeza que deseja remover esta solicitação?</p>
     </prompt>
   </div>
 </template>
 
 <script>
-/* eslint camelcase: 0 */
 export default {
   name: 'TeacherRequest',
   data () {
     return {
-      current_teacher_requests: [],
-      current_user_teachers: [],
       current_user_id: undefined,
       current_grade_id: '',
-      current_subject_id: '',
-      current_subjects: [],
-      current_teachers: []
+      current_subject_id: ''
     }
   },
-  watch: {
-    current_grade_id () {
+  computed: {
+    orderedGrades () {
+      return this.$store.getters['grades/getOrderedGrades']
+    },
+
+    currentGradeSubjects () {
       if (!this.current_grade_id) {
-        this.current_subject_id = ''
-        this.current_subjects = []
-        this.current_teachers = []
-        return
+        return []
       }
 
-      const grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
-        grade_subject.grade_id === this.current_grade_id
+      return this.$store.getters['grade_subjects/getGradeSubjects'].filter(gradeSubject =>
+        gradeSubject.grade_id === this.current_grade_id
       )
+    },
 
-      this.current_subjects = this.$store.state.subjects.filter(subject =>
-        grade_subjects.find(grade_subject =>
-          grade_subject.subject_id === subject.id
+    currentSubjects () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.getters['subjects/getOrderedSubjects'].filter(subject =>
+        this.currentGradeSubjects.find(gradeSubject =>
+          gradeSubject.subject_id === subject.id
         )
       )
+    },
 
-      this.current_teachers = this.$store.state.teachers.filter(teacher =>
+    currentTeachers () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.getters['teachers/getTeachers'].filter(teacher =>
         teacher.grade_id === this.current_grade_id
+      )
+    },
+
+    currentTeacherRequests () {
+      return this.$store.getters['teacher_requests/getTeacherRequests'].filter(teacherRequest =>
+        teacherRequest.user_id === this.current_user_id
+      )
+    },
+
+    currentGradeTeacherRequests () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.currentTeacherRequests.filter(teacherRequest =>
+        teacherRequest.grade_id === this.current_grade_id
+      )
+    },
+
+    currentUserTeachers () {
+      return this.$store.getters['teachers/getTeachers'].filter(teacher =>
+        teacher.user_id === this.current_user_id
       )
     }
   },
   methods: {
-    teacher_request_save (event) {
+    setCurrentTeacherRequest (teacherRequestId) {
+      this.current_teacher_request_id = teacherRequestId
+    },
+
+    getGrade (gradeId) {
+      return this.$store.getters['grades/getGrades'].find(grade =>
+        grade.id === gradeId
+      )
+    },
+
+    getSubject (subjectId) {
+      return this.$store.getters['subjects/getSubjects'].find(subject =>
+        subject.id === subjectId
+      )
+    },
+
+    teacherRequestSave () {
       this.$emit('loading')
 
-      const form = event.target
-
-      const save_resource = {
-        resource_name: 'teacher_request',
-        data: {
-          grade_id: this.current_grade_id,
-          subject_id: this.current_subject_id,
-          user_id: this.current_user_id
-        }
+      const teacherRequest = {
+        grade_id: this.current_grade_id,
+        subject_id: this.current_subject_id,
+        user_id: this.current_user_id
       }
-      this.$store.dispatch('save_resource', save_resource).then(teacher_request => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
-
-        this.current_teacher_requests.push(teacher_request)
-
+      this.$store.dispatch('teacher_requests/create', teacherRequest).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Requisição criada com sucesso!', 'success')
         this.current_subject_id = ''
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível criar a requisição.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
       })
     },
-    teacher_request_delete () {
+
+    teacherRequestDelete () {
       this.$emit('loading')
 
-      const delete_resource = {
-        resource_name: 'teacher_request',
-        id: this.current_teacher_request_id
-      }
-      this.$store.dispatch('delete_resource', delete_resource).then(() => {
-        this.$emit('notify', 'Sucesso!', 'Desvinculado da turma com sucesso.', 'success')
-
-        const index = this.current_teacher_requests.findIndex(teacher_request =>
-          teacher_request.id === this.current_teacher_request_id
-        )
-        this.$delete(this.current_teacher_requests, index)
+      this.$store.dispatch('teacher_requests/delete', this.current_teacher_request_id).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Requisição excluída com sucesso.', 'success')
       }).finally(() =>
         this.$emit('loaded')
       )
     }
   },
-  created: function () {
+  created () {
     this.current_user_id = this.$store.state.token.user_id
-    this.current_teacher_requests = this.$store.state.teacher_requests.filter(teacher_request =>
-      teacher_request.user_id === this.current_user_id
-    )
-    this.current_user_teachers = this.$store.state.teachers.filter(teacher =>
-      teacher.user_id === this.current_user_id
-    )
     this.current_grade_id = ''
     this.current_subject_id = ''
-    this.current_subjects = []
-    this.current_teachers = []
   }
 }
 </script>

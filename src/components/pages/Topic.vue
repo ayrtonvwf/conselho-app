@@ -14,14 +14,14 @@
 
     <article class="box">
       <div class="box-body">
-        <table class="table" v-if="$store.state.topics.length">
+        <table class="table" v-if="orderedTopics.length">
           <thead>
           <tr>
             <th>Nome</th>
           </tr>
           </thead>
           <tbody>
-          <tr v-for="topic in $store.state.topics" :key="topic.id">
+          <tr v-for="topic in orderedTopics" :key="topic.id">
             <td :class="!parseInt(topic.active) ? 'text-muted' : ''">
               {{ topic.name }}
               <span class="text-muted" v-if="!parseInt(topic.active)">(invisível)</span>
@@ -199,7 +199,6 @@
 </template>
 
 <script>
-/* eslint camelcase: 0 */
 export default {
   name: 'Topic',
   data () {
@@ -213,12 +212,20 @@ export default {
     }
   },
   computed: {
+    orderedTopics () {
+      return this.$store.getters['topics/getOrderedTopics']
+    },
+
+    orderedTopicOptions () {
+      return this.$store.getters['topic_options/getOrderedTopicOptions']
+    },
+
     currentTopic () {
       if (!this.current_topic_id) {
         return {}
       }
 
-      const topic = this.$store.state.topics.find(topic =>
+      const topic = this.orderedTopics.find(topic =>
         topic.id === this.current_topic_id
       )
 
@@ -230,8 +237,8 @@ export default {
         return []
       }
 
-      return this.$store.state.topic_options.filter(topic_option =>
-        topic_option.topic_id === this.current_topic_id
+      return this.orderedTopicOptions.filter(topicOption =>
+        topicOption.topic_id === this.current_topic_id
       )
     }
   },
@@ -246,10 +253,10 @@ export default {
     }
   },
   methods: {
-    setCurrentTopic (topic_id) {
-      this.current_topic_id = topic_id
+    setCurrentTopic (topicId) {
+      this.current_topic_id = topicId
 
-      if (topic_id) {
+      if (topicId) {
         this.new_topic_options = []
       } else {
         this.new_topic_options = [{}, {}]
@@ -274,65 +281,53 @@ export default {
         topic_option_id: null
       }
 
-      const option_name_inputs = form.querySelectorAll('[name="topic_option_name[]"]')
-      const option_names = [].map.call(option_name_inputs, input => input.value)
+      const optionNameInputs = form.querySelectorAll('[name="topic_option_name[]"]')
+      const optionNames = [].map.call(optionNameInputs, input => input.value)
 
-      const option_value_inputs = form.querySelectorAll('[name="topic_option_value[]"]')
-      const option_values = [].map.call(option_value_inputs, input => input.value)
+      const optionValueInputs = form.querySelectorAll('[name="topic_option_value[]"]')
+      const optionValues = [].map.call(optionValueInputs, input => input.value)
 
-      const option_default_inputs = form.querySelectorAll('[name="option_default"]')
-      const option_defaults = [].map.call(option_default_inputs, input => input.checked)
-      const default_option_index = option_defaults.indexOf(true)
+      const optionDefaultInputs = form.querySelectorAll('[name="option_default"]')
+      const optionDefaults = [].map.call(optionDefaultInputs, input => input.checked)
+      const defaultOptionIndex = optionDefaults.indexOf(true)
 
-      const options = []
-      option_names.forEach((name, i) => {
-        options.push({
+      const topicOptions = []
+      optionNames.forEach((name, i) => {
+        topicOptions.push({
           name: name,
-          value: option_values[i],
+          value: optionValues[i],
           active: true
         })
       })
 
-      const save_resource = {
-        resource_name: 'topic',
-        data: topic
-      }
-      return this.$store.dispatch('save_resource', save_resource).then(response => {
+      return this.$store.dispatch('topics/create', topic).then(response => {
         topic.id = response.id
 
-        const save_options = []
+        const saveOptions = []
 
-        options.forEach(option => {
-          option.topic_id = response.id
+        topicOptions.forEach(topicOption => {
+          topicOption.topic_id = response.id
 
-          const save_resource = {
-            resource_name: 'topic_option',
-            data: option
-          }
-          const promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('topic_options/create', topicOption)
 
-          save_options.push(promise)
+          saveOptions.push(promise)
         })
 
-        return Promise.all(save_options)
-      }).then(promises_response => {
-        if (default_option_index === -1) {
+        return Promise.all(saveOptions)
+      }).then(promisesResponse => {
+        if (defaultOptionIndex === -1) {
           return
         }
 
-        topic.topic_option_id = promises_response[default_option_index].id
+        topic.topic_option_id = promisesResponse[defaultOptionIndex].id
 
-        const save_resource = {
-          resource_name: 'topic',
-          data: topic
-        }
-        return this.$store.dispatch('save_resource', save_resource)
+        return this.$store.dispatch('topics/update', topic)
       }).then(() => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+        this.$emit('notify', 'Sucesso!', 'Tópico criado com sucesso!', 'success')
         form.querySelector('[name=name]').value = ''
         this.new_topic_options = [{}, {}]
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível criar o tópico.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
@@ -351,69 +346,53 @@ export default {
         topic_option_id: this.currentTopic.topic_option_id
       }
 
-      const save_resource = {
-        resource_name: 'topic',
-        data: topic
-      }
-      return this.$store.dispatch('save_resource', save_resource).then(() => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+      return this.$store.dispatch('topics/update', topic).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Tópico editado com sucesso!', 'success')
         this.$refs.modalEdit.close()
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível editar o tópico.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
       })
     },
 
-    topicOptionsUpdate (event) {
+    topicOptionsUpdate () {
       this.$emit('loading')
 
-      const form = event.target
+      const saveOptions = []
 
-      const save_options = []
-
-      this.editing_topic_options.forEach(topic_option => {
-        const save_resource = {
-          resource_name: 'topic_option',
-          data: topic_option
-        }
-        const promise = this.$store.dispatch('save_resource', save_resource)
-
-        save_options.push(promise)
+      this.editing_topic_options.forEach(topicOption => {
+        const action = topicOption.id ? 'topic_options/update' : 'topic_options/create'
+        const promise = this.$store.dispatch(action, topicOption)
+        saveOptions.push(promise)
       })
 
-      return Promise.all(save_options).then(() => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+      return Promise.all(saveOptions).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Opção de Resposta editada com sucesso!', 'success')
         this.editing_topic_options = JSON.parse(JSON.stringify(this.currentTopicOptions))
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível editar a Opção de Resposta.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
       })
     },
 
-    updateDefaultOption (topic_option_id) {
+    updateDefaultOption (topicOptionId) {
       this.$emit('loading')
-
-      const form = event.target
 
       const topic = {
         id: this.current_topic_id,
         name: this.currentTopic.name,
         active: this.currentTopic.active,
-        topic_option_id: topic_option_id
+        topic_option_id: topicOptionId
       }
 
-      const save_resource = {
-        resource_name: 'topic',
-        data: topic
-      }
-      return this.$store.dispatch('save_resource', save_resource).then(() => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+      return this.$store.dispatch('topics/update', topic).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Opção de Resposta Padrão editada com sucesso!', 'success')
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível editar a Opção de Resposta Padrão.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
@@ -421,15 +400,15 @@ export default {
     },
 
     newTopicOption () {
-      const blank_option = {
+      const blankOption = {
         topic_id: this.current_topic_id,
         active: true
       }
 
       if (this.current_topic_id) {
-        this.editing_topic_options.push(blank_option)
+        this.editing_topic_options.push(blankOption)
       } else {
-        this.new_topic_options.push(blank_option)
+        this.new_topic_options.push(blankOption)
       }
 
       this.$nextTick(() => {

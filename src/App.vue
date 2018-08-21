@@ -39,16 +39,16 @@
         <div class="header-pane" v-if="userHasPermission('role')">
           <button class="header-button material-icons" type="button">
             notifications
-            <span class="header-button-label-red" v-if="$store.state.teacher_requests.length">{{ $store.state.teacher_requests.length }}</span>
+            <span class="header-button-label-red" v-if="teacherRequests.length">{{ teacherRequests.length }}</span>
           </button>
           <div class="header-pane-popup">
             <div class="header-pane-header"><i class="material-icons">notifications</i>Notificações</div>
             <div class="header-pane-body">
-              <div v-for="(teacher_request, index) in $store.state.teacher_requests" :key="teacher_request.id">
+              <div v-for="(teacher_request, index) in teacherRequests" :key="teacher_request.id">
                 <hr class="margin-h-15" v-if="index">
                 <router-link class="no-link" :to="{ name: 'Teacher' }">
-                  <div class="header-notification-title"><b>{{ $store.state.users.find(user => user.id === teacher_request.user_id).name }}</b> aguarda sua aprovação</div>
-                  <div class="header-notification-description">{{ $store.state.grades.find(grade => grade.id === teacher_request.grade_id).name }} - {{ $store.state.subjects.find(subject => subject.id === teacher_request.subject_id).name }}
+                  <div class="header-notification-title"><b>{{ getUser(teacher_request.user_id).name }}</b> aguarda sua aprovação</div>
+                  <div class="header-notification-description">{{ getGrade(teacher_request.grade_id).name }} - {{ getSubject(teacher_request.subject_id).name }}
                     <div class="text-muted">{{ new Date(teacher_request.created_at).toLocaleDateString('pt-BR') }}</div>
                   </div>
                 </router-link>
@@ -130,7 +130,6 @@
 <style src="../node_modules/material-design-icons/iconfont/material-icons.css" type="text/css"></style>
 
 <script>
-/* eslint camelcase: 0 */
 export default {
   name: 'App',
   data () {
@@ -140,38 +139,47 @@ export default {
     }
   },
   computed: {
+    teacherRequests () {
+      return this.$store.getters['teacher_requests/getTeacherRequests']
+    },
+
     currentUser () {
-      const user = this.$store.state.users.find(user =>
+      const user = this.$store.getters['users/getUsers'].find(user =>
         user.id === this.$store.state.token.user_id
       )
       return user || {}
     },
+
     currentRole () {
-      const role = this.$store.state.roles.find(role =>
+      const role = this.$store.getters['roles/getRoles'].find(role =>
         role.user_id === this.$store.state.token.user_id
       )
       return role || {}
     },
+
     currentRoleType () {
-      const role_type = this.$store.state.role_types.find(role_type =>
-        role_type.id === this.currentRole.role_type_id
+      const roleType = this.$store.getters['role_types/getRoleTypes'].find(roleType =>
+        roleType.id === this.currentRole.role_type_id
       )
-      return role_type || {}
+      return roleType || {}
     },
+
     currentRoleTypePermissions () {
-      return this.$store.state.role_type_permissions.filter(role_type_permission =>
-        role_type_permission.role_type_id === this.currentRoleType.id
+      return this.$store.getters['role_type_permissions/getRoleTypePermissions'].filter(roleTypePermission =>
+        roleTypePermission.role_type_id === this.currentRoleType.id
       )
     },
+
     currentPermissions () {
-      return this.$store.state.permissions.filter(permission =>
-        this.currentRoleTypePermissions.find(role_type_permission =>
-          role_type_permission.permission_id === permission.id
+      return this.$store.getters['permissions/getPermissions'].filter(permission =>
+        this.currentRoleTypePermissions.find(roleTypePermission =>
+          roleTypePermission.permission_id === permission.id
         )
       )
     },
+
     activeCouncils () {
-      return this.$store.state.councils.filter(council =>
+      return this.$store.getters['councils/getOrderedCouncils'].filter(council =>
         council.active &&
         new Date(council.start_date) <= new Date() &&
         new Date(council.end_date) >= new Date()
@@ -179,6 +187,24 @@ export default {
     }
   },
   methods: {
+    getUser (userId) {
+      return this.$store.getters['users/getUsers'].find(user =>
+        user.id === userId
+      )
+    },
+
+    getGrade (gradeId) {
+      return this.$store.getters['grades/getGrades'].find(grade =>
+        grade.id === gradeId
+      )
+    },
+
+    getSubject (subjectId) {
+      return this.$store.getters['subjects/getSubjects'].find(subject =>
+        subject.id === subjectId
+      )
+    },
+
     notify (title, message, style, time) {
       if (time === undefined) {
         time = 5000
@@ -204,7 +230,7 @@ export default {
       document.getElementById('no-notification').checked = true
 
       // it there's already a notification, delay to transition
-      const start_delay = Object.keys(this.notification).length > 0 ? 500 : 0
+      const startDelay = Object.keys(this.notification).length > 0 ? 500 : 0
 
       setTimeout(() => {
         this.notification = {
@@ -232,7 +258,7 @@ export default {
             this.notification = {}
           }, 500)
         }, time)
-      }, start_delay)
+      }, startDelay)
     },
 
     logout () {
@@ -243,13 +269,13 @@ export default {
       })
     },
 
-    userHasPermission (permission_reference) {
+    userHasPermission (permissionReference) {
       if (!this.currentUser) {
         return false
       }
 
       return !!this.currentPermissions.find(permission =>
-        permission.reference === permission_reference
+        permission.reference === permissionReference
       )
     },
 
@@ -259,7 +285,11 @@ export default {
       this.$store.dispatch('loadFromAPI').then(() =>
         this.$store.dispatch('loadData')
       ).catch(error => {
-        this.notify('Erro', 'Ocorreu um erro durante a atualização. Tente novamente!', 'danger')
+        if (error.status && error.status === 401) {
+          this.notify('Não foi possível atualizar', 'Tente sair e entrar novamente', 'danger')
+        } else {
+          this.notify('Não foi possível atualizar', 'Ocorreu um erro durante a atualização. Tente novamente', 'danger')
+        }
         console.log(error)
       }).finally(() => {
         this.loading = false

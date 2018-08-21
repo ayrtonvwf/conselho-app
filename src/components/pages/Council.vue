@@ -9,7 +9,7 @@
     </div>
     <article class="box">
       <div class="box-body">
-        <table class="table" v-if="$store.state.councils.length">
+        <table class="table" v-if="orderedCouncils.length">
           <thead>
             <tr>
               <th>Nome</th>
@@ -18,7 +18,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="council in $store.state.councils" :class="activeCouncil(council.id) ? 'text-bold' : ''" :key="council.id">
+            <tr v-for="council in orderedCouncils" :class="activeCouncil(council.id) ? 'text-bold' : ''" :key="council.id">
               <td>{{ council.name }}</td>
               <td class="d-none d-sm-table-cell">{{ new Date(council.start_date).toLocaleDateString('pt-BR') }} - {{ new Date(council.end_date).toLocaleDateString('pt-BR') }}</td>
               <td class="d-none d-lg-table-cell">{{ councilStatus(council.id) }}</td>
@@ -67,7 +67,7 @@
               </div>
             </div><br>
             <div class="row">
-              <div class="col-6 col-md-4" v-for="topic in $store.state.topics" v-if="topic.active" :key="topic.id">
+              <div class="col-6 col-md-4" v-for="topic in orderedActiveTopics" :key="topic.id">
                 <label>
                   <input type="checkbox" name="council_topic[]" :value="topic.id"> {{ topic.name }}
                 </label>
@@ -131,7 +131,6 @@
 </template>
 
 <script>
-/* eslint camelcase: 0 */
 export default {
   name: 'Council',
   data () {
@@ -140,12 +139,22 @@ export default {
     }
   },
   computed: {
+    orderedActiveTopics () {
+      return this.$store.getters['topics/getOrderedTopics'].filter(topic =>
+        topic.active
+      )
+    },
+
+    orderedCouncils () {
+      return this.$store.getters['councils/getOrderedCouncils']
+    },
+
     currentCouncil () {
       if (!this.current_council_id) {
         return {}
       }
 
-      const council = this.$store.state.councils.find(council =>
+      const council = this.orderedCouncils.find(council =>
         council.id === this.current_council_id
       )
 
@@ -157,19 +166,19 @@ export default {
         return []
       }
 
-      return this.$store.state.topics.filter(topic =>
-        this.$store.state.council_topics.find(council_topic =>
-          council_topic.topic_id === topic.id &&
-          council_topic.council_id === this.current_council_id
+      return this.$store.getters['topics/getOrderedTopics'].filter(topic =>
+        this.$store.getters['council_topics/getCouncilTopics'].find(councilTopic =>
+          councilTopic.topic_id === topic.id &&
+          councilTopic.council_id === this.current_council_id
         )
       )
     }
   },
   methods: {
     // getters
-    councilStatus (council_id) {
-      const council = this.$store.state.councils.find(council =>
-        council.id === council_id
+    councilStatus (councilId) {
+      const council = this.orderedCouncils.find(council =>
+        council.id === councilId
       )
 
       const today = new Date()
@@ -185,9 +194,9 @@ export default {
       return council.active ? 'Acontecendo' : 'Pausado'
     },
 
-    activeCouncil (council_id) {
-      const council = this.$store.state.councils.find(council =>
-        council.id === council_id
+    activeCouncil (councilId) {
+      const council = this.orderedCouncils.find(council =>
+        council.id === councilId
       )
 
       const today = new Date()
@@ -198,8 +207,8 @@ export default {
     },
 
     // setters
-    setCurrentCouncil (council_id) {
-      this.current_council_id = council_id
+    setCurrentCouncil (councilId) {
+      this.current_council_id = councilId
     },
 
     councilSave (event) {
@@ -207,62 +216,53 @@ export default {
 
       const form = event.target
 
-      const council_topic_inputs = form.querySelectorAll('[name="council_topic[]"]:checked')
-      const council_topic_ids = [].map.call(council_topic_inputs, input => input.value)
+      const councilTopicInputs = form.querySelectorAll('[name="council_topic[]"]:checked')
+      const councilTopicIds = [].map.call(councilTopicInputs, input => input.value)
 
-      const save_resource = {
-        resource_name: 'council',
-        data: {
-          name: form.querySelector('[name=name]').value,
-          start_date: form.querySelector('[name=start_date]').value,
-          end_date: form.querySelector('[name=end_date]').value,
-          active: true
-        }
+      const council = {
+        name: form.querySelector('[name=name]').value,
+        start_date: form.querySelector('[name=start_date]').value,
+        end_date: form.querySelector('[name=end_date]').value,
+        active: true
       }
-      return this.$store.dispatch('save_resource', save_resource).then(council => {
+      return this.$store.dispatch('councils/create', council).then(council => {
         const promises = []
 
-        council_topic_ids.forEach(topic_id => {
-          const save_resource = {
-            resource_name: 'council_topic',
-            data: {
-              topic_id: topic_id,
-              council_id: council.id
-            }
+        councilTopicIds.forEach(topicId => {
+          const councilTopic = {
+            topic_id: topicId,
+            council_id: council.id
           }
 
-          const promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('council_topics/create', councilTopic)
 
           promises.push(promise)
         })
 
-        this.$store.state.grades.forEach(grade => {
-          const save_resource = {
-            resource_name: 'council_grade',
-            data: {
-              grade_id: grade.id,
-              council_id: council.id
-            }
+        this.$store.getters['grades/getGrades'].forEach(grade => {
+          const councilGrade = {
+            grade_id: grade.id,
+            council_id: council.id
           }
 
-          const promise = this.$store.dispatch('save_resource', save_resource)
+          const promise = this.$store.dispatch('council_grades/create', councilGrade)
 
           promises.push(promise)
         })
 
         return Promise.all(promises)
       }).then(() => {
-        this.$emit('notify', 'Sucesso!', 'Conselho de classe editado com sucesso!', 'success')
+        this.$emit('notify', 'Sucesso!', 'Conselho de Classe cadastrado com sucesso!', 'success')
         this.$refs.modalNew.close()
 
         form.querySelector('[name=name]').value = ''
         form.querySelector('[name=start_date]').value = ''
         form.querySelector('[name=end_date]').value = ''
-        council_topic_inputs.forEach(input => {
+        councilTopicInputs.forEach(input => {
           input.checked = false
         })
       }).catch(error => {
-        this.$emit('notify', 'Erro!', 'Não foi possível editar o conselho de classe.', 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível cadastrar o conselho de Classe.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')
@@ -273,21 +273,18 @@ export default {
       this.$emit('loading')
 
       const form = event.target
-      const save_resource = {
-        resource_name: 'council',
-        data: {
-          id: this.current_council_id,
-          name: form.querySelector('[name=name]').value,
-          start_date: form.querySelector('[name=start_date]').value,
-          end_date: form.querySelector('[name=end_date]').value,
-          active: true
-        }
+      const council = {
+        id: this.current_council_id,
+        name: form.querySelector('[name=name]').value,
+        start_date: form.querySelector('[name=start_date]').value,
+        end_date: form.querySelector('[name=end_date]').value,
+        active: true
       }
 
-      return this.$store.dispatch('save_resource', save_resource).then(() => {
-        this.$emit('notify', 'Sucesso!', 'Conselho de classe criado com sucesso!', 'success')
+      return this.$store.dispatch('councils/update', council).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Conselho de Classe editado com sucesso!', 'success')
       }).catch(error => {
-        this.$emit('notify', 'Erro!', 'Não foi possível criar o conselho de classe.', 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível editar o Conselho de Classe.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')

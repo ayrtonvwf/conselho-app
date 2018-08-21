@@ -9,14 +9,14 @@
     </div>
     <article class="box">
       <div class="box-body">
-        <table class="table" v-if="$store.state.subjects.length">
+        <table class="table" v-if="orderedSubjects.length">
           <thead>
             <tr>
               <th>Nome</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="subject in $store.state.subjects" :key="subject.id">
+            <tr v-for="subject in orderedSubjects" :key="subject.id">
               <td :class="!parseInt(subject.active) ? 'text-muted' : ''">
                 {{ subject.name }} <span class="text-muted" v-if="!parseInt(subject.active)">(invisível)</span>
               </td>
@@ -86,7 +86,6 @@
 </template>
 
 <script>
-/* eslint camelcase: 0 */
 export default {
   name: 'Subject',
   data () {
@@ -95,21 +94,23 @@ export default {
     }
   },
   computed: {
+    orderedSubjects () {
+      return this.$store.getters['subjects/getOrderedSubjects']
+    },
+
     currentSubject () {
       if (!this.current_subject_id) {
         return {}
       }
 
-      const subject = this.$store.state.subjects.find(subject =>
+      return this.orderedSubjects.find(subject =>
         subject.id === this.current_subject_id
       )
-
-      return subject || {}
     }
   },
   methods: {
-    setCurrentSubject (subject_id) {
-      this.current_subject_id = subject_id
+    setCurrentSubject (subjectId) {
+      this.current_subject_id = subjectId
     },
 
     subjectSave (event) {
@@ -122,11 +123,7 @@ export default {
         active: true
       }
 
-      const save_resource = {
-        resource_name: 'subject',
-        data: subject
-      }
-      return this.$store.dispatch('save_resource', save_resource).then(() => {
+      return this.$store.dispatch('subjects/create', subject).then(() => {
         form.querySelector('[name=name]').value = ''
         this.$emit('notify', 'Sucesso!', 'Disciplina criada com sucesso!', 'success')
       }).catch(error => {
@@ -148,11 +145,7 @@ export default {
         active: !!form.querySelector('[name=active]').checked
       }
 
-      const save_resource = {
-        resource_name: 'subject',
-        data: subject
-      }
-      return this.$store.dispatch('save_resource', save_resource).then(() => {
+      return this.$store.dispatch('subjects/update', subject).then(() => {
         this.$emit('notify', 'Sucesso!', 'Disciplina editada com sucesso!', 'success')
         this.$refs.modalEdit.close()
       }).catch(error => {

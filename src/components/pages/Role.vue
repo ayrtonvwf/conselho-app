@@ -11,18 +11,18 @@
       <div class="box-body">
         <table class="table">
           <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Tipo</th>
-            <th>E-mail</th>
-          </tr>
+            <tr>
+              <th>Nome</th>
+              <th>Tipo</th>
+              <th>E-mail</th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="user in $store.state.users" :key="user.id">
-            <td>{{ user.name }}</td>
-            <td>{{ role_type(user.id).name }}</td>
-            <td>{{ user.email }}</td>
-          </tr>
+            <tr v-for="user in orderedUsers" :key="user.id">
+              <td>{{ user.name }}</td>
+              <td>{{ role_type(user.id).name }}</td>
+              <td>{{ user.email }}</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -55,7 +55,7 @@
               <div class="col-sm-6 input">
                 <select required name="role_type_id">
                   <option value="" selected disabled hidden>Selecione...</option>
-                  <option v-for="role_type in $store.state.role_types" :value="role_type.id" :key="role_type.id">{{ role_type.name }}</option>
+                  <option v-for="role_type in orderedRoleTypes" :value="role_type.id" :key="role_type.id">{{ role_type.name }}</option>
                 </select>
                 <label>Tipo de usuário</label>
               </div>
@@ -72,16 +72,26 @@
 </template>
 
 <script>
-/* eslint camelcase: 0 */
+import axios from 'axios'
+
 export default {
   name: 'Role',
   data () {
     return {}
   },
+  computed: {
+    orderedUsers () {
+      return this.$store.getters['users/getOrderedUsers']
+    },
+
+    orderedRoleTypes () {
+      return this.$store.getters['role_types/getOrderedRoleTypes']
+    }
+  },
   methods: {
-    role_type (user_id) {
-      const role = this.$store.state.roles.find(role =>
-        role.user_id === user_id &&
+    role_type (userId) {
+      const role = this.$store.getters['roles/getRoles'].find(role =>
+        role.user_id === userId &&
         parseInt(role.approved)
       )
 
@@ -89,8 +99,8 @@ export default {
         return {}
       }
 
-      return this.$store.state.role_types.find(role_type =>
-        role_type.id === role.role_type_id
+      return this.$store.getters['role_types/getRoleTypes'].find(roleType =>
+        roleType.id === role.role_type_id
       )
     },
     user_save (event) {
@@ -103,7 +113,8 @@ export default {
       }
 
       const role = {
-        role_type_id: form.querySelector('[name=role_type_id]').value
+        role_type_id: form.querySelector('[name=role_type_id]').value,
+        approved: true
       }
 
       if (user.password !== form.querySelector('[name=re_password]').value) {
@@ -113,41 +124,29 @@ export default {
 
       this.$emit('loading')
 
-      const save_resource = {
-        resource_name: 'user',
-        data: user
-      }
-      this.$store.dispatch('save_resource', save_resource).then(user => {
+      const currentUserToken = axios.defaults.headers.common['Token'] + ''
+
+      this.$store.dispatch('users/create', user).then(response => {
+        user.id = response.id
+        user.created_at = response.created_at
+        user.updated_at = response.created_at
+
         role.user_id = user.id
-        const api_fetch = {
-          path: 'user_token',
-          method: 'POST',
-          body: {
-            email: user.email,
-            password: user.password
-          }
-        }
-        return this.$store.dispatch('api_fetch', api_fetch).then(response =>
-          response.json()
-        )
-      }).then(user_token => {
-        const save_resource = {
-          resource_name: 'role',
-          data: role,
-          headers: {
-            Token: user_token.value
-          }
-        }
-        return this.$store.dispatch('save_resource', save_resource)
-      }).then(role => {
-        role.approved = true
-        const save_resource = {
-          resource_name: 'role',
-          data: role
-        }
-        return this.$store.dispatch('save_resource', save_resource)
+
+        return axios.post('/user_token', user)
+      }).then(response => {
+        axios.defaults.headers.common['Token'] = response.data.value
+        return this.$store.dispatch('roles/create', role)
+      }).then(response => {
+        role.id = response.id
+        role.created_at = response.created_at
+        role.updated_at = response.created_at
+
+        axios.defaults.headers.common['Token'] = currentUserToken
+
+        return this.$store.dispatch('roles/update', role)
       }).then(() => {
-        this.$emit('notify', 'Sucesso!', form.dataset.success, 'success')
+        this.$emit('notify', 'Sucesso!', 'Usuário criado com sucesso!', 'success')
 
         this.$refs.modalNew.close()
 
@@ -156,7 +155,7 @@ export default {
         form.querySelector('[name=password]').value = ''
         form.querySelector('[name=role_type_id]').value = ''
       }).catch(error => {
-        this.$emit('notify', 'Erro!', form.dataset.error, 'danger')
+        this.$emit('notify', 'Erro!', 'Não foi possível criar o usuário.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')

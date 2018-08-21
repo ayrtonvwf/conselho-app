@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="content-title"><i class="material-icons">edit</i>Relatórios - {{ current_council.name }}</h1>
+    <h1 class="content-title"><i class="material-icons">edit</i>Relatórios - {{ currentCouncil.name }}</h1>
     <article class="box">
       <div class="box-body"><br>
         <div class="row justify-content-center">
@@ -9,14 +9,14 @@
               <div class="input col-12 col-sm-6">
                 <select id="current_grade_id" name="current_grade_id" required v-model="current_grade_id">
                   <option value="" selected hidden disabled>Selecione...</option>
-                  <option v-for="grade in current_grades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
+                  <option v-for="grade in currentGrades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
                 </select>
                 <label for="current_grade_id">Turma</label>
               </div>
               <div class="input col-12 col-sm-6">
                 <select id="current_subject_id" name="current_subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
                   <option value="" selected>{{ current_grade_id ? 'Todas' : 'Selecione a turma...' }}</option>
-                  <option v-for="subject in current_subjects" :value="subject.id" :key="subject.id">{{ subject.name }}</option>
+                  <option v-for="subject in currentSubjects" :value="subject.id" :key="subject.id">{{ subject.name }}</option>
                 </select>
                 <label for="current_subject_id">Disciplina</label>
               </div>
@@ -26,7 +26,7 @@
         <div class="text-center text-muted" v-if="!current_grade_id"><br>
           <div class="h4">Selecione uma turma para ver o relatório.</div><br>
         </div>
-        <div class="text-center text-muted" v-else-if="!current_evaluations.length"><br>
+        <div class="text-center text-muted" v-else-if="!currentEvaluations.length"><br>
           <div class="h4">Esta turma ainda não recebeu avaliações<span v-if="current_subject_id"> nesta disciplina</span>.</div><br>
         </div>
         <div v-else>
@@ -35,24 +35,24 @@
               <thead>
                 <tr>
                   <th style="max-width: 33vw">Aluno</th>
-                  <th v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
+                  <th v-for="topic in currentTopics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
                   <th class="no-wrap">Observações Gerais</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="student in current_students" :data-student_id="student.id" :key="student.id">
+                <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id">
                   <td style="max-width: 33vw">
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
-                  <td v-for="topic in current_topics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
+                  <td v-for="topic in currentTopics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
                   <td>
-                    <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ $store.state.users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+                    <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
                   </td>
                 </tr>
               </tbody>
             </super-table>
             <br>
-            <p v-for="grade_observation in current_grade_observations" :key="grade_observation.id"><b>{{ $store.state.users.find(user => user.id === grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
+            <p v-for="grade_observation in currentGradeObservations" :key="grade_observation.id"><b>{{ getUser(grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
           </template>
           <template v-else>
             <p>
@@ -73,23 +73,23 @@
             </p>
             <br>
             <p>
-              <b>{{ current_student.id ? studentGrade(current_student.id).number : '' }} - {{ current_student.name }}</b>
+              <b>{{ currentStudent.id ? studentGrade(currentStudent.id).number : '' }} - {{ currentStudent.name }}</b>
             </p>
             <super-table>
               <thead>
               <tr>
                 <th style="max-width: 33vw">Matéria</th>
-                <th v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
+                <th v-for="topic in currentTopics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
               </tr>
               </thead>
               <tbody>
-              <tr v-for="subject in current_subjects" :key="subject.id">
+              <tr v-for="subject in currentSubjects" :key="subject.id">
                 <td>{{ subject.name }}</td>
-                <td v-for="topic in current_topics" style="min-width: 150px" :key="topic.id">{{ reportSubjectTopic(subject.id, topic.id) }}</td>
+                <td v-for="topic in currentTopics" style="min-width: 150px" :key="topic.id">{{ reportSubjectTopic(subject.id, topic.id) }}</td>
               </tr>
               </tbody>
             </super-table>
-            <p v-for="student_observation in current_student_observations.filter(student_observation => student_observation.student_id === current_student_id)" :key="student_observation.id"><b>{{ $store.state.users.find(user => user.id === student_observation.user_id).name }}{{ !current_subject_id ? ' - '+current_subjects.find(subject => subject.id === student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+            <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === current_student_id)" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
           </template>
         </div>
       </div>
@@ -98,283 +98,323 @@
 </template>
 
 <script>
-/* eslint camelcase: 0 */
 export default {
   name: 'Report',
   data () {
     return {
-      current_council: {},
-      current_grades: [],
-      current_topics: [],
-      current_topic_options: [],
+      current_council_id: undefined,
       current_grade_id: '',
       current_subject_id: '',
-      current_subjects: [],
-      current_students: [],
-      current_student_grades: [],
-      current_evaluations: [],
-      current_student_observations: [],
-      current_grade_observations: [],
-      current_student_id: undefined,
-      current_student: {}
+      current_student_id: undefined
     }
   },
-  watch: {
-    current_grade_id () {
-      this.current_student_id = undefined
+  computed: {
+    currentCouncil () {
+      const council = this.$store.getters['councils/getCouncils'].find(council =>
+        council.id === this.current_council_id
+      )
+
+      return council || {}
+    },
+
+    currentCouncilGrades () {
+      return this.$store.getters['council_grades/getCouncilGrades'].filter(councilGrade =>
+        councilGrade.council_id === this.current_council_id
+      )
+    },
+
+    currentGrades () {
+      return this.$store.getters['grades/getOrderedGrades'].filter(grade =>
+        this.currentCouncilGrades.find(councilGrade =>
+          councilGrade.grade_id === grade.id
+        )
+      )
+    },
+
+    currentCouncilTopics () {
+      return this.$store.getters['council_topics/getCouncilTopics'].filter(councilTopic =>
+        councilTopic.council_id === this.current_council_id
+      )
+    },
+
+    currentTopics () {
+      return this.$store.getters['topics/getOrderedTopics'].filter(topic =>
+        this.currentCouncilTopics.find(councilTopic =>
+          councilTopic.topic_id === topic.id
+        )
+      )
+    },
+
+    currentTopicOptions () {
+      return this.$store.getters['topic_options/getOrderedTopicOptions'].filter(topicOption =>
+        this.currentTopics.find(topic =>
+          topic.id === topicOption.topic_id
+        )
+      )
+    },
+
+    currentCouncilEvaluations () {
+      return this.$store.getters['evaluations/getEvaluations'].map(evaluation => {
+        if (evaluation.council_id !== this.current_council_id) {
+          return undefined
+        }
+
+        const topicOption = this.currentTopicOptions.find(topicOption =>
+          topicOption.id === evaluation.topic_option_id
+        )
+
+        evaluation.topic_id = topicOption.topic_id
+        evaluation.value = topicOption.value
+
+        return evaluation
+      }).filter(evaluation => evaluation)
+    },
+
+    currentCouncilGradeObservations () {
+      return this.$store.getters['grade_observations/getGradeObservations'].filter(gradeObservation =>
+        gradeObservation.council_id === this.current_council_id
+      )
+    },
+
+    currentCouncilStudentObservations () {
+      return this.$store.getters['student_observations/getStudentObservations'].filter(studentObservation =>
+        studentObservation.council_id === this.current_council_id
+      )
+    },
+
+    currentGrade () {
       if (!this.current_grade_id) {
-        this.current_subject_id = ''
-        this.current_subjects = []
-        this.current_student_grades = []
-        this.current_students = []
-
-        this.load_evaluations() // empty current_evaluation
-        return
+        return {}
       }
 
-      const grade_subjects = this.$store.state.grade_subjects.filter(grade_subject =>
-        grade_subject.grade_id === this.current_grade_id
+      return this.currentGrades.find(grade =>
+        grade.id === this.current_grade_id
       )
-      this.current_subjects = this.$store.state.subjects.filter(subject =>
-        grade_subjects.find(grade_subject =>
-          grade_subject.subject_id === subject.id
-        )
-      )
+    },
 
-      this.current_student_grades = this.$store.state.student_grades.filter(student_grade =>
-        student_grade.grade_id === this.current_grade_id
-      )
-
-      this.current_students = this.$store.state.students.filter(student =>
-        this.current_student_grades.find(student_grade =>
-          student_grade.student_id === student.id
-        )
-      )
-
-      if (this.current_subject_id) {
-        this.current_subject_id = ''
-        // load_evaluations will be triggered by the current_subject_id watcher
-      } else {
-        this.load_evaluations()
+    currentStudentGrades () {
+      if (!this.current_grade_id) {
+        return []
       }
+
+      return this.$store.getters['student_grades/getStudentGrades'].filter(studentGrade =>
+        studentGrade.grade_id === this.current_grade_id
+      )
     },
-    current_subject_id () {
-      this.load_evaluations()
+
+    currentStudents () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.getters['students/getStudents'].map(student => {
+        const studentGrade = this.studentGrade(student.id)
+
+        if (!studentGrade) {
+          return undefined
+        }
+
+        student.grade_id = studentGrade.grade_id
+        student.number = studentGrade.number
+        return student
+      }).filter(student => student).sort((a, b) =>
+        Math.sign(a.number - b.number)
+      )
     },
-    current_student_id () {
+
+    currentGradeSubjects () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.getters['grade_subjects/getGradeSubjects'].filter(gradeSubject =>
+        gradeSubject.grade_id === this.current_grade_id
+      )
+    },
+
+    currentSubjects () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.$store.getters['subjects/getOrderedSubjects'].filter(subject =>
+        this.currentGradeSubjects.find(gradeSubject =>
+          gradeSubject.subject_id === subject.id
+        )
+      )
+    },
+
+    currentGradeEvaluations () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.currentCouncilEvaluations.filter(evaluation =>
+        evaluation.grade_id === this.current_grade_id
+      )
+    },
+
+    currentEvaluations () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      if (!this.current_subject_id) {
+        return this.currentGradeEvaluations
+      }
+
+      return this.currentGradeEvaluations.filter(evaluation =>
+        evaluation.subject_id === this.current_subject_id
+      )
+    },
+
+    currentGradeObservations () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.currentCouncilGradeObservations.filter(gradeObservation =>
+        gradeObservation.grade_id === this.current_grade_id &&
+        (
+          !this.current_subject_id ||
+          gradeObservation.subject_id === this.current_subject_id
+        )
+      )
+    },
+
+    currentStudentObservations () {
+      if (!this.current_grade_id) {
+        return []
+      }
+
+      return this.currentCouncilStudentObservations.filter(studentObservation =>
+        studentObservation.grade_id === this.current_grade_id &&
+        (
+          !this.current_subject_id ||
+          studentObservation.subject_id === this.current_subject_id
+        ) && (
+          !this.current_student_id ||
+          studentObservation.student_id === this.current_student_id
+        )
+      )
+    },
+
+    currentStudent () {
       if (!this.current_student_id) {
-        this.current_student = {}
-        return
+        return {}
       }
 
-      this.current_student = this.current_students.find(student =>
+      return this.currentStudents.find(student =>
         student.id === this.current_student_id
       )
     }
   },
   methods: {
-    load_evaluations () {
-      if (!this.current_grade_id) {
-        this.current_evaluations = []
-        this.current_grade_observations = []
-        this.current_student_observations = []
-        return
-      }
-
-      this.current_evaluations = this.$store.state.evaluations.filter(evaluation =>
-        evaluation.council_id === this.current_council.id &&
-        evaluation.grade_id === this.current_grade_id && (
-          !this.current_subject_id ||
-          this.current_subject_id === evaluation.subject_id
-        )
-      )
-      this.current_student_observations = this.$store.state.student_observations.filter(student_observation =>
-        student_observation.council_id === this.current_council.id &&
-        student_observation.grade_id === this.current_grade_id && (
-          !this.current_subject_id ||
-          this.current_subject_id === student_observation.subject_id
-        )
-      )
-      this.current_grade_observations = this.$store.state.grade_observations.filter(grade_observation =>
-        grade_observation.council_id === this.current_council.id &&
-        grade_observation.grade_id === this.current_grade_id && (
-          !this.current_subject_id ||
-          this.current_subject_id === grade_observation.subject_id
-        )
+    getUser (userId) {
+      return this.$store.getters['users/getUsers'].find(user =>
+        user.id === userId
       )
     },
-    reportStudentTopic (student_id, topic_id) {
-      const topic_options = this.current_topic_options.filter(topic_option =>
-        topic_option.topic_id === topic_id
+
+    getSubject (subjectId) {
+      return this.$store.getters['subjects/getSubjects'].find(subject =>
+        subject.id === subjectId
+      )
+    },
+
+    reportStudentTopic (studentId, topicId) {
+      const topicOptions = this.currentTopicOptions.filter(topicOption =>
+        topicOption.topic_id === topicId
       )
 
-      const evaluations = this.current_evaluations.filter(evaluation =>
-        evaluation.student_id === student_id &&
-        topic_options.find(topic_option =>
-          topic_option.id === evaluation.topic_option_id
-        )
+      const evaluations = this.currentEvaluations.filter(evaluation =>
+        evaluation.student_id === studentId &&
+        evaluation.topic_id === topicId
       )
 
       if (!evaluations.length) {
         return '-'
       }
 
-      const values = evaluations.map(evaluation =>
-        topic_options.find(topic_option =>
-          topic_option.id === evaluation.topic_option_id
-        ).value
+      const avg = evaluations.reduce((avg, evaluation, i, arr) => {
+        return avg + evaluation.value / arr.length
+      }, 0)
+
+      const nearestTopicOption = topicOptions.reduce((prev, curr) =>
+        Math.abs(curr.value - avg) < Math.abs(prev.value - avg) ? curr : prev
       )
-
-      const sum = values.reduce((a, b) => a + b)
-      const avg = parseInt(sum / values.length)
-
-      const topic_options_values = topic_options.map(topic_option => topic_option.value)
-
-      const nearest_value = topic_options_values.reduce((prev, curr) =>
-        Math.abs(curr - avg) < Math.abs(prev - avg) ? curr : prev
-      )
-
-      const topic_option_name = topic_options.find(topic_option =>
-        topic_option.value === nearest_value
-      ).name
 
       if (this.current_subject_id) {
-        return topic_option_name
+        return nearestTopicOption.name
       }
 
-      return topic_option_name + ' (' + avg + '%)'
+      return nearestTopicOption.name + ' (' + avg + '%)'
     },
-    reportSubjectTopic (subject_id, topic_id) {
-      const topic_options = this.current_topic_options.filter(topic_option =>
-        topic_option.topic_id === topic_id
+
+    reportSubjectTopic (subjectId, topicId) {
+      const topicOptions = this.currentTopicOptions.filter(topicOption =>
+        topicOption.topic_id === topicId
       )
 
-      const evaluation = this.current_evaluations.find(evaluation =>
+      const evaluation = this.currentEvaluations.find(evaluation =>
         evaluation.student_id === this.current_student_id &&
-        evaluation.subject_id === subject_id &&
-        topic_options.find(topic_option =>
-          topic_option.id === evaluation.topic_option_id &&
-          topic_option.topic_id === topic_id
-        )
+        evaluation.topic_id === topicId &&
+        evaluation.subject_id === subjectId
       )
 
       if (!evaluation) {
         return '-'
       }
 
-      return topic_options.find(topic_option =>
-        topic_option.id === evaluation.topic_option_id
+      return topicOptions.find(topicOption =>
+        topicOption.id === evaluation.topic_option_id
       ).name
     },
-    studentGrade (student_id) {
-      return this.current_student_grades.find(student_grade =>
-        student_grade.student_id === student_id
+
+    studentGrade (studentId) {
+      return this.currentStudentGrades.find(studentGrade =>
+        studentGrade.student_id === studentId
       )
     },
-    studentHasEvaluation (student_id) {
-      return !!this.current_evaluations.find(evaluation =>
-        evaluation.student_id === student_id
+
+    studentHasEvaluation (studentId) {
+      return !!this.currentEvaluations.find(evaluation =>
+        evaluation.student_id === studentId
       )
     },
+
     prevStudent () {
-      const index = this.current_students.findIndex(student =>
+      const index = this.currentStudents.findIndex(student =>
         student.id === this.current_student_id
       )
 
-      const prev_student = this.current_students[index - 1]
-      if (!prev_student) {
+      const prevStudent = this.currentStudents[index - 1]
+      if (!prevStudent) {
         return
       }
 
-      this.current_student_id = prev_student.id
+      this.current_student_id = prevStudent.id
     },
+
     nextStudent () {
-      const index = this.current_students.findIndex(student =>
+      const index = this.currentStudents.findIndex(student =>
         student.id === this.current_student_id
       )
 
-      const next_student = this.current_students[index + 1]
-      if (!next_student) {
+      const nextStudent = this.currentStudents[index + 1]
+      if (!nextStudent) {
         return
       }
 
-      this.current_student_id = next_student.id
+      this.current_student_id = nextStudent.id
     }
   },
-  computed: {
-    studentsInGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.$store.state.students.filter(student =>
-        this.studentGrade(student.id)
-      ).sort((a, b) =>
-        Math.sign(this.studentGrade(a.id).number - this.studentGrade(b.id).number)
-      )
-    },
-    currentGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
 
-      return this.current_grades.find(grade =>
-        grade.id === this.current_grade_id
-      )
-    },
-    subjectsInGrade () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.$store.state.subjects.filter(subject =>
-        this.$store.state.grade_subjects.find(grade_subject =>
-          grade_subject.subject_id === subject.id &&
-          grade_subject.grade_id === this.current_grade_id
-        )
-      )
-    },
-    gradeObservations () {
-      if (!this.current_grade_id) {
-        return undefined
-      }
-      return this.$store.state.grade_observations.filter(grade_observation =>
-        grade_observation.grade_id === this.current_grade_id &&
-        grade_observation.council_id === this.current_council.id &&
-        (
-          !this.current_subject_id ||
-          grade_observation.subject_id === this.current_subject_id
-        )
-      )
-    }
-  },
   created () {
-    const council_id = parseInt(this.$route.params.id)
-
-    this.current_council = this.$store.state.councils.find(council =>
-      council.id === council_id
-    )
-    this.current_grades = this.$store.state.grades.filter(grade =>
-      this.$store.state.council_grades.find(council_grade =>
-        council_grade.grade_id === grade.id &&
-        council_grade.council_id === council_id
-      )
-    )
-    this.current_topics = this.$store.state.topics.filter(topic =>
-      this.$store.state.council_topics.find(council_topic =>
-        council_topic.topic_id === topic.id &&
-        council_topic.council_id === council_id
-      )
-    )
-    this.current_topic_options = this.$store.state.topic_options
-
+    this.current_council_id = parseInt(this.$route.params.id)
     this.current_grade_id = ''
     this.current_subject_id = ''
-    this.current_subjects = []
-    this.current_students = []
-    this.current_evaluations = []
-    this.current_student_observations = []
-    this.current_grade_observations = []
     this.current_student_id = undefined
-    this.current_student = {}
   }
 }
 </script>

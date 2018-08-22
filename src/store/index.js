@@ -124,7 +124,7 @@ export default new Vuex.Store({
 
     getResource: (context, name) => {
       const path = '/' + name
-      return axios.get(path).then(response => {
+      return axios.get(path, {params: {school_id: 1}}).then(response => {
         const responseData = response.data
         let returnData = responseData.results
 
@@ -139,7 +139,7 @@ export default new Vuex.Store({
 
         const remainingRequisitions = []
         for (let i = 1; i <= remainingPages; i++) {
-          const promise = axios.get(path, {params: {page: i + 1}})
+          const promise = axios.get(path, {params: {school_id: 1, page: i + 1}})
           remainingRequisitions.push(promise)
         }
 

@@ -4,7 +4,8 @@ export default {
   namespaced: true,
 
   state: {
-    permissions: []
+    permissions: [],
+    loaded: false
   },
 
   getters: {
@@ -22,6 +23,18 @@ export default {
   mutations: {
     setAll: (state, payload) => {
       state.permissions = payload
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.permissions = []
     }
   },
 
@@ -36,9 +49,16 @@ export default {
       return PermissionApi.getPermissions()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(permissions => {
         context.commit('setAll', permissions)
+        context.commit('setLoaded')
       })
     }
   }

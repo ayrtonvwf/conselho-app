@@ -4,7 +4,8 @@ export default {
   namespaced: true,
 
   state: {
-    role_type_permissions: []
+    role_type_permissions: [],
+    loaded: false
   },
 
   getters: {
@@ -16,6 +17,18 @@ export default {
   mutations: {
     setAll: (state, payload) => {
       state.role_type_permissions = payload
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.role_type_permissions = []
     }
   },
 
@@ -30,9 +43,16 @@ export default {
       return RoleTypePermissionApi.getRoleTypePermissions()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(roleTypePermissions => {
         context.commit('setAll', roleTypePermissions)
+        context.commit('setLoaded')
       })
     }
   }

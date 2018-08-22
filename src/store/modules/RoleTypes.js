@@ -4,7 +4,8 @@ export default {
   namespaced: true,
 
   state: {
-    role_types: []
+    role_types: [],
+    loaded: false
   },
 
   getters: {
@@ -22,6 +23,18 @@ export default {
   mutations: {
     setAll: (state, payload) => {
       state.role_types = payload
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.role_types = []
     }
   },
 
@@ -36,9 +49,16 @@ export default {
       return RoleTypeApi.getRoleTypes()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(roleTypes => {
         context.commit('setAll', roleTypes)
+        context.commit('setLoaded')
       })
     }
   }

@@ -154,7 +154,29 @@ export default {
       }).finally(() => {
         this.$emit('loaded')
       })
+    },
+
+    load () {
+      const required = [
+        'subjects'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb')
+      )
+
+      return Promise.all(promises)
     }
+  },
+
+  beforeCreate () {
+    this.$emit('loading')
+  },
+
+  created () {
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

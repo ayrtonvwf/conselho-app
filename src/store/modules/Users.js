@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    users: []
+    users: [],
+    loaded: false
   },
 
   getters: {
@@ -35,6 +36,18 @@ export default {
       )
 
       Vue.set(state.users, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.users = []
     }
   },
 
@@ -49,9 +62,16 @@ export default {
       return UserApi.getUsers()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(users => {
         context.commit('setAll', users)
+        context.commit('setLoaded')
       })
     },
 

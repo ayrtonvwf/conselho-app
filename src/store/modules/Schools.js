@@ -4,7 +4,8 @@ export default {
   namespaced: true,
 
   state: {
-    schools: []
+    schools: [],
+    loaded: false
   },
 
   getters: {
@@ -16,6 +17,18 @@ export default {
   mutations: {
     setAll: (state, payload) => {
       state.schools = payload
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.schools = []
     }
   },
 
@@ -30,9 +43,16 @@ export default {
       return SchoolApi.getSchools()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(schools => {
         context.commit('setAll', schools)
+        context.commit('setLoaded')
       })
     }
   }

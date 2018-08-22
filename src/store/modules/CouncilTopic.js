@@ -4,7 +4,8 @@ export default {
   namespaced: true,
 
   state: {
-    council_topics: []
+    council_topics: [],
+    loaded: false
   },
 
   getters: {
@@ -20,6 +21,18 @@ export default {
 
     create: (state, payload) => {
       state.council_topics.push(payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.council_topics = []
     }
   },
 
@@ -34,9 +47,16 @@ export default {
       return CouncilTopicApi.getCouncilTopics()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(councilTopics => {
         context.commit('setAll', councilTopics)
+        context.commit('setLoaded')
       })
     },
 

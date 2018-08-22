@@ -407,7 +407,36 @@ export default {
       }
 
       this.current_student_id = nextStudent.id
+    },
+
+    load () {
+      const required = [
+        'councils',
+        'council_grades',
+        'grades',
+        'council_topics',
+        'topics',
+        'topic_options',
+        'evaluations',
+        'grade_observations',
+        'student_observations',
+        'student_grades',
+        'students',
+        'grade_subjects',
+        'subjects',
+        'users'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb')
+      )
+
+      return Promise.all(promises)
     }
+  },
+
+  beforeCreate () {
+    this.$emit('loading')
   },
 
   created () {
@@ -415,6 +444,10 @@ export default {
     this.current_grade_id = ''
     this.current_subject_id = ''
     this.current_student_id = undefined
+
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

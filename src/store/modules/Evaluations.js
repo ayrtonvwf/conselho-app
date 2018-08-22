@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    evaluations: []
+    evaluations: [],
+    loaded: false
   },
 
   getters: {
@@ -43,6 +44,18 @@ export default {
           Vue.set(state.evaluations, index, evaluation)
         }
       })
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.evaluations = []
     }
   },
 
@@ -57,9 +70,16 @@ export default {
       return EvaluationApi.getEvaluations()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(evaluations => {
         context.commit('setAll', evaluations)
+        context.commit('setLoaded')
       })
     },
 

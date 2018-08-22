@@ -4,6 +4,7 @@ export default {
   namespaced: true,
 
   state: {
+    loaded: false,
     council_grades: []
   },
 
@@ -20,6 +21,18 @@ export default {
 
     create: (state, payload) => {
       state.council_grades.push(payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.council_grades = []
     }
   },
 
@@ -34,9 +47,16 @@ export default {
       return CouncilGradeApi.getCouncilGrades()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(councilGrades => {
         context.commit('setAll', councilGrades)
+        context.commit('setLoaded')
       })
     },
 

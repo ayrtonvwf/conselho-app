@@ -56,6 +56,8 @@ export default {
         this.$store.dispatch('loadFromAPI')
       ).then(() =>
         this.$store.dispatch('loadData')
+      ).then(() =>
+        this.load()
       ).then(() => {
         this.$emit('loaded')
         this.$router.push('/')
@@ -64,7 +66,35 @@ export default {
         this.$emit('notify', 'Erro', 'Não foi possível fazer login. Tente novamente!', 'danger')
         console.log('Error:', error)
       })
+    },
+
+    load () {
+      const required = [
+        'teacher_requests',
+        'users',
+        'councils',
+        'roles',
+        'role_types',
+        'role_type_permissions',
+        'permissions'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb', true)
+      )
+
+      return Promise.all(promises)
     }
+  },
+
+  beforeCreate () {
+    this.$emit('loading')
+  },
+
+  created () {
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

@@ -482,7 +482,36 @@ export default {
       }).finally(() => {
         this.$emit('loaded')
       })
+    },
+
+    load () {
+      const required = [
+        'councils',
+        'council_topics',
+        'topics',
+        'topic_options',
+        'council_grades',
+        'teachers',
+        'grades',
+        'student_grades',
+        'students',
+        'grade_subjects',
+        'subjects',
+        'evaluations',
+        'student_observations',
+        'grade_observations'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb')
+      )
+
+      return Promise.all(promises)
     }
+  },
+
+  beforeCreate () {
+    this.$emit('loading')
   },
 
   created () {
@@ -491,6 +520,10 @@ export default {
     this.current_council_id = parseInt(this.$route.params.id)
     this.current_grade_id = ''
     this.current_subject_id = ''
+
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

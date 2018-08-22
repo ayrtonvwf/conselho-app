@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    grade_observations: []
+    grade_observations: [],
+    loaded: false
   },
 
   getters: {
@@ -29,6 +30,18 @@ export default {
       )
 
       Vue.set(state.grade_observations, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.grade_observations = []
     }
   },
 
@@ -43,9 +56,16 @@ export default {
       return GradeObservationApi.getGradeObservations()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(gradeObservations => {
         context.commit('setAll', gradeObservations)
+        context.commit('setLoaded')
       })
     },
 

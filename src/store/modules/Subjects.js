@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    subjects: []
+    subjects: [],
+    loaded: false
   },
 
   getters: {
@@ -35,6 +36,18 @@ export default {
       )
 
       Vue.set(state.subjects, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.subjects = []
     }
   },
 
@@ -49,9 +62,16 @@ export default {
       return SubjectApi.getSubjects()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(subjects => {
         context.commit('setAll', subjects)
+        context.commit('setLoaded')
       })
     },
 

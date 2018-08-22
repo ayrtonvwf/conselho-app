@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    roles: []
+    roles: [],
+    loaded: false
   },
 
   getters: {
@@ -29,6 +30,18 @@ export default {
       )
 
       Vue.set(state.roles, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.roles = []
     }
   },
 
@@ -43,9 +56,16 @@ export default {
       return RoleApi.getRoles()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(roles => {
         context.commit('setAll', roles)
+        context.commit('setLoaded')
       })
     },
 

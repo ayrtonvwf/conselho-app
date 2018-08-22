@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    grade_subjects: []
+    grade_subjects: [],
+    loaded: false
   },
 
   getters: {
@@ -28,6 +29,18 @@ export default {
         gradeSubject.id === gradeSubjectId
       )
       Vue.delete(state.grade_subjects, index)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.grade_subjects = []
     }
   },
 
@@ -42,9 +55,16 @@ export default {
       return GradeSubjectApi.getGradeSubjects()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(gradeSubjects => {
         context.commit('setAll', gradeSubjects)
+        context.commit('setLoaded')
       })
     },
 

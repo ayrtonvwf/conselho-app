@@ -294,6 +294,24 @@ export default {
       }).finally(() => {
         this.loading = false
       })
+    },
+
+    load () {
+      const required = [
+        'teacher_requests',
+        'users',
+        'councils',
+        'roles',
+        'role_types',
+        'role_type_permissions',
+        'permissions'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb', true)
+      )
+
+      return Promise.all(promises)
     }
   },
   created () {
@@ -309,7 +327,7 @@ export default {
       return
     }
 
-    this.$store.dispatch('loadData').then(() => {
+    this.load().then(() => {
       this.loading = false
     })
   }

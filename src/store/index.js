@@ -75,29 +75,12 @@ export default new Vuex.Store({
 
   actions: {
     loadData: context => {
+      const db = context.state.db
       const promises = []
 
-      promises.push(context.dispatch('users/loadFromDb'))
-      promises.push(context.dispatch('grades/loadFromDb'))
-      promises.push(context.dispatch('subjects/loadFromDb'))
-      promises.push(context.dispatch('topic_options/loadFromDb'))
-      promises.push(context.dispatch('councils/loadFromDb'))
-      promises.push(context.dispatch('council_grades/loadFromDb'))
-      promises.push(context.dispatch('council_topics/loadFromDb'))
-      promises.push(context.dispatch('evaluations/loadFromDb'))
-      promises.push(context.dispatch('grade_subjects/loadFromDb'))
-      promises.push(context.dispatch('grade_observations/loadFromDb'))
-      promises.push(context.dispatch('permissions/loadFromDb'))
-      promises.push(context.dispatch('roles/loadFromDb'))
-      promises.push(context.dispatch('role_types/loadFromDb'))
-      promises.push(context.dispatch('role_type_permissions/loadFromDb'))
-      promises.push(context.dispatch('schools/loadFromDb'))
-      promises.push(context.dispatch('students/loadFromDb'))
-      promises.push(context.dispatch('student_observations/loadFromDb'))
-      promises.push(context.dispatch('student_grades/loadFromDb'))
-      promises.push(context.dispatch('teachers/loadFromDb'))
-      promises.push(context.dispatch('teacher_requests/loadFromDb'))
-      promises.push(context.dispatch('topics/loadFromDb'))
+      db.tables.forEach(table => {
+        promises.push(context.dispatch(table.name + '/loadFromDb'))
+      })
 
       return Promise.all(promises)
     },
@@ -172,7 +155,10 @@ export default new Vuex.Store({
       const promises = []
 
       context.state.db.tables.forEach(table => {
-        promises.push(table.clear())
+        const promise = table.clear().then(() => {
+          context.commit(table.name + '/unload')
+        })
+        promises.push(promise)
       })
 
       return Promise.all(promises)

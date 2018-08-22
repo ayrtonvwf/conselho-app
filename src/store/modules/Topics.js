@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    topics: []
+    topics: [],
+    loaded: false
   },
 
   getters: {
@@ -35,6 +36,18 @@ export default {
       )
 
       Vue.set(state.topics, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.topics = []
     }
   },
 
@@ -49,9 +62,16 @@ export default {
       return TopicApi.getTopics()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(topics => {
         context.commit('setAll', topics)
+        context.commit('setLoaded')
       })
     },
 

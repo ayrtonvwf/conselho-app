@@ -356,7 +356,32 @@ export default {
         this.$emit('loaded')
         this.$refs.modalGrades.open()
       })
+    },
+
+    load () {
+      const required = [
+        'grades',
+        'teacher_requests',
+        'users',
+        'teachers',
+        'grade_subjects',
+        'subjects',
+        'roles',
+        'role_types',
+        'permissions',
+        'role_type_permissions'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb')
+      )
+
+      return Promise.all(promises)
     }
+  },
+
+  beforeCreate () {
+    this.$emit('loading')
   },
 
   created () {
@@ -365,6 +390,10 @@ export default {
     this.current_subject_id = ''
     this.current_teacher_id = undefined
     this.current_teacher_request_id = undefined
+
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

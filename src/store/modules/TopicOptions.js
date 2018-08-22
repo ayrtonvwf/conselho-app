@@ -5,6 +5,7 @@ export default {
   namespaced: true,
 
   state: {
+    loaded: false,
     topic_options: []
   },
 
@@ -35,6 +36,18 @@ export default {
       )
 
       Vue.set(state.topic_options, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.topic_options = []
     }
   },
 
@@ -49,9 +62,16 @@ export default {
       return TopicOptionApi.getTopicOptions()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(topicOptions => {
         context.commit('setAll', topicOptions)
+        context.commit('setLoaded')
       })
     },
 

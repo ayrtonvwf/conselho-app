@@ -478,10 +478,35 @@ export default {
       }).finally(() => {
         this.$emit('loaded')
       })
+    },
+
+    load () {
+      const required = [
+        'grade',
+        'student_grades',
+        'students',
+        'grade_subjects',
+        'subjects'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb')
+      )
+
+      return Promise.all(promises)
     }
   },
+
+  beforeCreate () {
+    this.$emit('loading')
+  },
+
   created () {
     this.current_grade_id = undefined
+
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

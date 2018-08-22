@@ -5,7 +5,8 @@ export default {
   namespaced: true,
 
   state: {
-    teacher_requests: []
+    teacher_requests: [],
+    loaded: false
   },
 
   getters: {
@@ -37,6 +38,18 @@ export default {
       )
 
       Vue.delete(state.teacher_requests, index)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.teacher_requests = []
     }
   },
 
@@ -51,9 +64,16 @@ export default {
       return TeacherRequestApi.getTeacherRequests()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(teacherRequests => {
         context.commit('setAll', teacherRequests)
+        context.commit('setLoaded')
       })
     },
 

@@ -5,6 +5,7 @@ export default {
   namespaced: true,
 
   state: {
+    loaded: false,
     councils: []
   },
 
@@ -35,6 +36,18 @@ export default {
       )
 
       Vue.set(state.councils, index, payload)
+    },
+
+    setLoaded: (state, status) => {
+      if (status === undefined) {
+        status = true
+      }
+      state.loaded = status
+    },
+
+    unload: state => {
+      state.loaded = false
+      state.councils = []
     }
   },
 
@@ -49,9 +62,16 @@ export default {
       return CouncilApi.getCouncils()
     },
 
-    loadFromDb: context => {
+    loadFromDb: (context, force) => {
+      if (!force && context.state.loaded) {
+        return
+      }
+
+      context.commit('setLoaded', false)
+
       context.dispatch('getAllFromDb').then(councils => {
         context.commit('setAll', councils)
+        context.commit('setLoaded')
       })
     },
 

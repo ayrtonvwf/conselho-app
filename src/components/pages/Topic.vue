@@ -420,12 +420,34 @@ export default {
 
         inputs[inputs.length - 1].focus()
       })
+    },
+
+    load () {
+      const required = [
+        'topics',
+        'topic_options'
+      ]
+
+      const promises = required.map(module =>
+        this.$store.dispatch(module + '/loadFromDb')
+      )
+
+      return Promise.all(promises)
     }
   },
+
+  beforeCreate () {
+    this.$emit('loading')
+  },
+
   created () {
     this.current_topic_id = undefined
     this.new_topic_options = [{}, {}]
     this.editing_topic_options = []
+
+    this.load().then(() => {
+      this.$emit('loaded')
+    })
   }
 }
 </script>

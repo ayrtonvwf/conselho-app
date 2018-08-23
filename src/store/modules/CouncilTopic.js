@@ -54,7 +54,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(councilTopics => {
+      return context.dispatch('getAllFromDb').then(councilTopics => {
         context.commit('setAll', councilTopics)
         context.commit('setLoaded')
       })

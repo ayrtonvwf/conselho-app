@@ -92,6 +92,10 @@ export default new Vuex.Store({
       const promises = []
 
       db.tables.forEach(table => {
+        if (table.name === 'evaluations') {
+          return // will be loaded only if the user cant see the report
+        }
+
         const resource = table.name.slice(0, -1)
         const promise = context.dispatch('getResource', resource).then(data => {
           return table.clear().then(() => {
@@ -102,7 +106,49 @@ export default new Vuex.Store({
         promises.push(promise)
       })
 
-      return Promise.all(promises)
+      return Promise.all(promises).then(() => {
+        const promises = [
+          context.dispatch('users/loadFromDb'),
+          context.dispatch('roles/loadFromDb'),
+          context.dispatch('role_types/loadFromDb'),
+          context.dispatch('role_type_permissions/loadFromDb'),
+          context.dispatch('permissions/loadFromDb')
+        ]
+        return Promise.all(promises)
+      }).then(() => {
+        const currentRole = context.getters['roles/getRoles'].find(role =>
+          role.user_id === context.state.token.user_id
+        )
+
+        const currentRoleType = context.getters['role_types/getRoleTypes'].find(roleType =>
+          roleType.id === currentRole.role_type_id
+        )
+
+        const currentRoleTypePermissions = context.getters['role_type_permissions/getRoleTypePermissions'].filter(roleTypePermission =>
+          roleTypePermission.role_type_id === currentRoleType.id
+        )
+
+        const currentPermissions = context.getters['permissions/getPermissions'].filter(permission =>
+          currentRoleTypePermissions.find(roleTypePermission =>
+            roleTypePermission.permission_id === permission.id
+          )
+        )
+
+        const canSeeReport = currentPermissions.find(permission =>
+          permission.reference === 'council_report'
+        )
+
+        if (canSeeReport) {
+          return
+        }
+        console.log(canSeeReport)
+        return;
+        return context.dispatch('getResource', 'evaluation').then(data => {
+          return db.evaluations.clear().then(() => {
+            return db.evaluations.bulkPut(parseObjects(data))
+          })
+        })
+      })
     },
 
     getResource: (context, name) => {

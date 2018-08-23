@@ -50,7 +50,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(roleTypePermissions => {
+      return context.dispatch('getAllFromDb').then(roleTypePermissions => {
         context.commit('setAll', roleTypePermissions)
         context.commit('setLoaded')
       })

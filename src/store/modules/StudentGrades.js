@@ -63,7 +63,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(studentGrades => {
+      return context.dispatch('getAllFromDb').then(studentGrades => {
         context.commit('setAll', studentGrades)
         context.commit('setLoaded')
       })

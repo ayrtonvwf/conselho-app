@@ -56,7 +56,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(permissions => {
+      return context.dispatch('getAllFromDb').then(permissions => {
         context.commit('setAll', permissions)
         context.commit('setLoaded')
       })

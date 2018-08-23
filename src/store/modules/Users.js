@@ -69,7 +69,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(users => {
+      return context.dispatch('getAllFromDb').then(users => {
         context.commit('setAll', users)
         context.commit('setLoaded')
       })

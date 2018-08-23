@@ -63,7 +63,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(roles => {
+      return context.dispatch('getAllFromDb').then(roles => {
         context.commit('setAll', roles)
         context.commit('setLoaded')
       })

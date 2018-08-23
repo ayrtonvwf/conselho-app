@@ -69,7 +69,7 @@ export default {
 
       context.commit('setLoaded', false)
 
-      context.dispatch('getAllFromDb').then(topicOptions => {
+      return context.dispatch('getAllFromDb').then(topicOptions => {
         context.commit('setAll', topicOptions)
         context.commit('setLoaded')
       })

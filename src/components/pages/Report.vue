@@ -105,7 +105,8 @@ export default {
       current_council_id: undefined,
       current_grade_id: '',
       current_subject_id: '',
-      current_student_id: undefined
+      current_student_id: undefined,
+      current_grade_evaluations: []
     }
   },
   computed: {
@@ -152,7 +153,7 @@ export default {
         )
       )
     },
-
+    /*
     currentCouncilEvaluations () {
       return this.$store.getters['evaluations/getEvaluations'].map(evaluation => {
         if (evaluation.council_id !== this.current_council_id) {
@@ -169,7 +170,7 @@ export default {
         return evaluation
       }).filter(evaluation => evaluation)
     },
-
+    */
     currentCouncilGradeObservations () {
       return this.$store.getters['grade_observations/getGradeObservations'].filter(gradeObservation =>
         gradeObservation.council_id === this.current_council_id
@@ -243,7 +244,7 @@ export default {
         )
       )
     },
-
+    /*
     currentGradeEvaluations () {
       if (!this.current_grade_id) {
         return []
@@ -253,17 +254,17 @@ export default {
         evaluation.grade_id === this.current_grade_id
       )
     },
-
+    */
     currentEvaluations () {
       if (!this.current_grade_id) {
         return []
       }
 
       if (!this.current_subject_id) {
-        return this.currentGradeEvaluations
+        return this.current_grade_evaluations
       }
 
-      return this.currentGradeEvaluations.filter(evaluation =>
+      return this.current_grade_evaluations.filter(evaluation =>
         evaluation.subject_id === this.current_subject_id
       )
     },
@@ -307,6 +308,39 @@ export default {
       return this.currentStudents.find(student =>
         student.id === this.current_student_id
       )
+    }
+  },
+  watch: {
+    current_grade_id () {
+      if (!this.current_grade_id) {
+        this.current_grade_evaluations = []
+        return
+      }
+
+      this.$emit('loading')
+
+      const getResourceConfig = {
+        name: 'evaluation',
+        data: {
+          council_id: this.current_council_id,
+          grade_id: this.current_grade_id
+        }
+      }
+
+      this.$store.dispatch('getResource', getResourceConfig).then(evaluations => {
+        this.current_grade_evaluations = evaluations.map(evaluation => {
+          const topicOption = this.currentTopicOptions.find(topicOption =>
+            topicOption.id === evaluation.topic_option_id
+          )
+
+          evaluation.topic_id = topicOption.topic_id
+          evaluation.value = topicOption.value
+
+          return evaluation
+        })
+
+        this.$emit('loaded')
+      })
     }
   },
   methods: {
@@ -417,7 +451,6 @@ export default {
         'council_topics',
         'topics',
         'topic_options',
-        'evaluations',
         'grade_observations',
         'student_observations',
         'student_grades',

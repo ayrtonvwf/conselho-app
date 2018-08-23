@@ -322,7 +322,7 @@ export default {
       return
     }
 
-    if (this.$route.name === 'Login') {
+    if (!this.$store.state.logged_in) {
       this.loading = false
       return
     }

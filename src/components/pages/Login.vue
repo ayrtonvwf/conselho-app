@@ -85,16 +85,6 @@ export default {
 
       return Promise.all(promises)
     }
-  },
-
-  beforeCreate () {
-    this.$emit('loading')
-  },
-
-  created () {
-    this.load().then(() => {
-      this.$emit('loaded')
-    })
   }
 }
 </script>

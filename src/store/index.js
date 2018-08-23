@@ -108,7 +108,6 @@ export default new Vuex.Store({
 
       return Promise.all(promises).then(() => {
         const promises = [
-          context.dispatch('users/loadFromDb'),
           context.dispatch('roles/loadFromDb'),
           context.dispatch('role_types/loadFromDb'),
           context.dispatch('role_type_permissions/loadFromDb'),
@@ -141,8 +140,7 @@ export default new Vuex.Store({
         if (canSeeReport) {
           return
         }
-        console.log(canSeeReport)
-        return;
+
         return context.dispatch('getResource', 'evaluation').then(data => {
           return db.evaluations.clear().then(() => {
             return db.evaluations.bulkPut(parseObjects(data))
@@ -151,11 +149,16 @@ export default new Vuex.Store({
       })
     },
 
-    getResource: (context, name) => {
+    getResource: (context, payload) => {
+      const name = payload.name ? payload.name : payload
+      const data = payload.data ? payload.data : {}
       const path = '/' + name
-      return axios.get(path, {params: {school_id: 1}}).then(response => {
+
+      data.school_id = 1
+
+      return axios.get(path, {params: data}).then(response => {
         const responseData = response.data
-        let returnData = responseData.results
+        let returnData = parseObjects(responseData.results)
 
         const max = parseInt(responseData.max_results_per_page)
         const total = parseInt(responseData.total_results)
@@ -168,7 +171,8 @@ export default new Vuex.Store({
 
         const remainingRequisitions = []
         for (let i = 1; i <= remainingPages; i++) {
-          const promise = axios.get(path, {params: {school_id: 1, page: i + 1}})
+          data.page = i + 1
+          const promise = axios.get(path, {params: data})
           remainingRequisitions.push(promise)
         }
 

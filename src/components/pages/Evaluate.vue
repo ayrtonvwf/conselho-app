@@ -205,7 +205,14 @@ export default {
       return this.$store.getters['evaluations/getEvaluations'].filter(evaluation =>
         evaluation.council_id === this.current_council_id &&
         evaluation.user_id === this.current_user_id
-      )
+      ).map(evaluation => {
+        const topicOption = this.currentTopicOptions.find(topicOption =>
+          topicOption.id === evaluation.topic_option_id
+        )
+        evaluation.value = topicOption.value
+        evaluation.topic_id = topicOption.topic_id
+        return evaluation
+      })
     },
 
     currentUserStudentObservations () {

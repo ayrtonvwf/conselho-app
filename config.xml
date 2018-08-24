@@ -91,5 +91,6 @@
         <splash src="res/screen/windows/splashscreen.png" target="SplashScreen" />
         <splash src="res/screen/windows/splashscreenphone.png" target="SplashScreenPhone" />
     </platform>
+    <plugin name="cordova-plugin-splashscreen" spec="^5.0.2" />
     <engine name="android" spec="^7.1.1" />
 </widget>

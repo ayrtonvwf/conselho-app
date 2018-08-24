@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Thu Aug 23 23:19:47 BRT 2018
+#Fri Aug 24 05:29:13 BRT 2018
 124.path=www/dist/static/cordova/res/screen/android/splash-land-mdpi.png
 60.set=ASSET
 52.set=ASSET
@@ -137,6 +137,7 @@
 128.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 29.path=www/dist/static/html_code.html
 2.baseType=DIRECTORY
+132.baseType=DIRECTORY
 76.path=www/dist/static/cordova/res/icon/ios/icon-small@3x.png
 6.set=DEX
 93.baseType=DIRECTORY
@@ -255,6 +256,7 @@
 98.path=www/dist/static/cordova/res/icon/ios/icon-83.5@2x.png
 103.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 3.set=ASSET
+132.set=ASSET
 124.set=ASSET
 19.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 51.path=www/dist/static/apple-touch-icon-120x120.png
@@ -341,7 +343,7 @@
 50.path=www/dist/static/cordova/splash.png
 106.set=ASSET
 65.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-count=132
+count=133
 57.path=www/dist/static/cordova/archive/appstoreicon.png
 105.baseType=DIRECTORY
 10.path=www/dist/static/cordova/res/screen/android/splash-land-xxhdpi.png
@@ -381,6 +383,7 @@ count=132
 105.set=ASSET
 89.baseType=DIRECTORY
 49.baseType=DIRECTORY
+132.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 92.baseType=DIRECTORY
 41.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 52.baseType=DIRECTORY
@@ -471,6 +474,7 @@ count=132
 46.set=ASSET
 116.baseType=DIRECTORY
 38.set=ASSET
+132.path=www/plugins/cordova-plugin-splashscreen/www/splashscreen.js
 41.path=www/cordova-js-src/plugin/android/app.js
 77.baseType=DIRECTORY
 14.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug

@@ -2,8 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import db from '../assets/db'
 import axios from 'axios'
-import detectBrowser from 'detect-browser'
-import semver from 'semver'
+import browserDetect from 'browser-detect'
 
 import {parseObjects} from '../assets/helpers'
 
@@ -31,7 +30,7 @@ import Users from './modules/Users'
 
 Vue.use(Vuex)
 
-const browser = detectBrowser.detect()
+const browser = browserDetect()
 
 export default new Vuex.Store({
   modules: {
@@ -66,10 +65,10 @@ export default new Vuex.Store({
     browser: {
       ...browser,
       support: (
-        (browser.name === 'chrome' && semver.gte(browser.version, '60.0.0')) ||
-        (browser.name === 'firefox' && semver.gte(browser.version, '30.0.0')) ||
-        (browser.name === 'edge' && semver.gte(browser.version, '14.0.0')) ||
-        (browser.name === 'ie' && semver.get(browser.version, '11.0.0'))
+        (browser.name === 'chrome' && browser.versionNumber >= 60) ||
+        (browser.name === 'firefox' && browser.versionNumber >= 30) ||
+        (browser.name === 'edge' && browser.versionNumber >= 14) ||
+        (browser.name === 'ie' && browser.version >= 11)
       ),
       readableName () {
         switch (browser.name) {

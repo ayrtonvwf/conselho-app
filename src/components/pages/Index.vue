@@ -41,11 +41,35 @@
         </div>
       </template>
     </div>
+    <p v-html="debugBrowser()"></p>
+    <p v-html="debugAgent()"></p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'Index'
+  name: 'Index',
+  methods: {
+    pretty: value => {
+      const pretty = JSON.stringify(value, null, 2)
+      const textarea = document.createElement('textarea')
+      textarea.innerText = pretty
+      return textarea.innerHTML
+    },
+    debugBrowser () {
+      return this.pretty(this.$store.state.browser)
+    },
+    debugAgent () {
+      return navigator.userAgent
+    }
+  },
+  filters: {
+    pretty: value => {
+      const pretty = JSON.stringify(value, null, 2)
+      const textarea = document.createElement('textarea')
+      textarea.innerText = pretty
+      return textarea.innerHTML
+    }
+  }
 }
 </script>

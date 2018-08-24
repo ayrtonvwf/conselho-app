@@ -1,4 +1,4 @@
-#Fri Aug 24 12:48:44 BRT 2018
+#Fri Aug 24 13:53:56 BRT 2018
 base.0=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/transforms/dexMerger/debug/0
 path.0=classes.dex
 renamed.0=classes.dex

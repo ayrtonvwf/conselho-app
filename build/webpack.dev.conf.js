@@ -7,6 +7,7 @@ const path = require('path')
 const baseWebpackConfig = require('./webpack.base.conf')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CSPWebpackPlugin = require('csp-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
 
@@ -56,6 +57,18 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       filename: 'index.html',
       template: 'index.html',
       inject: true
+    }),
+    new CSPWebpackPlugin({
+      'default-src': '\'self\' data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
+      'style-src': '\'self\' \'unsafe-inline\'',
+      'media-src': '*',
+      'img-src': '\'self\' data: content:',
+      'connect-src': '\'self\' http://localhost ws:',
+
+      'object-src': '\'none\'',
+      'base-uri': '\'self\'',
+      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com'],
+      'worker-src': ['\'self\'','blob:']
     }),
     // copy custom static assets
     new CopyWebpackPlugin([

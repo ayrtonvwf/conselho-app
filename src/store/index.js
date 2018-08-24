@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import db from '../assets/db'
 import axios from 'axios'
+import detectBrowser from 'detect-browser'
+import semver from 'semver'
 
 import {parseObjects} from '../assets/helpers'
 
@@ -28,6 +30,8 @@ import Topics from './modules/Topics'
 import Users from './modules/Users'
 
 Vue.use(Vuex)
+
+const browser = detectBrowser.detect()
 
 export default new Vuex.Store({
   modules: {
@@ -58,7 +62,58 @@ export default new Vuex.Store({
     school_id: 1,
     db: db,
     token: {},
-    logged_in: undefined
+    logged_in: undefined,
+    browser: {
+      ...browser,
+      support: (
+        (browser.name === 'chrome' && semver.gte(browser.version, '60.0.0')) ||
+        (browser.name === 'firefox' && semver.gte(browser.version, '30.0.0')) ||
+        (browser.name === 'edge' && semver.gte(browser.version, '14.0.0')) ||
+        (browser.name === 'ie' && semver.get(browser.version, '11.0.0'))
+      ),
+      readableName () {
+        switch (browser.name) {
+          case 'chrome' : return 'Google Chrome'
+          case 'firefox' : return 'Mozilla Firefox'
+          case 'edge' : return 'Edge'
+          case 'ie' : return 'Internet Explorer'
+        }
+      },
+      updateLink () {
+        if (!browser) {
+          return undefined
+        }
+
+        switch (browser.name) {
+          case 'chrome':
+            if (browser.os === 'Android OS') {
+              return 'https://play.google.com/store/apps/details?id=com.android.chrome'
+            }
+            if (browser.os === 'iOS') {
+              return 'https://itunes.apple.com/us/app/google-chrome/id535886823'
+            }
+            return 'https://www.google.com/chrome'
+          case 'firefox':
+            if (browser.os === 'Android OS') {
+              return 'https://play.google.com/store/apps/details?id=org.mozilla.firefox'
+            }
+            if (browser.os === 'iOS') {
+              return 'https://itunes.apple.com/ca/app/firefox-web-browser/id989804926'
+            }
+            return 'https://www.mozilla.org/pt-BR/firefox/new'
+          case 'edge':
+            if (browser.os === 'Android OS') {
+              return 'https://play.google.com/store/apps/details?id=com.microsoft.emmx'
+            }
+            if (browser.os === 'iOS') {
+              return 'https://itunes.apple.com/us/app/microsoft-edge/id1288723196?mt=8'
+            }
+            return 'https://www.microsoft.com/en-us/download/details.aspx?id=48126#4baacbe7-a8a1-8091-5597-393c6b9ace67'
+          case 'ie':
+            return 'https://www.microsoft.com/en-us/download/details.aspx?id=48126#4baacbe7-a8a1-8091-5597-393c6b9ace67'
+        }
+      }
+    }
   },
 
   mutations: {

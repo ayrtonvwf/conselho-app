@@ -10,6 +10,13 @@
     line-height: 100vh;
     text-align: center;
     z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  #loading.show {
+    opacity: 1;
+    pointer-events: all;
   }
   #loading>.material-icons {
     font-size: 35px;
@@ -120,7 +127,7 @@
       <div class="notification-icon material-icons" v-if="notification.icon !== undefined">{{ notification.icon }}</div>
       <div class="notification-title">{{ notification.title }}</div>{{ notification.message }}
     </div>
-    <div id="loading" v-if="loading">
+    <div id="loading" :class="loading ? 'show' : ''">
       <div class="material-icons">sync</div>
     </div>
   </div>

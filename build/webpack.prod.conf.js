@@ -84,7 +84,7 @@ const webpackConfig = merge(baseWebpackConfig, {
       'style-src': '\'self\' \'unsafe-inline\'',
       'media-src': '*',
       'img-src': '\'self\' data: content:',
-      'connect-src': '\'self\' https://conselho-api.infomec.net.br ws:',
+      'connect-src': '\'self\' https://conselho-api.infomec.net.br https://sentry.io ws:',
 
       'object-src': '\'none\'',
       'base-uri': '\'self\'',

@@ -3,12 +3,20 @@ import store from './store/index'
 import router from './router'
 import axios from 'axios'
 import VueCordova from 'vue-cordova'
+import Raven from 'raven-js'
+import RavenVue from 'raven-js/plugins/vue'
 
 import App from './App'
 
 import Modal from './components/Modal'
 import Prompt from './components/Prompt'
 import SuperTable from './components/SuperTable'
+
+if (process.env.NODE_ENV === 'production') {
+  Raven.config('https://baa34bf451b14b72bf02d99406a1ea25@sentry.io/1268814')
+    .addPlugin(RavenVue, Vue)
+    .install()
+}
 
 axios.defaults.baseURL = process.env.NODE_ENV !== 'production' ? 'http://localhost/conselho-server/' : 'https://conselho-api.infomec.net.br/'
 axios.defaults.headers.common['Token'] = undefined

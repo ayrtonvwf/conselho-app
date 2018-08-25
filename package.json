@@ -23,6 +23,7 @@
     "dexie": "^2.0.4",
     "lite-admin": "git+https://github.com/ayrtonvwf/lite-admin.git",
     "material-design-icons": "^3.0.1",
+    "raven-js": "^3.26.4",
     "vue": "^2.5.17",
     "vue-cordova": "^0.1.2",
     "vue-router": "^3.0.1",

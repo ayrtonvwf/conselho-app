@@ -64,6 +64,8 @@ export default new Vuex.Store({
     logged_in: undefined,
     browser: {
       ...browser,
+      playStore: browser.os.name.startsWith('Android'),
+      iTunes: browser.os.name.startsWith('Mac'),
       support: (
         (browser.name === 'chrome' && browser.versionNumber >= 60) ||
         (browser.name === 'firefox' && browser.versionNumber >= 30) ||
@@ -85,26 +87,26 @@ export default new Vuex.Store({
 
         switch (browser.name) {
           case 'chrome':
-            if (browser.os === 'Android OS') {
+            if (browser.playStore) {
               return 'https://play.google.com/store/apps/details?id=com.android.chrome'
             }
-            if (browser.os === 'iOS') {
+            if (browser.iTunes) {
               return 'https://itunes.apple.com/us/app/google-chrome/id535886823'
             }
             return 'https://www.google.com/chrome'
           case 'firefox':
-            if (browser.os === 'Android OS') {
+            if (browser.playStore) {
               return 'https://play.google.com/store/apps/details?id=org.mozilla.firefox'
             }
-            if (browser.os === 'iOS') {
+            if (browser.iTunes) {
               return 'https://itunes.apple.com/ca/app/firefox-web-browser/id989804926'
             }
             return 'https://www.mozilla.org/pt-BR/firefox/new'
           case 'edge':
-            if (browser.os === 'Android OS') {
+            if (browser.playStore) {
               return 'https://play.google.com/store/apps/details?id=com.microsoft.emmx'
             }
-            if (browser.os === 'iOS') {
+            if (browser.iTunes) {
               return 'https://itunes.apple.com/us/app/microsoft-edge/id1288723196?mt=8'
             }
             return 'https://www.microsoft.com/en-us/download/details.aspx?id=48126#4baacbe7-a8a1-8091-5597-393c6b9ace67'

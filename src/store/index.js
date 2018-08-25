@@ -64,8 +64,8 @@ export default new Vuex.Store({
     logged_in: undefined,
     browser: {
       ...browser,
-      playStore: browser.os.name.startsWith('Android'),
-      iTunes: browser.os.name.startsWith('Mac'),
+      playStore: browser.os.startsWith('Android'),
+      iTunes: browser.os.startsWith('Mac'),
       support: (
         (browser.name === 'chrome' && browser.versionNumber >= 60) ||
         (browser.name === 'firefox' && browser.versionNumber >= 30) ||

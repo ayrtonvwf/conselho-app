@@ -70,14 +70,16 @@ export default new Vuex.Store({
         (browser.name === 'chrome' && browser.versionNumber >= 60) ||
         (browser.name === 'firefox' && browser.versionNumber >= 30) ||
         (browser.name === 'edge' && browser.versionNumber >= 14) ||
-        (browser.name === 'ie' && browser.version >= 11)
+        (browser.name === 'ie' && browser.version >= 11) ||
+        (browser.name === 'opera' && browser.version >= 43)
       ),
       readableName () {
         switch (browser.name) {
           case 'chrome' : return 'Google Chrome'
-          case 'firefox' : return 'Mozilla Firefox'
+          case 'firefox' : return 'Firefox'
           case 'edge' : return 'Edge'
           case 'ie' : return 'Internet Explorer'
+          case 'opera': return 'Ópera'
         }
       },
       updateLink () {
@@ -112,6 +114,11 @@ export default new Vuex.Store({
             return 'https://www.microsoft.com/en-us/download/details.aspx?id=48126#4baacbe7-a8a1-8091-5597-393c6b9ace67'
           case 'ie':
             return 'https://www.microsoft.com/en-us/download/details.aspx?id=48126#4baacbe7-a8a1-8091-5597-393c6b9ace67'
+          case 'opera':
+            if (browser.playStore) {
+              return 'https://play.google.com/store/apps/details?id=com.opera.browser'
+            }
+            return 'https://www.opera.com'
         }
       }
     }

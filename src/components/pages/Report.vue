@@ -153,24 +153,6 @@ export default {
         )
       )
     },
-    /*
-    currentCouncilEvaluations () {
-      return this.$store.getters['evaluations/getEvaluations'].map(evaluation => {
-        if (evaluation.council_id !== this.current_council_id) {
-          return undefined
-        }
-
-        const topicOption = this.currentTopicOptions.find(topicOption =>
-          topicOption.id === evaluation.topic_option_id
-        )
-
-        evaluation.topic_id = topicOption.topic_id
-        evaluation.value = topicOption.value
-
-        return evaluation
-      }).filter(evaluation => evaluation)
-    },
-    */
     currentCouncilGradeObservations () {
       return this.$store.getters['grade_observations/getGradeObservations'].filter(gradeObservation =>
         gradeObservation.council_id === this.current_council_id
@@ -244,17 +226,6 @@ export default {
         )
       )
     },
-    /*
-    currentGradeEvaluations () {
-      if (!this.current_grade_id) {
-        return []
-      }
-
-      return this.currentCouncilEvaluations.filter(evaluation =>
-        evaluation.grade_id === this.current_grade_id
-      )
-    },
-    */
     currentEvaluations () {
       if (!this.current_grade_id) {
         return []

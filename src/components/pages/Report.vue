@@ -106,7 +106,9 @@ export default {
       current_grade_id: '',
       current_subject_id: '',
       current_student_id: undefined,
-      current_grade_evaluations: []
+      current_grade_evaluations: [],
+      current_grade_observations: [],
+      current_student_observations: []
     }
   },
   computed: {
@@ -226,6 +228,7 @@ export default {
         )
       )
     },
+
     currentEvaluations () {
       if (!this.current_grade_id) {
         return []
@@ -245,12 +248,12 @@ export default {
         return []
       }
 
-      return this.currentCouncilGradeObservations.filter(gradeObservation =>
-        gradeObservation.grade_id === this.current_grade_id &&
-        (
-          !this.current_subject_id ||
-          gradeObservation.subject_id === this.current_subject_id
-        )
+      if (!this.current_subject_id) {
+        return this.current_grade_observations
+      }
+
+      return this.current_grade_observations.filter(gradeObservation =>
+        gradeObservation.subject_id === this.current_subject_id
       )
     },
 
@@ -259,12 +262,13 @@ export default {
         return []
       }
 
-      return this.currentCouncilStudentObservations.filter(studentObservation =>
-        studentObservation.grade_id === this.current_grade_id &&
+      if (!this.current_subject_id) {
+        return this.current_student_observations
+      }
+
+      return this.current_student_observations.filter(studentObservation =>
+        studentObservation.subject_id === this.current_subject_id &&
         (
-          !this.current_subject_id ||
-          studentObservation.subject_id === this.current_subject_id
-        ) && (
           !this.current_student_id ||
           studentObservation.student_id === this.current_student_id
         )
@@ -283,14 +287,19 @@ export default {
   },
   watch: {
     current_grade_id () {
+      this.current_grade_evaluations = []
+      this.current_student_observations = []
+      this.current_grade_observations = []
+
       if (!this.current_grade_id) {
-        this.current_grade_evaluations = []
         return
       }
 
       this.$emit('loading')
 
-      const getResourceConfig = {
+      const promises = []
+
+      const getEvaluationConfig = {
         name: 'evaluation',
         data: {
           council_id: this.current_council_id,
@@ -298,7 +307,7 @@ export default {
         }
       }
 
-      this.$store.dispatch('getResource', getResourceConfig).then(evaluations => {
+      promises.push(this.$store.dispatch('getResource', getEvaluationConfig).then(evaluations => {
         this.current_grade_evaluations = evaluations.map(evaluation => {
           const topicOption = this.currentTopicOptions.find(topicOption =>
             topicOption.id === evaluation.topic_option_id
@@ -309,7 +318,33 @@ export default {
 
           return evaluation
         })
+      }))
 
+      const getStudentObservationConfig = {
+        name: 'student_observation',
+        data: {
+          council_id: this.current_council_id,
+          grade_id: this.current_grade_id
+        }
+      }
+
+      promises.push(this.$store.dispatch('getResource', getStudentObservationConfig).then(studentObservations => {
+        this.current_student_observations = studentObservations
+      }))
+
+      const getGradeObservationConfig = {
+        name: 'grade_observation',
+        data: {
+          council_id: this.current_council_id,
+          grade_id: this.current_grade_id
+        }
+      }
+
+      promises.push(this.$store.dispatch('getResource', getGradeObservationConfig).then(gradeObservations => {
+        this.current_grade_observations = gradeObservations
+      }))
+
+      Promise.all(promises).then(() => {
         this.$emit('loaded')
       })
     }

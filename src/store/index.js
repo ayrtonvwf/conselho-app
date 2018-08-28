@@ -152,10 +152,12 @@ export default new Vuex.Store({
       const state = context.state
       const db = state.db
 
+      const ignoreTables = ['evaluations', 'student_observations', 'grade_observations']
+
       const promises = []
 
       db.tables.forEach(table => {
-        if (table.name === 'evaluations') {
+        if (ignoreTables.indexOf(table.name) !== -1) {
           return // will be loaded only if the user cant see the report
         }
 
@@ -204,11 +206,16 @@ export default new Vuex.Store({
           return
         }
 
-        return context.dispatch('getResource', 'evaluation').then(data => {
-          return db.evaluations.clear().then(() => {
-            return db.evaluations.bulkPut(parseObjects(data))
+        const promises = ignoreTables.map(tableName => {
+          const resource = tableName.slice(0, -1)
+          return context.dispatch('getResource', resource).then(data => {
+            return db[tableName].clear().then(() => {
+              return db[tableName].bulkPut(parseObjects(data))
+            })
           })
         })
+
+        return Promise.all(promises)
       })
     },
 

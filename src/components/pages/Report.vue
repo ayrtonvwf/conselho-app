@@ -4,30 +4,52 @@
     <article class="box">
       <div class="box-body"><br>
         <div class="row justify-content-center">
-          <div class="col-12 col-md-8 col-lg-6">
+          <div class="col-12 col-md-10 col-xlg-9">
             <div class="row justify-content-center">
-              <div class="input col-12 col-sm-6">
+              <div class="input col-12 col-sm-6 col-lg-3">
                 <select id="current_grade_id" name="current_grade_id" required v-model="current_grade_id">
                   <option value="" selected hidden disabled>Selecione...</option>
                   <option v-for="grade in currentGrades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
                 </select>
                 <label for="current_grade_id">Turma</label>
               </div>
-              <div class="input col-12 col-sm-6">
-                <select id="current_subject_id" name="current_subject_id" required v-model="current_subject_id" :disabled="!current_grade_id">
+              <div class="input col-12 col-sm-6 col-lg-3">
+                <select id="current_subject_id" name="current_subject_id" v-model="current_subject_id" :disabled="!current_grade_id">
                   <option value="" selected>{{ current_grade_id ? 'Todas' : 'Selecione a turma...' }}</option>
                   <option v-for="subject in currentSubjects" :value="subject.id" :key="subject.id">{{ subject.name }}</option>
                 </select>
                 <label for="current_subject_id">Disciplina</label>
               </div>
+              <div class="input col-6 col-lg-3">
+                <input id="min_evaluation" v-model="min_evaluation" type="number" min="0" max="100" step="1">
+                <label for="min_evaluation">Avaliação Mínima</label>
+              </div>
+              <div class="input col-6 col-lg-3">
+                <input id="max_evaluation" v-model="max_evaluation" type="number" min="0" max="100" step="1">
+                <label for="max_evaluation">Avaliação Máxima</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12 text-right">
+                <button type="button" class="btn btn-success" @click="generateReport">
+                  <i class="fa fa-fw fa-check"></i> Gerar relatório
+                </button>
+              </div>
             </div>
           </div>
         </div><br>
-        <div class="text-center text-muted" v-if="!current_grade_id"><br>
-          <div class="h4">Selecione uma turma para ver o relatório.</div><br>
+        <div class="text-center text-muted" v-if="!current_grade_id">
+          <br>
+          <div class="h4"><b>Selecione uma turma</b> para ver o relatório.</div>
+          <br>
+        </div>
+        <div class="text-center text-muted" v-else-if="!loaded_evaluations">
+          <br>
+          <div class="h4">Clique em "<b>gerar relatório</b>".</div>
+          <br>
         </div>
         <div class="text-center text-muted" v-else-if="!currentEvaluations.length"><br>
-          <div class="h4">Esta turma ainda não recebeu avaliações<span v-if="current_subject_id"> nesta disciplina</span>.</div><br>
+          <div class="h4">Esta turma ainda <b>não recebeu avaliações</b><span v-if="current_subject_id"> nesta disciplina</span>.</div><br>
         </div>
         <div v-else>
           <template v-if="!current_student_id">
@@ -40,7 +62,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id">
+                <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id" v-if="mustShowStudent(student.id)">
                   <td style="max-width: 33vw">
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
@@ -108,7 +130,27 @@ export default {
       current_student_id: undefined,
       current_grade_evaluations: [],
       current_grade_observations: [],
-      current_student_observations: []
+      current_student_observations: [],
+      loaded_evaluations: false,
+      min_evaluation: 0,
+      max_evaluation: 100
+    }
+  },
+  watch: {
+    current_grade_id () {
+      this.eraseEvaluations()
+    },
+
+    current_subject_id () {
+      this.eraseEvaluations()
+    },
+
+    min_evaluation () {
+      this.eraseEvaluations()
+    },
+
+    max_evaluation () {
+      this.eraseEvaluations()
     }
   },
   computed: {
@@ -153,17 +195,6 @@ export default {
         this.currentTopics.find(topic =>
           topic.id === topicOption.topic_id
         )
-      )
-    },
-    currentCouncilGradeObservations () {
-      return this.$store.getters['grade_observations/getGradeObservations'].filter(gradeObservation =>
-        gradeObservation.council_id === this.current_council_id
-      )
-    },
-
-    currentCouncilStudentObservations () {
-      return this.$store.getters['student_observations/getStudentObservations'].filter(studentObservation =>
-        studentObservation.council_id === this.current_council_id
       )
     },
 
@@ -230,48 +261,20 @@ export default {
     },
 
     currentEvaluations () {
-      if (!this.current_grade_id) {
-        return []
-      }
-
-      if (!this.current_subject_id) {
-        return this.current_grade_evaluations
-      }
-
-      return this.current_grade_evaluations.filter(evaluation =>
-        evaluation.subject_id === this.current_subject_id
-      )
+      return this.current_grade_evaluations
     },
 
     currentGradeObservations () {
-      if (!this.current_grade_id) {
-        return []
-      }
-
-      if (!this.current_subject_id) {
-        return this.current_grade_observations
-      }
-
-      return this.current_grade_observations.filter(gradeObservation =>
-        gradeObservation.subject_id === this.current_subject_id
-      )
+      return this.current_grade_observations
     },
 
     currentStudentObservations () {
-      if (!this.current_grade_id) {
-        return []
-      }
-
-      if (!this.current_subject_id) {
+      if (!this.current_student_id) {
         return this.current_student_observations
       }
 
       return this.current_student_observations.filter(studentObservation =>
-        studentObservation.subject_id === this.current_subject_id &&
-        (
-          !this.current_student_id ||
-          studentObservation.student_id === this.current_student_id
-        )
+        studentObservation.student_id === this.current_student_id
       )
     },
 
@@ -285,8 +288,35 @@ export default {
       )
     }
   },
-  watch: {
-    current_grade_id () {
+  methods: {
+    mustShowStudent (studentId) {
+      return this.studentHasAnyEvaluation(studentId) ||
+        this.currentStudentObservations.find(studentObservation =>
+          studentObservation.student_id === studentId
+        )
+    },
+
+    eraseEvaluations () {
+      this.loaded_evaluations = false
+      this.current_grade_evaluations = []
+      this.current_student_observations = []
+      this.current_grade_observations = []
+    },
+
+    getUser (userId) {
+      return this.$store.getters['users/getUsers'].find(user =>
+        user.id === userId
+      )
+    },
+
+    getSubject (subjectId) {
+      return this.$store.getters['subjects/getSubjects'].find(subject =>
+        subject.id === subjectId
+      )
+    },
+
+    generateReport () {
+      this.loaded_evaluations = false
       this.current_grade_evaluations = []
       this.current_student_observations = []
       this.current_grade_observations = []
@@ -307,6 +337,28 @@ export default {
         }
       }
 
+      const getStudentObservationConfig = {
+        name: 'student_observation',
+        data: {
+          council_id: this.current_council_id,
+          grade_id: this.current_grade_id
+        }
+      }
+
+      const getGradeObservationConfig = {
+        name: 'grade_observation',
+        data: {
+          council_id: this.current_council_id,
+          grade_id: this.current_grade_id
+        }
+      }
+
+      if (this.current_subject_id) {
+        getEvaluationConfig.data.subject_id = this.current_subject_id
+        getStudentObservationConfig.data.subject_id = this.current_subject_id
+        getGradeObservationConfig.data.subject_id = this.current_subject_id
+      }
+
       promises.push(this.$store.dispatch('getResource', getEvaluationConfig).then(evaluations => {
         this.current_grade_evaluations = evaluations.map(evaluation => {
           const topicOption = this.currentTopicOptions.find(topicOption =>
@@ -320,45 +372,23 @@ export default {
         })
       }))
 
-      const getStudentObservationConfig = {
-        name: 'student_observation',
-        data: {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id
-        }
-      }
-
       promises.push(this.$store.dispatch('getResource', getStudentObservationConfig).then(studentObservations => {
         this.current_student_observations = studentObservations
       }))
-
-      const getGradeObservationConfig = {
-        name: 'grade_observation',
-        data: {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id
-        }
-      }
 
       promises.push(this.$store.dispatch('getResource', getGradeObservationConfig).then(gradeObservations => {
         this.current_grade_observations = gradeObservations
       }))
 
       Promise.all(promises).then(() => {
+        this.loaded_evaluations = true
         this.$emit('loaded')
       })
-    }
-  },
-  methods: {
-    getUser (userId) {
-      return this.$store.getters['users/getUsers'].find(user =>
-        user.id === userId
-      )
     },
 
-    getSubject (subjectId) {
-      return this.$store.getters['subjects/getSubjects'].find(subject =>
-        subject.id === subjectId
+    studentHasAnyEvaluation (studentId) {
+      return !!this.currentTopics.find(topic =>
+        this.reportStudentTopic(studentId, topic.id) !== '-'
       )
     },
 
@@ -384,11 +414,11 @@ export default {
         Math.abs(curr.value - avg) < Math.abs(prev.value - avg) ? curr : prev
       )
 
-      if (this.current_subject_id) {
-        return nearestTopicOption.name
+      if (avg > this.max_evaluation || avg < this.min_evaluation) {
+        return '-'
       }
 
-      return nearestTopicOption.name + ' (' + avg + '%)'
+      return avg + ' - ' + nearestTopicOption.name
     },
 
     reportSubjectTopic (subjectId, topicId) {
@@ -406,9 +436,11 @@ export default {
         return '-'
       }
 
-      return topicOptions.find(topicOption =>
+      const topicOption = topicOptions.find(topicOption =>
         topicOption.id === evaluation.topic_option_id
-      ).name
+      )
+
+      return topicOption.value + ' - ' + topicOption.name
     },
 
     studentGrade (studentId) {
@@ -483,6 +515,9 @@ export default {
     this.current_grade_id = ''
     this.current_subject_id = ''
     this.current_student_id = undefined
+    this.loaded_evaluations = false
+    this.min_evaluation = 0
+    this.max_evaluation = 100
 
     this.load().then(() => {
       this.$emit('loaded')

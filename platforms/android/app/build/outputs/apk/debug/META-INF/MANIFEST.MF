@@ -1,0 +1,502 @@
+Manifest-Version: 1.0
+Built-By: Generated-by-ADT
+Created-By: Android Gradle 3.0.1
+
+Name: AndroidManifest.xml
+SHA-256-Digest: fa8BMsJC0ESIRA/9KOu0HUNHr4CI/Y6uH+nwBvHwiP0=
+
+Name: assets/www/cordova-js-src/android/nativeapiprovider.js
+SHA-256-Digest: a5OrdJ06OMPBrv0kr3JY7hZKfb1ZEmvl7hUklRoeoTA=
+
+Name: assets/www/cordova-js-src/android/promptbasednativeapi.js
+SHA-256-Digest: ry2twh3bUsw3LvCu+Nrv4mSOuyJfSS0B5UuupSOaujI=
+
+Name: assets/www/cordova-js-src/exec.js
+SHA-256-Digest: cuhLxNgNmw9uMtyBBN0fLef9NahqIsNw9Qxflxq7Jko=
+
+Name: assets/www/cordova-js-src/platform.js
+SHA-256-Digest: iYMwKPWN2p0026cFvU2Nb8o6/NAeIE3EpJ+MQYZ8zB8=
+
+Name: assets/www/cordova-js-src/plugin/android/app.js
+SHA-256-Digest: BAnPbjfmcjvuiMbEJQs9ZyITfxQN9H8A/w6R1mFdoE4=
+
+Name: assets/www/cordova.js
+SHA-256-Digest: bvp78bP0zzwRg+Pi+Mdxlr7SJzcweTPonMlPpmOEn+0=
+
+Name: assets/www/cordova_plugins.js
+SHA-256-Digest: PcMzOdMYBmclsUGi3yPq6+k8czHJVg3ubeSzMBDaFkk=
+
+Name: assets/www/dist/index.html
+SHA-256-Digest: ZoS9fkgK3Gx2T4JhtS/sGj3THUI1HGk5btK80Vs8zZQ=
+
+Name: assets/www/dist/static/README.md
+SHA-256-Digest: PXLEohlSPXwCpKPNGFw6GLM4TByRD5HeqhPrhqlYxYo=
+
+Name: assets/www/dist/static/android-chrome-144x144.png
+SHA-256-Digest: KweEq2MZ60JLymdAvaMc/hDmw/m5K5hSuJOq7VXXo68=
+
+Name: assets/www/dist/static/android-chrome-192x192.png
+SHA-256-Digest: NQKooXVI6WOWrZJti/kWCcFQqs4QNfmXUU6mydWiqCw=
+
+Name: assets/www/dist/static/android-chrome-256x256.png
+SHA-256-Digest: r/7b1TzYDp1kokdSaohSK6sSBCvR4yBM3JQ/UC6TusA=
+
+Name: assets/www/dist/static/android-chrome-36x36.png
+SHA-256-Digest: B026czBVrI6wF/vSvTQxrmmZgwJ2nH8Nds2ybHli1r8=
+
+Name: assets/www/dist/static/android-chrome-48x48.png
+SHA-256-Digest: Vy5QloyPU/dL+NYZMHmXzEcT5OuSgntzsNAf+Y7+eGA=
+
+Name: assets/www/dist/static/android-chrome-72x72.png
+SHA-256-Digest: rP1Ojs5NjZdJuljDOt7Y1uohvC2Favu1rGbemzcymLs=
+
+Name: assets/www/dist/static/android-chrome-96x96.png
+SHA-256-Digest: ajql61UwLh/5zv9X7mzYweW2TJB8jsT54iRXdon+uC0=
+
+Name: assets/www/dist/static/apple-touch-icon-114x114-precomposed.png
+SHA-256-Digest: pKSt7FpFKSWciql7N2i62kA1jKQLHempHvn2JKaaFIo=
+
+Name: assets/www/dist/static/apple-touch-icon-114x114.png
+SHA-256-Digest: v4RAhk1qNy3K2hPwnTcnKcBqxAt+OCudpcrVjoDxhxE=
+
+Name: assets/www/dist/static/apple-touch-icon-120x120-precomposed.png
+SHA-256-Digest: Lz+XyQTEOJ02PoiEvr7zm9/YZB5J5XP1DKtZwwiZDqA=
+
+Name: assets/www/dist/static/apple-touch-icon-120x120.png
+SHA-256-Digest: 54PskOUcGE/AGu/KXVligWQdYHIvZ/6LlD063s4HbrA=
+
+Name: assets/www/dist/static/apple-touch-icon-144x144-precomposed.png
+SHA-256-Digest: xdpe9LSJWZakIzjW0dePNPrHk45Mzs/hX/Iqbu+jT0w=
+
+Name: assets/www/dist/static/apple-touch-icon-144x144.png
+SHA-256-Digest: KweEq2MZ60JLymdAvaMc/hDmw/m5K5hSuJOq7VXXo68=
+
+Name: assets/www/dist/static/apple-touch-icon-152x152-precomposed.png
+SHA-256-Digest: Q/D31BBXFoaWJp8kJUKBfaBv/SCBHK8Zf3PIPICUgh4=
+
+Name: assets/www/dist/static/apple-touch-icon-152x152.png
+SHA-256-Digest: GhgosGJMohxAJqgS5IcxjiG05cJaesKSmnDWvKIYVhc=
+
+Name: assets/www/dist/static/apple-touch-icon-180x180-precomposed.png
+SHA-256-Digest: LTtbzWZuVqG1uO78gwJlVmmaHqkWHrXCv7ghSUdKgNY=
+
+Name: assets/www/dist/static/apple-touch-icon-180x180.png
+SHA-256-Digest: FE4Dkv6C+aoC5soN6xlaUD+QbIVBcwymn5b3RKQPPrk=
+
+Name: assets/www/dist/static/apple-touch-icon-57x57-precomposed.png
+SHA-256-Digest: enDq1nI5ZHF/127c97yJt4lNKf+pfCAFgRh4H9cAmpw=
+
+Name: assets/www/dist/static/apple-touch-icon-57x57.png
+SHA-256-Digest: VwAnz4f/7JUR2O0yPKoVDa62gjULK5ELS/cGiym/5e4=
+
+Name: assets/www/dist/static/apple-touch-icon-60x60-precomposed.png
+SHA-256-Digest: Nh4UJHb6rMkxy5/5jv/NFuxSaMjt4wk9P9NbqTrjaNE=
+
+Name: assets/www/dist/static/apple-touch-icon-60x60.png
+SHA-256-Digest: SrazmJ5U3sYnYh33FyqGw+hMdL795kYXCbn+RZ8YLTU=
+
+Name: assets/www/dist/static/apple-touch-icon-72x72-precomposed.png
+SHA-256-Digest: mO6mTGRAk0fvEiJbjhV7/gjeaixixpzPtzGgXjksYBA=
+
+Name: assets/www/dist/static/apple-touch-icon-72x72.png
+SHA-256-Digest: rP1Ojs5NjZdJuljDOt7Y1uohvC2Favu1rGbemzcymLs=
+
+Name: assets/www/dist/static/apple-touch-icon-76x76-precomposed.png
+SHA-256-Digest: QHGOzOrhw0wc/ifveITeadFTqsI6/atcELf/jgnpKbQ=
+
+Name: assets/www/dist/static/apple-touch-icon-76x76.png
+SHA-256-Digest: 4+6M+6w25+apgQAbxmDJ0aDag7TX5HijTb5ySnvqZZY=
+
+Name: assets/www/dist/static/apple-touch-icon-precomposed.png
+SHA-256-Digest: LTtbzWZuVqG1uO78gwJlVmmaHqkWHrXCv7ghSUdKgNY=
+
+Name: assets/www/dist/static/apple-touch-icon.png
+SHA-256-Digest: FE4Dkv6C+aoC5soN6xlaUD+QbIVBcwymn5b3RKQPPrk=
+
+Name: assets/www/dist/static/browserconfig.xml
+SHA-256-Digest: 6NO0naIB/6+VKnganCCIjdo6g/YmjnjN35kn4k+q5BI=
+
+Name: assets/www/dist/static/cordova/archive/appstoreicon.png
+SHA-256-Digest: YkFOYk3L2b9ZbshkABNBWLNo/Zg6UlGCq7MdTs86qiE=
+
+Name: assets/www/dist/static/cordova/archive/googleplayfeature.png
+SHA-256-Digest: 1i/shDmTYBKFzr4Iono2+ePLynYqFXd0geBm74Qqb4M=
+
+Name: assets/www/dist/static/cordova/archive/googleplayicon.png
+SHA-256-Digest: 2ubBPil9bJva5Fqaq5ZKTRFYXXC7Vw4Wyzf/goTlgJU=
+
+Name: assets/www/dist/static/cordova/archive/icon-logo.svg
+SHA-256-Digest: oR01GdAJlQ5hF+ulnPSTBp+PZLBqFdIyf291w53ITYA=
+
+Name: assets/www/dist/static/cordova/icon.png
+SHA-256-Digest: e4Ay0fAxoU9twWLegSlLPdWKuolQ6AgkZxhM24aVrcY=
+
+Name: assets/www/dist/static/cordova/res/icon/android/hdpi.png
+SHA-256-Digest: HQuNLXRPimexlxT5lMk/vH+UqGX/3N90RtlpJ2mEjjM=
+
+Name: assets/www/dist/static/cordova/res/icon/android/ldpi.png
+SHA-256-Digest: aBruHxSnidSUrdkm9MOe++67/Xif5tqJ8XU5zfrQA+o=
+
+Name: assets/www/dist/static/cordova/res/icon/android/mdpi.png
+SHA-256-Digest: Ha+JSdD+zTFMsW8EE9ISX71Ek55yog3EN6kMf6X9doc=
+
+Name: assets/www/dist/static/cordova/res/icon/android/xhdpi.png
+SHA-256-Digest: x/L/+02m1eDrNFsmxOKdJOq9B1MY1ownwJnSXxrP6VM=
+
+Name: assets/www/dist/static/cordova/res/icon/android/xxhdpi.png
+SHA-256-Digest: SkIMvo+w5vHKkA8csh4jbtG/2qgSOFhhv9oO6RYkgI8=
+
+Name: assets/www/dist/static/cordova/res/icon/android/xxxhdpi.png
+SHA-256-Digest: tvBh3cUUhBBfh3wZT5Ig/zvYNu00VnhXLQn6I6gPwe4=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-1024.png
+SHA-256-Digest: YkFOYk3L2b9ZbshkABNBWLNo/Zg6UlGCq7MdTs86qiE=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-167.png
+SHA-256-Digest: VI6BwG0z62EA9OPAkwFz7QuKFKPbxFINgenhjIalptc=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-60.png
+SHA-256-Digest: uFJJYz6Sm9n+QMtD72Z5MiAFE58cizKtdSD7AzM8Hro=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-60@2x.png
+SHA-256-Digest: Pkwvi9JHFSNNPqlmdeuJnE2qYuIjr5mz5WfpO/xwMbY=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-60@3x.png
+SHA-256-Digest: WlaVt1AL6qW6IMvDt0hK0uwSqkLGoMcsvOLa2jsjTg8=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-72.png
+SHA-256-Digest: HQuNLXRPimexlxT5lMk/vH+UqGX/3N90RtlpJ2mEjjM=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-72@2x.png
+SHA-256-Digest: SkIMvo+w5vHKkA8csh4jbtG/2qgSOFhhv9oO6RYkgI8=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-76.png
+SHA-256-Digest: 9exdolZ3f8jZ0CabTWozJol10AqbK9sKcnfsP2BabjA=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-76@2x.png
+SHA-256-Digest: o1QJAmQCC8dQv9HhdQfjv0bgPAXk06OojiBaUK03ayc=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-83.5@2x.png
+SHA-256-Digest: VI6BwG0z62EA9OPAkwFz7QuKFKPbxFINgenhjIalptc=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small-40.png
+SHA-256-Digest: xXiTAUI44vt3Y2R0WwEmwqbv36EShSzAbgpNm0mo2ms=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small-40@2x.png
+SHA-256-Digest: DcJFDbilxlN4tGAXpAjokGKvAmZBsEjNSOgWzNzVDvY=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small-40@3x.png
+SHA-256-Digest: Pkwvi9JHFSNNPqlmdeuJnE2qYuIjr5mz5WfpO/xwMbY=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small-50.png
+SHA-256-Digest: YWpBMtJUCteinwUl5vVZaZkcKZc0ZlFanzY3SdpXIUI=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small-50@2x.png
+SHA-256-Digest: Ck2TxhrbpIpG+tEVauiswSvYg7zSLP6t9lA/aMTvtSo=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small.png
+SHA-256-Digest: z1i7Zmx3BLWnWP3GaVDraTl1iwMXK2AT/pKcX8GU3ZU=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small@2x.png
+SHA-256-Digest: NNbjiyDypozKbiVWL+G88miK0e8GtCYq5lbegsBnIS0=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon-small@3x.png
+SHA-256-Digest: amP2mgFJi7CEA7oY1mmywe8s1M3L/obkfEWDa4WO/6Q=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon.png
+SHA-256-Digest: 0tMuFaSKFFDVv2W7pCYwHEs/zKCsWfoWB6AGLLY4RXs=
+
+Name: assets/www/dist/static/cordova/res/icon/ios/icon@2x.png
+SHA-256-Digest: jHXdNICNlA6N4D4YM0CIL4GyJLfsG1/ozn+EXGQqTVs=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/Square150x150Log
+ o.png
+SHA-256-Digest: dywfkKDcLYJ4/JXx0SqzesYvlSdFvDez9oe005Ep+Go=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/Square310x310Log
+ o.png
+SHA-256-Digest: Ael8JLdkX5GEubLm88SAy4/YTl76K+Lwi2QObyly7xE=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/Square44x44Logo.
+ png
+SHA-256-Digest: BKB0BhzBeAgxmhXtCQTzDEj9nTLb6O2a7ZxGAAWu1s8=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/Square70x70Logo.
+ png
+SHA-256-Digest: RZVRCibBTYjS+3dGW+OPdZI2whEya7UBaqxW89YbluQ=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/Square71x71Logo.
+ png
+SHA-256-Digest: KaQhaxYIhFOWVYQ72dll7lvzHfriIzaZXNq8/RqhwH4=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/smalllogo.png
+SHA-256-Digest: 4a8n+bUJERQ6339Opzr92ZP8xGH+h4C4er1C3tIXtyo=
+
+Name: assets/www/dist/static/cordova/res/icon/windows/storelogo.png
+SHA-256-Digest: YWpBMtJUCteinwUl5vVZaZkcKZc0ZlFanzY3SdpXIUI=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-land-hd
+ pi.png
+SHA-256-Digest: Tpen57q4PFFkY6PoDz5aRMAVFYka1TZ7HMElSJR7E6E=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-land-ld
+ pi.png
+SHA-256-Digest: uIhL53S3cYBr/AqKSXH+1f+b5+3D3JhhfzEziRwbEDg=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-land-md
+ pi.png
+SHA-256-Digest: gq7wChs9xCica4wIWqjYrT507qsu9jslTdceLsMCtGw=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-land-xh
+ dpi.png
+SHA-256-Digest: KYTo3Y1aE6uhQVc1eXFJaAnWhP9bUFOcj43a9w6d9u4=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-land-xx
+ hdpi.png
+SHA-256-Digest: za16uMw9ZseLW0PVUaq7t9pS9MHQcSivARnp8/Tprxk=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-land-xx
+ xhdpi.png
+SHA-256-Digest: qEhysoM4M0mbrfotFiP+tNzk3ghC3uUW7wCo27br8Sg=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-port-hd
+ pi.png
+SHA-256-Digest: bT2NSxVMF5Nq27VOH+s2ArZj04sZ/EDltEn1uO/g3LU=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-port-ld
+ pi.png
+SHA-256-Digest: g0lZe+boerA0OgTdd+hE6X0OTYeNXhoqMkvgNk38Ryw=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-port-md
+ pi.png
+SHA-256-Digest: be+eGSW99ewp3g7eEemRMY5d+egk0KEg39VOqJoUJqE=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-port-xh
+ dpi.png
+SHA-256-Digest: Lgchzxtajy0UnPXboVR8me9r6R4wG03ZTE3kTnTlcxU=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-port-xx
+ hdpi.png
+SHA-256-Digest: 2cfsn/f7VJ6bm0S4NOQXnWWQdUoVO3xqTNDlohDYzmc=
+
+Name: assets/www/dist/static/cordova/res/screen/android/splash-port-xx
+ xhdpi.png
+SHA-256-Digest: XeN5lWtWaQgCktZW9E5dzEHADF8l9NpnG3ru8Ma+XEo=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-568h@2x~ip
+ hone.png
+SHA-256-Digest: 0WY1UfOnGcnOTF2RZV9LXa/RXr84r4TlLbm0SzL0D+o=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-667h.png
+SHA-256-Digest: pZV+YJFbPOPhL0E6EU0omM0jd+xl0rpytWRiuAEur08=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-736h.png
+SHA-256-Digest: 7stIId+5LYLzf6ZIPQqvreMJGFw8VAN4CpnTu1h/ryQ=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-Landscape@
+ 2x~ipad.png
+SHA-256-Digest: J4eKWKz1yoJHPxSN0r6umPzeKLELGxh1WWtI3SFtXuw=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-Landscape~
+ ipad.png
+SHA-256-Digest: cVLIUx8sTwPWMU6RyeBnYYQrF4JvjVV27voWELePUfM=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-Portrait@2
+ x~ipad.png
+SHA-256-Digest: hDwbsKhmWbzo3nnMH+f1FAij0u5buOzomIGU7FkRTZA=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default-Portrait~i
+ pad.png
+SHA-256-Digest: nGpyOZlZsTHxjug8VLvIRrkPwXO0ebUrbdNGoZSm5jc=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@2x~ipad~an
+ yany.png
+SHA-256-Digest: uPFChP5VXmUtxElqY7/xKsileMucnrJo1cesupML8CY=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@2x~ipad~co
+ many.png
+SHA-256-Digest: OU8UmJsWNWFFvz5/C3Vj+Rfp7tol/kv8J+hdBn4whRE=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@2x~iphone.
+ png
+SHA-256-Digest: 4M0I2aZnVFz/Cac5u1ut9VLcAZxScT5e9b+zVbSd/9M=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@2x~iphone~
+ anyany.png
+SHA-256-Digest: /zLbv5duDE5XIQGoxIptCIsVbYfwXZTyVtIBQFRUjaA=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@2x~iphone~
+ comany.png
+SHA-256-Digest: pZV+YJFbPOPhL0E6EU0omM0jd+xl0rpytWRiuAEur08=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@2x~iphone~
+ comcom.png
+SHA-256-Digest: SfHLDD2sdPn6z/oOE4v8HAPdys+a2Lq3JqhGzevSajc=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@3x~iphone~
+ anyany.png
+SHA-256-Digest: 6RmbMSykfjNKlbEBKBS0I+qtxTel5FLxoyXi6+4W2ls=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@3x~iphone~
+ anycom.png
+SHA-256-Digest: RQBAfaBV4wTCBoPUZT1yVoUM12aXicnhmS+Z0KTG3Mo=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default@3x~iphone~
+ comany.png
+SHA-256-Digest: ToBb6JUTOIy9zF60gortmmENfUYlVGNPLMxJa9SHwHc=
+
+Name: assets/www/dist/static/cordova/res/screen/ios/Default~iphone.png
+SHA-256-Digest: cc+nyK0HMxRETPp9EN0mq/Ya/2V7JBoRD/Ked0QKGsg=
+
+Name: assets/www/dist/static/cordova/res/screen/windows/splashscreen.p
+ ng
+SHA-256-Digest: 3QKAAnChOokjkMov8CW9IFoCuf8g1J71OWHWJ7GpPDs=
+
+Name: assets/www/dist/static/cordova/res/screen/windows/splashscreenph
+ one.png
+SHA-256-Digest: AjjJj/DzE1q7r4nB6JtUEXV83sgV27+mUvkir3MZGdU=
+
+Name: assets/www/dist/static/cordova/splash.png
+SHA-256-Digest: XMimRwdsRPweSg8vyEU0+oYXkqCmEgu8nfxSkwzJzBQ=
+
+Name: assets/www/dist/static/css/app.c525586958cf5ea88d99c4a9a445e3df.
+ css
+SHA-256-Digest: KZZ4glVFRw2v+M+sNdQYUZa9ds/UmldwOIuD3BvF+oQ=
+
+Name: assets/www/dist/static/css/app.c525586958cf5ea88d99c4a9a445e3df.
+ css.map
+SHA-256-Digest: YrR6/ITMNF3fdNGa7sCdYo8V4LwE6ucygh7f1vn7QiE=
+
+Name: assets/www/dist/static/favicon-16x16.png
+SHA-256-Digest: LIpFdHxc7xAsxQwId74ZnLhk5IuZ9O6g1IMB1mzmwmA=
+
+Name: assets/www/dist/static/favicon-32x32.png
+SHA-256-Digest: K/lCRQUZcv3G2TGOH1ISfZ3lbz2SaZy4RoeKCvdGBvg=
+
+Name: assets/www/dist/static/favicon.ico
+SHA-256-Digest: 5rNZR6nxO2cLe0Ry2bb6PVeDjTZGtMIvGiu6kgbdJy8=
+
+Name: assets/www/dist/static/favicon_package_v0.16.zip
+SHA-256-Digest: 1/5uWR6hXGxftZ4hoSDlTXi2B+ZoWP52/zKv6m33hcg=
+
+Name: assets/www/dist/static/fonts/MaterialIcons-Regular.012cf6a.woff
+SHA-256-Digest: xKG67DANCeA6g4C4WRgmfugPqujgDGxWtI4udLHZs40=
+
+Name: assets/www/dist/static/fonts/MaterialIcons-Regular.570eb83.woff2
+SHA-256-Digest: qH1myRsufcVTCu92wDvWo9JepYJhEL9IA7VhuBHMhyY=
+
+Name: assets/www/dist/static/fonts/MaterialIcons-Regular.a37b0c0.ttf
+SHA-256-Digest: t/Sjq1YgSPKN0fppFgG8QzY6YdD4dtFtgxbFLk8y1pY=
+
+Name: assets/www/dist/static/fonts/MaterialIcons-Regular.e79bfd8.eot
+SHA-256-Digest: jJmLSpwKy7n+XdVywgaloz/dXKK1jbh/w7iTvqyFBo0=
+
+Name: assets/www/dist/static/html_code.html
+SHA-256-Digest: nM9dQ2p1MdsibZdEjODBMnwcAjck/I+1OUPZpTxWsw0=
+
+Name: assets/www/dist/static/js/app.13756e9b2c034b52d185.js
+SHA-256-Digest: Bps+lZlisxT8BF6JQ0kTn5IBmX7btGsjqiqucJX9Z6M=
+
+Name: assets/www/dist/static/js/app.13756e9b2c034b52d185.js.map
+SHA-256-Digest: mRtnjeHauM71rcaTTUhMBpjzL1eMzvL8p6AKEMPJa9Y=
+
+Name: assets/www/dist/static/js/manifest.37a2ecbb1d1b7e6c9ada.js
+SHA-256-Digest: ERIsCkKEi1E7VK1wmNurp2t5hU+GCv0RQKTCS4x/xcc=
+
+Name: assets/www/dist/static/js/manifest.37a2ecbb1d1b7e6c9ada.js.map
+SHA-256-Digest: Z0HGyjPYWQb2gxIT9t0xtzK8xABXdi3gBw1qrC1TcWg=
+
+Name: assets/www/dist/static/js/vendor.254e4b7bb47a68521091.js
+SHA-256-Digest: SNTQfZNrNn4owg0hRQO0pzrohVBKmb5Ry73fUi2raQc=
+
+Name: assets/www/dist/static/js/vendor.254e4b7bb47a68521091.js.map
+SHA-256-Digest: TKNM+zkQKWdZX7k9i2fOGNsEFf5SxXKGYVjS6/IIfIg=
+
+Name: assets/www/dist/static/mstile-144x144.png
+SHA-256-Digest: qPd6/u+qo2jx6Z+w8++48n03Y2diRrry6lCWTG+bwo4=
+
+Name: assets/www/dist/static/mstile-150x150.png
+SHA-256-Digest: Lt9CEXdAqqK7zvbShNl5NQ3tv4jjq7YY8Z1U5w+qtQg=
+
+Name: assets/www/dist/static/mstile-310x150.png
+SHA-256-Digest: SlHX3ZkDjKIHu7GDpP/KEZ096Kg19RsmFmjcXjNaoyw=
+
+Name: assets/www/dist/static/mstile-310x310.png
+SHA-256-Digest: v0wBqwNO+zBP5cZca5RMRwbBXy2kzJRpcIr3VXjZcYk=
+
+Name: assets/www/dist/static/mstile-70x70.png
+SHA-256-Digest: huGvCtmR9ALiqy5l2duD2uI4O4cwLxAXNurS8n2dYVM=
+
+Name: assets/www/dist/static/safari-pinned-tab.svg
+SHA-256-Digest: 1OADmyo0E/lJJb4NlrVgBzc+1yPWUGyc9/AZCiJ770k=
+
+Name: assets/www/dist/static/site.webmanifest
+SHA-256-Digest: /pzr7rJ3NqX9x6lZfmE6sw6SMmORWKqACNTNoF4t6u8=
+
+Name: assets/www/plugins/cordova-plugin-splashscreen/www/splashscreen.
+ js
+SHA-256-Digest: YSn19P0zRIG9MxdesT37iqYB1WqXVOFIXyjmnTn6foU=
+
+Name: classes.dex
+SHA-256-Digest: wVQUslkNEV6Y3ru+XhR/NCb1INxR/Nx2h2C6Pc2woVo=
+
+Name: res/drawable-land-hdpi-v4/screen.png
+SHA-256-Digest: Tpen57q4PFFkY6PoDz5aRMAVFYka1TZ7HMElSJR7E6E=
+
+Name: res/drawable-land-ldpi-v4/screen.png
+SHA-256-Digest: uIhL53S3cYBr/AqKSXH+1f+b5+3D3JhhfzEziRwbEDg=
+
+Name: res/drawable-land-mdpi-v4/screen.png
+SHA-256-Digest: gq7wChs9xCica4wIWqjYrT507qsu9jslTdceLsMCtGw=
+
+Name: res/drawable-land-xhdpi-v4/screen.png
+SHA-256-Digest: KYTo3Y1aE6uhQVc1eXFJaAnWhP9bUFOcj43a9w6d9u4=
+
+Name: res/drawable-land-xxhdpi-v4/screen.png
+SHA-256-Digest: za16uMw9ZseLW0PVUaq7t9pS9MHQcSivARnp8/Tprxk=
+
+Name: res/drawable-land-xxxhdpi-v4/screen.png
+SHA-256-Digest: qEhysoM4M0mbrfotFiP+tNzk3ghC3uUW7wCo27br8Sg=
+
+Name: res/drawable-port-hdpi-v4/screen.png
+SHA-256-Digest: bT2NSxVMF5Nq27VOH+s2ArZj04sZ/EDltEn1uO/g3LU=
+
+Name: res/drawable-port-ldpi-v4/screen.png
+SHA-256-Digest: g0lZe+boerA0OgTdd+hE6X0OTYeNXhoqMkvgNk38Ryw=
+
+Name: res/drawable-port-mdpi-v4/screen.png
+SHA-256-Digest: be+eGSW99ewp3g7eEemRMY5d+egk0KEg39VOqJoUJqE=
+
+Name: res/drawable-port-xhdpi-v4/screen.png
+SHA-256-Digest: Lgchzxtajy0UnPXboVR8me9r6R4wG03ZTE3kTnTlcxU=
+
+Name: res/drawable-port-xxhdpi-v4/screen.png
+SHA-256-Digest: 2cfsn/f7VJ6bm0S4NOQXnWWQdUoVO3xqTNDlohDYzmc=
+
+Name: res/drawable-port-xxxhdpi-v4/screen.png
+SHA-256-Digest: XeN5lWtWaQgCktZW9E5dzEHADF8l9NpnG3ru8Ma+XEo=
+
+Name: res/mipmap-hdpi-v4/icon.png
+SHA-256-Digest: HQuNLXRPimexlxT5lMk/vH+UqGX/3N90RtlpJ2mEjjM=
+
+Name: res/mipmap-ldpi-v4/icon.png
+SHA-256-Digest: aBruHxSnidSUrdkm9MOe++67/Xif5tqJ8XU5zfrQA+o=
+
+Name: res/mipmap-mdpi-v4/icon.png
+SHA-256-Digest: Ha+JSdD+zTFMsW8EE9ISX71Ek55yog3EN6kMf6X9doc=
+
+Name: res/mipmap-xhdpi-v4/icon.png
+SHA-256-Digest: x/L/+02m1eDrNFsmxOKdJOq9B1MY1ownwJnSXxrP6VM=
+
+Name: res/mipmap-xxhdpi-v4/icon.png
+SHA-256-Digest: SkIMvo+w5vHKkA8csh4jbtG/2qgSOFhhv9oO6RYkgI8=
+
+Name: res/mipmap-xxxhdpi-v4/icon.png
+SHA-256-Digest: tvBh3cUUhBBfh3wZT5Ig/zvYNu00VnhXLQn6I6gPwe4=
+
+Name: res/xml/config.xml
+SHA-256-Digest: /xMe+0hmv2PUWeWMkY9Y3X4W+kkfIdx7eyOnCMGEBRs=
+
+Name: resources.arsc
+SHA-256-Digest: y3ip8S0ZSqTHZO2FExajUCeJiPmvPgXwF2oFwRrTgmk=
+

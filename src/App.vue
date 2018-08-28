@@ -1,10 +1,10 @@
 <style scoped>
   #loading {
     position: fixed;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, .7);
     color: white;
     line-height: 100vh;

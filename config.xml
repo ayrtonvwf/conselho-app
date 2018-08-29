@@ -91,5 +91,5 @@
     <preference name="LoadingDialog" value="Aguarde. Carregando..." />
     <preference name="SplashScreenBackgroundColor" value="3c8dbc" />
     <preference name="WindowsStoreDisplayName" value="Conselho" />
-    <engine name="android" spec="^7.1.1" />
+    <engine name="android" spec="~7.1.1" />
 </widget>

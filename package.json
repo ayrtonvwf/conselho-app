@@ -10,6 +10,7 @@
     "student",
     "college"
   ],
+  "license": "MIT",
   "description": "Avalie o desempenho de seus alunos e obtenha resultados úteis",
   "author": {
     "name": "Ayrton Fidelis",

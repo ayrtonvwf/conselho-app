@@ -31,6 +31,9 @@
             </div>
             <div class="row">
               <div class="col-12 text-right">
+                <button type="button" class="btn-primary" onclick="window.print()" v-if="loaded_evaluations">
+                  <span class="material-icons">print</span> Imprimir
+                </button>
                 <button type="button" class="btn btn-success" @click="generateReport">
                   <i class="fa fa-fw fa-check"></i> Gerar relatório
                 </button>
@@ -119,6 +122,51 @@
   </div>
 </template>
 
+<style>
+  @media print {
+    .input {
+      flex-direction: initial !important;
+      flex-wrap: nowrap !important;
+      width: 25% !important;
+      flex: 0 0 25% !important;
+    }
+    label, input, select {
+      height: 38px !important;
+      line-height: 38px !important;
+      display: inline !important;
+      padding: 0 !important;
+      border: none !important;
+      width: auto !important;
+    }
+    label {
+      color: black !important;
+      margin-right: 5px !important;
+    }
+    label::after {
+      color: black !important;
+      content: ":" !important;
+    }
+    .table, table {
+      position: relative !important;
+      overflow: initial !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      font-size: 16px !important;
+      line-height: 16px !important;
+    }
+    button {
+      display: none !important;
+    }
+    td, th, .box-body {
+      padding: 3px !important;
+    }
+    td, th {
+      max-width: initial !important;
+      min-width: initial !important;
+      border: 1px solid gray !important;
+    }
+  }
+</style>
 <script>
 export default {
   name: 'Report',

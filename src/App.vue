@@ -30,6 +30,17 @@
       transform: rotate(-360deg);
     }
   }
+  @media print {
+    .header, .menu {
+      display: none !important;
+    }
+    .content {
+      padding: 0;
+    }
+    .table {
+      overflow: initial;
+    }
+  }
 </style>
 
 <template>

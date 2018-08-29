@@ -1,6 +1,8 @@
-# conselho-vue
+# Conselho APP
 
-> A Vue.js project
+> Avalie o desempenho de seus alunos e obtenha resultados úteis.
+
+[![Build Status](https://travis-ci.com/ayrtonvwf/conselho-app.svg?token=QNhqq5qTbvyr1ZyULjs6&branch=master)](https://travis-ci.com/ayrtonvwf/conselho-app)
 
 ## Build Setup
 
@@ -25,6 +27,9 @@ npm run e2e
 
 # run all tests
 npm test
+
+# build android apk
+cordova build android
 ```
 
 For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).

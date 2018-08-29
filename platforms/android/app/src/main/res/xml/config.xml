@@ -8,21 +8,15 @@
         <param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
         <param name="onload" value="true" />
     </feature>
-    <name>Conselho</name>
-    <description>
-        A sample Apache Cordova application that responds to the deviceready event.
-    </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
-    </author>
+    <name short="Conselho">Conselho</name>
+    <description>Avalie o desempenho de seus alunos e obtenha resultados úteis</description>
+    <author email="ayrton.vargas33@gmail.com" href="https://github.com/ayrtonvwf">Ayrton Fidelis</author>
     <content src="dist/index.html" />
-    <access origin="*" />
-    <allow-intent href="http://*/*" />
-    <allow-intent href="https://*/*" />
-    <allow-intent href="tel:*" />
-    <allow-intent href="sms:*" />
-    <allow-intent href="mailto:*" />
-    <allow-intent href="geo:*" />
+    <access origin="https://*.infomec.net.br" />
+    <access origin="https://ssl.gstatic.com" />
+    <access origin="https://sentry.io" />
+    <allow-intent href="http://*.infomec.net.br" />
+    <allow-intent href="https://*.infomec.net.br" />
     <allow-intent href="market:*" />
     <icon density="ldpi" src="res/icon/android/ldpi.png" />
     <icon density="mdpi" src="res/icon/android/mdpi.png" />
@@ -43,6 +37,11 @@
     <splash density="land-xxhdpi" src="res/screen/android/splash-land-xxhdpi.png" />
     <splash density="land-xxxhdpi" src="res/screen/android/splash-land-xxxhdpi.png" />
     <preference name="loglevel" value="DEBUG" />
+    <preference name="BackgroundColor" value="ecf0f5" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="LoadingDialog" value="Aguarde. Carregando..." />
+    <preference name="SplashScreenBackgroundColor" value="3c8dbc" />
+    <preference name="WindowsStoreDisplayName" value="Conselho" />
     <preference name="SplashMaintainAspectRatio" value="true" />
     <preference name="SplashShowOnlyFirstTime" value="true" />
 </widget>

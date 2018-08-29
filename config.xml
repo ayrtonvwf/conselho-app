@@ -1,21 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="com.infomec.conselho" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Conselho</name>
-    <description>
-        A sample Apache Cordova application that responds to the deviceready event.
-    </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
-        Apache Cordova Team
-    </author>
+    <name short="Conselho">Conselho</name>
+    <description>Avalie o desempenho de seus alunos e obtenha resultados úteis</description>
+    <author email="ayrton.vargas33@gmail.com" href="https://github.com/ayrtonvwf">Ayrton Fidelis</author>
     <content src="dist/index.html" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
-    <access origin="*" />
-    <allow-intent href="http://*/*" />
-    <allow-intent href="https://*/*" />
-    <allow-intent href="tel:*" />
-    <allow-intent href="sms:*" />
-    <allow-intent href="mailto:*" />
-    <allow-intent href="geo:*" />
+    <access origin="https://*.infomec.net.br" />
+    <access origin="https://ssl.gstatic.com" />
+    <access origin="https://sentry.io" />
+    <allow-intent href="http://*.infomec.net.br" />
+    <allow-intent href="https://*.infomec.net.br" />
     <platform name="android">
         <allow-intent href="market:*" />
         <preference name="SplashMaintainAspectRatio" value="true" />
@@ -92,5 +86,10 @@
         <splash src="res/screen/windows/splashscreenphone.png" target="SplashScreenPhone" />
     </platform>
     <plugin name="cordova-plugin-splashscreen" spec="^5.0.2" />
+    <preference name="BackgroundColor" value="ecf0f5" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="LoadingDialog" value="Aguarde. Carregando..." />
+    <preference name="SplashScreenBackgroundColor" value="3c8dbc" />
+    <preference name="WindowsStoreDisplayName" value="Conselho" />
     <engine name="android" spec="^7.1.1" />
 </widget>

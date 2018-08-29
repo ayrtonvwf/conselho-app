@@ -11,6 +11,7 @@ const CSPWebpackPlugin = require('csp-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const WebappWebpackPlugin = require('webapp-webpack-plugin')
 
 const env = process.env.NODE_ENV === 'testing'
   ? require('../config/test.env')
@@ -123,6 +124,16 @@ const webpackConfig = merge(baseWebpackConfig, {
       async: 'vendor-async',
       children: true,
       minChunks: 3
+    }),
+
+    new WebappWebpackPlugin({
+      logo: './src/assets/logo.svg',
+      favicons: {
+        appName: 'Conselho',
+        theme_color: '#3c8dbc',
+        lang: 'pt-BR',
+        start_url: 'https://mondrone.infomec.net.br'
+      }
     }),
 
     // copy custom static assets

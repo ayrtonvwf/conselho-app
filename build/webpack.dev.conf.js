@@ -10,6 +10,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CSPWebpackPlugin = require('csp-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
+const WebappWebpackPlugin = require('webapp-webpack-plugin')
 
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
@@ -58,6 +59,17 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       template: 'index.html',
       inject: true
     }),
+
+    new WebappWebpackPlugin({
+      logo: './src/assets/logo.svg',
+      favicons: {
+        appName: 'Conselho',
+        theme_color: '#3c8dbc',
+        lang: 'pt-BR',
+        start_url: 'https://mondrone.infomec.net.br'
+      }
+    }),
+
     new CSPWebpackPlugin({
       'default-src': '\'self\' data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
       'style-src': '\'self\' \'unsafe-inline\'',

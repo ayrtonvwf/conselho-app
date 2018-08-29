@@ -4,29 +4,51 @@
     <article class="box">
       <div class="box-body"><br>
         <div class="row justify-content-center">
-          <div class="col-12 col-md-10 col-xlg-9">
+          <div class="col-12">
             <div class="row justify-content-center">
-              <div class="input col-12 col-sm-6 col-lg-3">
+              <div class="input col-12 col-sm-4">
                 <select id="current_grade_id" name="current_grade_id" required v-model="current_grade_id">
                   <option value="" selected hidden disabled>Selecione...</option>
                   <option v-for="grade in currentGrades" :value="grade.id" :key="grade.id">{{ grade.name }}</option>
                 </select>
                 <label for="current_grade_id">Turma</label>
               </div>
-              <div class="input col-12 col-sm-6 col-lg-3">
+              <div class="input col-12 col-sm-4">
                 <select id="current_subject_id" name="current_subject_id" v-model="current_subject_id" :disabled="!current_grade_id">
                   <option value="" selected>{{ current_grade_id ? 'Todas' : 'Selecione a turma...' }}</option>
                   <option v-for="subject in currentSubjects" :value="subject.id" :key="subject.id">{{ subject.name }}</option>
                 </select>
                 <label for="current_subject_id">Disciplina</label>
               </div>
-              <div class="input col-6 col-lg-3">
+              <div class="input col-12 col-sm-4 text-center">
+                <label><br>
+                  <input type="checkbox" v-model="show_advanced_options"> Opções avançadas<br><br>
+                </label>
+              </div>
+            </div>
+            <div class="row" v-if="show_advanced_options">
+              <div class="input col-12 col-sm-6 col-lg-3">
                 <input id="min_evaluation" v-model="min_evaluation" type="number" min="0" max="100" step="1">
                 <label for="min_evaluation">Avaliação Mínima</label>
               </div>
-              <div class="input col-6 col-lg-3">
+              <div class="input col-12 col-sm-6 col-lg-3">
                 <input id="max_evaluation" v-model="max_evaluation" type="number" min="0" max="100" step="1">
                 <label for="max_evaluation">Avaliação Máxima</label>
+              </div>
+              <div class="input col-12 col-sm-3 col-lg-2 text-center">
+                <label><br>
+                  <input type="checkbox" v-model="show_topics"> Tópicos<br><br>
+                </label>
+              </div>
+              <div class="input col-12 col-sm-5 col-lg-2 text-center">
+                <label><br>
+                  <input type="checkbox" v-model="show_student_observations"> Observações dos Estudantes<br><br>
+                </label>
+              </div>
+              <div class="input col-12 col-sm-4 col-lg-2 text-center">
+                <label><br>
+                  <input type="checkbox" v-model="show_grade_observations"> Observações da Turma<br><br>
+                </label>
               </div>
             </div>
             <div class="row">
@@ -51,17 +73,17 @@
           <div class="h4">Clique em "<b>gerar relatório</b>".</div>
           <br>
         </div>
-        <div class="text-center text-muted" v-else-if="!currentEvaluations.length"><br>
+        <div class="text-center text-muted" v-else-if="!currentEvaluations.length && !currentStudentObservations.length && !currentGradeObservations.length"><br>
           <div class="h4">Esta turma ainda <b>não recebeu avaliações</b><span v-if="current_subject_id"> nesta disciplina</span>.</div><br>
         </div>
         <div v-else>
           <template v-if="!current_student_id">
-            <super-table>
+            <super-table v-if="show_topics || show_student_observations">
               <thead>
                 <tr>
                   <th style="max-width: 33vw">Aluno</th>
-                  <th v-for="topic in currentTopics" style="min-width: 150px" :key="topic.id">{{ topic.name }}</th>
-                  <th class="no-wrap">Observações Gerais</th>
+                  <th v-for="topic in currentTopics" style="min-width: 150px" :key="topic.id" v-if="show_topics">{{ topic.name }}</th>
+                  <th class="no-wrap" v-if="show_student_observations">Observações Gerais</th>
                 </tr>
               </thead>
               <tbody>
@@ -69,15 +91,17 @@
                   <td style="max-width: 33vw">
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
-                  <td v-for="topic in currentTopics" :key="topic.id">{{ reportStudentTopic(student.id, topic.id) }}</td>
-                  <td>
+                  <td v-for="topic in currentTopics" :key="topic.id" v-if="show_topics">{{ reportStudentTopic(student.id, topic.id) }}</td>
+                  <td v-if="show_student_observations">
                     <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
                   </td>
                 </tr>
               </tbody>
             </super-table>
             <br>
-            <p v-for="grade_observation in currentGradeObservations" :key="grade_observation.id"><b>{{ getUser(grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
+            <template v-if="show_grade_observations">
+              <p v-for="grade_observation in currentGradeObservations" :key="grade_observation.id"><b>{{ getUser(grade_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(grade_observation.subject_id).name : '' }}:</b> {{ grade_observation.description }}</p>
+            </template>
           </template>
           <template v-else>
             <p>
@@ -100,7 +124,7 @@
             <p>
               <b>{{ currentStudent.id ? studentGrade(currentStudent.id).number : '' }} - {{ currentStudent.name }}</b>
             </p>
-            <super-table>
+            <super-table v-if="show_topics">
               <thead>
               <tr>
                 <th style="max-width: 33vw">Matéria</th>
@@ -114,7 +138,7 @@
               </tr>
               </tbody>
             </super-table>
-            <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === current_student_id)" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+            <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === current_student_id)" :key="student_observation.id" v-if="show_student_observations"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
           </template>
         </div>
       </div>
@@ -180,8 +204,12 @@ export default {
       current_grade_observations: [],
       current_student_observations: [],
       loaded_evaluations: false,
+      show_advanced_options: false,
       min_evaluation: 0,
-      max_evaluation: 100
+      max_evaluation: 100,
+      show_topics: true,
+      show_student_observations: true,
+      show_grade_observations: true
     }
   },
   watch: {
@@ -193,11 +221,32 @@ export default {
       this.eraseEvaluations()
     },
 
+    show_advanced_options () {
+      this.eraseEvaluations()
+      this.min_evaluation = 0
+      this.max_evaluation = 100
+      this.show_topics = true
+      this.show_student_observations = true
+      this.show_grade_observations = true
+    },
+
     min_evaluation () {
       this.eraseEvaluations()
     },
 
     max_evaluation () {
+      this.eraseEvaluations()
+    },
+
+    show_topics () {
+      this.eraseEvaluations()
+    },
+
+    show_student_observations () {
+      this.eraseEvaluations()
+    },
+
+    show_grade_observations () {
       this.eraseEvaluations()
     }
   },
@@ -407,26 +456,32 @@ export default {
         getGradeObservationConfig.data.subject_id = this.current_subject_id
       }
 
-      promises.push(this.$store.dispatch('getResource', getEvaluationConfig).then(evaluations => {
-        this.current_grade_evaluations = evaluations.map(evaluation => {
-          const topicOption = this.currentTopicOptions.find(topicOption =>
-            topicOption.id === evaluation.topic_option_id
-          )
+      if (this.show_topics) {
+        promises.push(this.$store.dispatch('getResource', getEvaluationConfig).then(evaluations => {
+          this.current_grade_evaluations = evaluations.map(evaluation => {
+            const topicOption = this.currentTopicOptions.find(topicOption =>
+              topicOption.id === evaluation.topic_option_id
+            )
 
-          evaluation.topic_id = topicOption.topic_id
-          evaluation.value = topicOption.value
+            evaluation.topic_id = topicOption.topic_id
+            evaluation.value = topicOption.value
 
-          return evaluation
-        })
-      }))
+            return evaluation
+          })
+        }))
+      }
 
-      promises.push(this.$store.dispatch('getResource', getStudentObservationConfig).then(studentObservations => {
-        this.current_student_observations = studentObservations
-      }))
+      if (this.show_student_observations) {
+        promises.push(this.$store.dispatch('getResource', getStudentObservationConfig).then(studentObservations => {
+          this.current_student_observations = studentObservations
+        }))
+      }
 
-      promises.push(this.$store.dispatch('getResource', getGradeObservationConfig).then(gradeObservations => {
-        this.current_grade_observations = gradeObservations
-      }))
+      if (this.show_grade_observations) {
+        promises.push(this.$store.dispatch('getResource', getGradeObservationConfig).then(gradeObservations => {
+          this.current_grade_observations = gradeObservations
+        }))
+      }
 
       Promise.all(promises).then(() => {
         this.loaded_evaluations = true
@@ -564,8 +619,12 @@ export default {
     this.current_subject_id = ''
     this.current_student_id = undefined
     this.loaded_evaluations = false
+    this.show_advanced_options = false
     this.min_evaluation = 0
     this.max_evaluation = 100
+    this.show_topics = true
+    this.show_student_observations = true
+    this.show_grade_observations = true
 
     this.load().then(() => {
       this.$emit('loaded')

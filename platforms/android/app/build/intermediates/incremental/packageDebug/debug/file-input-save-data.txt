@@ -1,5 +1,5 @@
 #Internal package file, do not edit.
-#Tue Aug 28 22:23:45 BRT 2018
+#Wed Aug 29 05:39:16 BRT 2018
 124.path=www/dist/static/apple-touch-icon-180x180.png
 60.set=ASSET
 52.set=ASSET
@@ -26,7 +26,7 @@
 106.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 72.baseType=DIRECTORY
 62.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-54.path=www/dist/static/android-chrome-36x36.png
+54.path=www/dist/static/README.md
 69.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 9.set=ASSET
 113.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
@@ -34,7 +34,7 @@
 22.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 14.path=www/dist/static/apple-touch-icon-60x60.png
 29.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-61.path=www/dist/static/cordova/res/screen/ios/Default@2x~iphone~comcom.png
+61.path=www/dist/static/apple-touch-icon-76x76-precomposed.png
 76.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 51.set=ASSET
 65.baseType=DIRECTORY
@@ -44,7 +44,7 @@
 107.path=www/dist/static/cordova/res/screen/ios/Default-568h@2x~iphone.png
 35.set=ASSET
 27.set=ASSET
-63.path=www/dist/static/cordova/res/icon/windows/Square44x44Logo.png
+63.path=www/dist/static/cordova/res/screen/windows/splashscreenphone.png
 7.baseType=DIRECTORY
 19.set=ASSET
 36.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
@@ -65,7 +65,7 @@
 130.baseType=DIRECTORY
 8.set=ASSET
 88.baseType=DIRECTORY
-30.path=www/dist/static/js/app.2a45032fa5c540fe2168.js
+30.path=www/dist/static/js/app.801cac1172f90703864b.js
 48.baseType=DIRECTORY
 1.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 129.set=ASSET
@@ -98,7 +98,7 @@
 9.path=www/dist/static/cordova/res/screen/ios/Default@3x~iphone~comany.png
 74.baseType=DIRECTORY
 105.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-53.path=www/dist/static/README.md
+53.path=www/dist/static/apple-touch-icon-120x120.png
 7.set=ASSET
 68.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 128.set=ASSET
@@ -110,7 +110,7 @@
 119.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 27.baseType=DIRECTORY
 28.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-60.path=www/dist/static/apple-touch-icon-76x76-precomposed.png
+60.path=www/dist/static/cordova/res/screen/ios/Default@2x~iphone~anyany.png
 75.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 70.baseType=DIRECTORY
 41.set=ASSET
@@ -121,7 +121,7 @@
 25.set=ASSET
 17.set=ASSET
 95.set=ASSET
-62.path=www/dist/static/cordova/res/screen/windows/splashscreenphone.png
+62.path=www/dist/static/cordova/res/screen/ios/Default@2x~iphone~comcom.png
 97.baseType=DIRECTORY
 35.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 87.set=ASSET
@@ -177,10 +177,10 @@
 104.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 5.set=ASSET
 108.baseType=DIRECTORY
-52.path=www/dist/static/apple-touch-icon-120x120.png
+52.path=www/dist/static/js/app.801cac1172f90703864b.js.map
 126.set=ASSET
 67.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-59.path=www/dist/static/cordova/res/screen/ios/Default@2x~iphone~anyany.png
+59.path=www/dist/static/cordova/archive/appstoreicon.png
 118.set=ASSET
 69.baseType=DIRECTORY
 29.baseType=DIRECTORY
@@ -263,7 +263,7 @@
 116.set=ASSET
 66.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 71.baseType=DIRECTORY
-58.path=www/dist/static/cordova/archive/appstoreicon.png
+58.path=www/dist/static/cordova/res/screen/android/splash-land-xhdpi.png
 108.set=ASSET
 34.baseType=DIRECTORY
 110.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
@@ -282,7 +282,7 @@
 75.set=ASSET
 33.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 67.set=ASSET
-67.path=www/dist/static/js/app.2a45032fa5c540fe2168.js.map
+67.path=www/dist/static/cordova/res/icon/ios/icon.png
 80.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 6.baseType=DIRECTORY
 59.set=ASSET
@@ -344,7 +344,7 @@
 106.set=ASSET
 65.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 count=133
-57.path=www/dist/static/cordova/res/screen/android/splash-land-xhdpi.png
+57.path=www/dist/static/cordova/icon.png
 105.baseType=DIRECTORY
 10.path=www/dist/static/cordova/res/screen/android/splash-land-xxhdpi.png
 116.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
@@ -362,7 +362,7 @@ count=133
 19.path=www/dist/static/cordova/res/screen/android/splash-land-xxxhdpi.png
 32.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 57.set=ASSET
-66.path=www/dist/static/cordova/res/icon/ios/icon.png
+66.path=www/dist/static/cordova/archive/googleplayfeature.png
 96.baseType=DIRECTORY
 39.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 49.set=ASSET
@@ -418,7 +418,7 @@ count=133
 104.set=ASSET
 17.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 64.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-56.path=www/dist/static/cordova/icon.png
+56.path=www/dist/static/apple-touch-icon-57x57-precomposed.png
 107.baseType=DIRECTORY
 110.baseType=DIRECTORY
 68.baseType=DIRECTORY
@@ -439,7 +439,7 @@ count=133
 18.path=www/dist/static/fonts/MaterialIcons-Regular.012cf6a.woff
 31.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 47.set=ASSET
-65.path=www/dist/static/cordova/archive/googleplayfeature.png
+65.path=www/dist/static/cordova/res/screen/ios/Default@3x~iphone~anyany.png
 61.baseType=DIRECTORY
 38.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 39.set=ASSET
@@ -491,7 +491,7 @@ count=133
 109.baseType=DIRECTORY
 107.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 63.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
-55.path=www/dist/static/apple-touch-icon-57x57-precomposed.png
+55.path=www/dist/static/android-chrome-36x36.png
 33.baseType=DIRECTORY
 114.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 23.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
@@ -509,7 +509,7 @@ count=133
 17.path=www/dist/static/cordova/res/icon/ios/icon-76@2x.png
 30.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 37.set=ASSET
-64.path=www/dist/static/cordova/res/screen/ios/Default@3x~iphone~anyany.png
+64.path=www/dist/static/cordova/res/icon/windows/Square44x44Logo.png
 29.set=ASSET
 37.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug
 84.base=/home/ayrton/projects/conselho-app/platforms/android/app/build/intermediates/assets/debug

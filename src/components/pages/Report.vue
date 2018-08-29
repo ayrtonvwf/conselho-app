@@ -53,11 +53,16 @@
             </div>
             <div class="row">
               <div class="col-12 text-right">
-                <button type="button" class="btn-primary" onclick="window.print()" v-if="loaded_evaluations">
-                  <span class="material-icons">print</span> Imprimir
-                </button>
+                <template v-if="loaded_evaluations">
+                  <button type="button" class="btn-primary" @click="current_student_id ? exportStudentCSV() : exportGradeCSV()">
+                    <span class="material-icons">cloud_download</span> Baixar
+                  </button>
+                  <button type="button" class="btn-primary" onclick="window.print()">
+                    <span class="material-icons">print</span> Imprimir
+                  </button>
+                </template>
                 <button type="button" class="btn btn-success" @click="generateReport">
-                  <i class="fa fa-fw fa-check"></i> Gerar relatório
+                  <span class="material-icons">check</span> Gerar relatório
                 </button>
               </div>
             </div>
@@ -191,7 +196,10 @@
     }
   }
 </style>
+
 <script>
+import { saveAs } from 'file-saver/FileSaver'
+import Papa from 'papaparse'
 export default {
   name: 'Report',
   data () {
@@ -386,6 +394,101 @@ export default {
     }
   },
   methods: {
+    exportGradeCSV () {
+      const data = []
+      const line = ['N', 'Estudante']
+
+      if (this.show_topics) {
+        this.currentTopics.forEach(topic => {
+          line.push(topic.name)
+        })
+      }
+
+      if (this.show_student_observations) {
+        line.push('Observações')
+      }
+
+      data.push(line)
+
+      this.currentStudents.forEach(student => {
+        const line = []
+        line.push(this.studentGrade(student.id).number)
+        line.push(student.name)
+
+        if (this.show_topics) {
+          this.currentTopics.forEach(topic => {
+            line.push(this.reportStudentTopic(student.id, topic.id))
+          })
+        }
+
+        if (this.show_student_observations) {
+          const studentObservations = []
+          this.currentStudentObservations.filter(studentObservation =>
+            studentObservation.student_id === student.id
+          ).forEach(studentObservation => {
+            const user = this.getUser(studentObservation.user_id)
+            const subject = this.getSubject(studentObservation.subject_id)
+
+            studentObservations.push(user.name + ' - ' + subject.name + ': ' + studentObservation.description)
+          })
+          line.push(studentObservations.join('\n'))
+        }
+        data.push(line)
+      })
+
+      const csv = Papa.unparse(data)
+      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+      const fileName = this.currentCouncil.name + ' - ' + this.currentGrade.name + '.csv'
+      saveAs(blob, fileName)
+    },
+
+    exportStudentCSV () {
+      const data = []
+      const line = ['Disciplina']
+
+      if (this.show_topics) {
+        this.currentTopics.forEach(topic => {
+          line.push(topic.name)
+        })
+      }
+
+      if (this.show_student_observations) {
+        line.push('Observações')
+      }
+
+      data.push(line)
+
+      this.currentSubjects.forEach(subject => {
+        const line = []
+        line.push(subject.name)
+
+        if (this.show_topics) {
+          this.currentTopics.forEach(topic => {
+            line.push(this.reportSubjectTopic(subject.id, topic.id))
+          })
+        }
+
+        if (this.show_student_observations) {
+          const studentObservations = []
+          this.currentStudentObservations.filter(studentObservation =>
+            studentObservation.student_id === this.current_student_id &&
+            studentObservation.subject_id === subject.id
+          ).forEach(studentObservation => {
+            const user = this.getUser(studentObservation.user_id)
+
+            studentObservations.push(user.name + ': ' + studentObservation.description)
+          })
+          line.push(studentObservations.join('\n'))
+        }
+        data.push(line)
+      })
+
+      const csv = Papa.unparse(data)
+      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+      const fileName = this.currentCouncil.name + ' - ' + this.currentGrade.name + ' - ' + this.currentStudent.name + '.csv'
+      saveAs(blob, fileName)
+    },
+
     mustShowStudent (studentId) {
       return this.studentHasAnyEvaluation(studentId) ||
         this.currentStudentObservations.find(studentObservation =>

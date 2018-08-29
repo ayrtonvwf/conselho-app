@@ -2,7 +2,14 @@
   "name": "com.infomec.conselho",
   "displayName": "Conselho",
   "version": "1.0.0",
-  "keywords": ["school", "education", "evaluate", "grade", "student", "college"],
+  "keywords": [
+    "school",
+    "education",
+    "evaluate",
+    "grade",
+    "student",
+    "college"
+  ],
   "description": "Avalie o desempenho de seus alunos e obtenha resultados úteis",
   "author": {
     "name": "Ayrton Fidelis",
@@ -100,8 +107,8 @@
     "webpack-merge": "^4.1.4"
   },
   "engines": {
-    "node": ">= 10.9.0",
-    "npm": ">= 6.4.0"
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
   },
   "browserslist": [
     "> 1%",

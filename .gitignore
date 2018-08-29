@@ -7,6 +7,9 @@ yarn-error.log*
 /test/e2e/reports/
 selenium-debug.log
 www/
+platforms/android/.gradle/
+platforms/android/CordovaLib/build/
+platforms/android/app/build/
 
 # Editor directories and files
 .idea

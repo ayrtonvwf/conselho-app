@@ -72,15 +72,15 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     }),
 
     new CSPWebpackPlugin({
-      'default-src': '\'self\' data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
+      'default-src': '\'self\' https://cdn.polyfill.io data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
       'style-src': '\'self\' \'unsafe-inline\'',
       'media-src': '*',
-      'img-src': '\'self\' data: content:',
+      'img-src': '\'self\' http://polyfill.io data: content:',
       'connect-src': '\'self\' http://localhost ws:',
 
       'object-src': '\'none\'',
       'base-uri': '\'self\'',
-      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com'],
+      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com', 'https://cdn.polyfill.io'],
       'worker-src': ['\'self\'','blob:']
     }),
     // copy custom static assets

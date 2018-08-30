@@ -65,7 +65,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       favicons: {
         appName: 'Conselho',
         theme_color: '#3c8dbc',
-        background_color: '#3c8dbc',
+        background: '#3c8dbc',
         lang: 'pt-BR',
         start_url: 'https://mondrone.infomec.net.br'
       }

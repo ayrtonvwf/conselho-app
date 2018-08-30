@@ -125,6 +125,9 @@
             <i class="material-icons">edit</i> {{ council.name }}
           </router-link>
         </template>
+        <button class="menu-link" v-if="installPromptEvent" @click="install">
+          <i class="material-icons">cloud_download</i> Instalar
+        </button>
       </nav>
       <main class="content mark-required selection-primary">
         <router-view @notify="notify" @loading="loading = true" @loaded="loading = false"></router-view>
@@ -152,6 +155,7 @@ export default {
   name: 'App',
   data () {
     return {
+      installPromptEvent: undefined,
       notification: {},
       loading: true
     }
@@ -205,6 +209,22 @@ export default {
     }
   },
   methods: {
+    install () {
+      this.installPromptEvent.prompt()
+      // Wait for the user to respond to the prompt
+      this.installPromptEvent.userChoice.then(choice => {
+        console.log(choice)
+        if (choice.outcome !== 'accepted') {
+          this.notify(':(', 'Aplicativo não instalado!', 'error')
+          return
+        }
+        window.addEventListener('appinstalled', event => {
+          this.notify('Instalado!', 'Aplicativo instalado com sucesso!', 'success')
+          this.installPromptEvent = undefined
+        })
+      })
+    },
+
     getUser (userId) {
       return this.$store.getters['users/getUsers'].find(user =>
         user.id === userId
@@ -333,6 +353,15 @@ export default {
     }
   },
   created () {
+    if (!window.matchMedia('(display-mode: standalone)').matches && window.navigator.standalone === false) {
+      window.addEventListener('beforeinstallprompt', event => {
+        // Prevent Chrome <= 67 from automatically showing the prompt
+        event.preventDefault()
+        // Stash the event so it can be triggered later.
+        this.installPromptEvent = event
+      })
+    }
+
     this.$store.commit('checkAuth')
 
     if (!this.$store.state.logged_in && this.$route.name !== 'Login') {

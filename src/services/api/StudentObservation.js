@@ -1,4 +1,5 @@
 import {getResource, saveResource, updateResource} from './helpers'
+import axios from 'axios'
 
 export default {
   getStudentObservations () {
@@ -11,5 +12,9 @@ export default {
 
   updateStudentObservation (studentObservation) {
     return updateResource('student_observation', studentObservation)
+  },
+
+  deleteStudentObservation (studentObservationId) {
+    return axios.delete('/student_observation/' + studentObservationId)
   }
 }

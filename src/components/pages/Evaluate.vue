@@ -397,11 +397,13 @@ export default {
 
       const studentObservationDescription = document.querySelector('tr[data-student_id="' + studentId + '"] textarea').value
 
-      if (studentObservationDescription) {
-        const previousObservation = this.currentStudentObservations.find(studentObservation =>
-          studentObservation.student_id === studentId
-        )
+      const previousObservation = this.currentStudentObservations.find(studentObservation =>
+        studentObservation.student_id === studentId
+      )
 
+      if (!studentObservationDescription && previousObservation) {
+        promises.push(this.$store.dispatch('student_observations/delete', previousObservation.id))
+      } else if (studentObservationDescription) {
         const studentObservation = {
           council_id: this.current_council_id,
           grade_id: this.current_grade_id,

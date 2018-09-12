@@ -32,6 +32,14 @@ export default {
       Vue.set(state.student_observations, index, payload)
     },
 
+    delete: (state, studentObservationId) => {
+      const index = state.student_observations.findIndex(studentObservation =>
+        studentObservation.id === studentObservationId
+      )
+
+      Vue.delete(state.student_observations, index)
+    },
+
     setLoaded: (state, status) => {
       if (status === undefined) {
         status = true
@@ -90,6 +98,16 @@ export default {
       ).then(studentObservation => {
         context.commit('update', studentObservation)
         return studentObservation
+      })
+    },
+
+    delete: (context, studentObservationId) => {
+      const db = context.rootState.db
+
+      return StudentObservationApi.deleteStudentObservation(studentObservationId).then(() =>
+        db.students.delete(studentObservationId)
+      ).then(() => {
+        context.commit('delete', studentObservationId)
       })
     }
   }

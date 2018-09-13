@@ -105,7 +105,7 @@ export default {
       const db = context.rootState.db
 
       return StudentObservationApi.deleteStudentObservation(studentObservationId).then(() =>
-        db.students.delete(studentObservationId)
+        db.student_observations.delete(studentObservationId)
       ).then(() => {
         context.commit('delete', studentObservationId)
       })

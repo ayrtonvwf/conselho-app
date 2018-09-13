@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import GradeObservationApi from '../../services/api/GradeObservation'
+import StudentObservationApi from '@/services/api/StudentObservation'
 
 export default {
   namespaced: true,
@@ -30,6 +31,14 @@ export default {
       )
 
       Vue.set(state.grade_observations, index, payload)
+    },
+
+    delete: (state, gradeObservationId) => {
+      const index = state.grade_observations.findIndex(gradeObservation =>
+        gradeObservation.id === gradeObservationId
+      )
+
+      Vue.delete(state.grade_observations, index)
     },
 
     setLoaded: (state, status) => {
@@ -90,6 +99,16 @@ export default {
       ).then(gradeObservation => {
         context.commit('update', gradeObservation)
         return gradeObservation
+      })
+    },
+
+    delete: (context, gradeObservationId) => {
+      const db = context.rootState.db
+
+      return StudentObservationApi.deleteStudentObservation(gradeObservationId).then(() =>
+        db.grade_observations.delete(gradeObservationId)
+      ).then(() => {
+        context.commit('delete', gradeObservationId)
       })
     }
   }

@@ -444,30 +444,33 @@ export default {
         }
 
         const studentObservationDescription = studentObservationTextarea.value
-        if (!studentObservationDescription) {
-          return
-        }
 
         const previousObservation = this.currentStudentObservations.find(studentObservation =>
           studentObservation.student_id === studentId
         )
 
-        const studentObservation = {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id,
-          subject_id: this.current_subject_id,
-          user_id: this.current_user_id,
-          student_id: studentId,
-          description: studentObservationDescription,
-          id: previousObservation ? previousObservation.id : null
+        if (!studentObservationDescription && previousObservation) {
+          promises.push(this.$store.dispatch('student_observations/delete', previousObservation.id))
+        } else if (studentObservationDescription) {
+          const studentObservation = {
+            council_id: this.current_council_id,
+            grade_id: this.current_grade_id,
+            subject_id: this.current_subject_id,
+            user_id: this.current_user_id,
+            student_id: studentId,
+            description: studentObservationDescription,
+            id: previousObservation ? previousObservation.id : null
+          }
+          const action = studentObservation.id ? 'student_observations/update' : 'student_observations/create'
+          promises.push(this.$store.dispatch(action, studentObservation))
         }
-        const action = studentObservation.id ? 'student_observations/update' : 'student_observations/create'
-        promises.push(this.$store.dispatch(action, studentObservation))
       })
 
       const gradeObservationDescription = form.querySelector('[name=grade_observation]').value
 
-      if (gradeObservationDescription) {
+      if (!gradeObservationDescription && this.currentGradeObservation) {
+        promises.push(this.$store.dispatch('grade_observations/delete', this.currentGradeObservation.id))
+      } else if (gradeObservationDescription) {
         const gradeObservation = {
           council_id: this.current_council_id,
           grade_id: this.current_grade_id,

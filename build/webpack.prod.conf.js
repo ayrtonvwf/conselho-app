@@ -89,7 +89,7 @@ const webpackConfig = merge(baseWebpackConfig, {
 
       'object-src': '\'none\'',
       'base-uri': '\'self\'',
-      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com', 'https://cdn.polyfill.io'],
+      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com', 'https://cdn.polyfill.io', 'https://ajax.cloudflare.com'],
       'worker-src': ['\'self\'','blob:"']
     }),
     // keep module.id stable when vendor modules does not change

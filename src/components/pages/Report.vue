@@ -87,8 +87,8 @@
               <thead>
                 <tr>
                   <th style="max-width: 33vw">Aluno</th>
-                  <th v-for="topic in currentTopics" style="min-width: 150px" :key="topic.id" v-if="show_topics">{{ topic.name }}</th>
-                  <th class="no-wrap" v-if="show_student_observations">Observações Gerais</th>
+                  <th v-for="topic in currentTopics" style="min-width: 150px" :key="'topic-' + topic.id" v-if="show_topics">{{ topic.name }}</th>
+                  <th v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" class="no-wrap" v-if="show_student_observations">{{ observationTopic.name }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -96,9 +96,9 @@
                   <td style="max-width: 33vw">
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
-                  <td v-for="topic in currentTopics" :key="topic.id" v-if="show_topics">{{ reportStudentTopic(student.id, topic.id) }}</td>
-                  <td v-if="show_student_observations">
-                    <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+                  <td v-for="topic in currentTopics" :key="'topic-' + topic.id" v-if="show_topics">{{ reportStudentTopic(student.id, topic.id) }}</td>
+                  <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" v-if="show_student_observations">
+                    <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id && studentObservation.observation_topic_id === observationTopic.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
                   </td>
                 </tr>
               </tbody>
@@ -143,7 +143,10 @@
               </tr>
               </tbody>
             </super-table>
-            <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === current_student_id)" :key="student_observation.id" v-if="show_student_observations"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+            <div v-for="observationTopic in currentObservationTopics" :key="observationTopic.id" v-if="show_student_observations">
+              <h4>{{ observationTopic.name }}</h4>
+              <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === current_student_id && studentObservation.observation_topic_id === observationTopic.id)" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+            </div>
           </template>
         </div>
       </div>
@@ -287,10 +290,24 @@ export default {
       )
     },
 
+    currentCouncilObservationTopics () {
+      return this.$store.getters['council_observation_topics/getCouncilObservationTopics'].filter(councilObservationTopic =>
+        councilObservationTopic.council_id === this.current_council_id
+      )
+    },
+
     currentTopics () {
       return this.$store.getters['topics/getOrderedTopics'].filter(topic =>
         this.currentCouncilTopics.find(councilTopic =>
           councilTopic.topic_id === topic.id
+        )
+      )
+    },
+
+    currentObservationTopics () {
+      return this.$store.getters['observation_topics/getOrderedObservationTopics'].filter(observationTopic =>
+        this.currentCouncilObservationTopics.find(councilObservationTopic =>
+          councilObservationTopic.observation_topic_id === observationTopic.id
         )
       )
     },
@@ -405,7 +422,9 @@ export default {
       }
 
       if (this.show_student_observations) {
-        line.push('Observações')
+        this.currentObservationTopics.forEach(observationTopic => {
+          line.push(observationTopic.name)
+        })
       }
 
       data.push(line)
@@ -422,16 +441,19 @@ export default {
         }
 
         if (this.show_student_observations) {
-          const studentObservations = []
-          this.currentStudentObservations.filter(studentObservation =>
-            studentObservation.student_id === student.id
-          ).forEach(studentObservation => {
-            const user = this.getUser(studentObservation.user_id)
-            const subject = this.getSubject(studentObservation.subject_id)
+          this.currentObservationTopics.forEach(observationTopic => {
+            const studentObservations = []
+            this.currentStudentObservations.filter(studentObservation =>
+              studentObservation.student_id === student.id &&
+              studentObservation.observation_topic_id === observationTopic.id
+            ).forEach(studentObservation => {
+              const user = this.getUser(studentObservation.user_id)
+              const subject = this.getSubject(studentObservation.subject_id)
 
-            studentObservations.push(user.name + ' - ' + subject.name + ': ' + studentObservation.description)
+              studentObservations.push(user.name + ' - ' + subject.name + ': ' + studentObservation.description)
+            })
+            line.push(studentObservations.join('\n'))
           })
-          line.push(studentObservations.join('\n'))
         }
         data.push(line)
       })
@@ -453,7 +475,9 @@ export default {
       }
 
       if (this.show_student_observations) {
-        line.push('Observações')
+        this.currentObservationTopics.forEach(observationTopic => {
+          line.push(observationTopic.name)
+        })
       }
 
       data.push(line)
@@ -469,16 +493,19 @@ export default {
         }
 
         if (this.show_student_observations) {
-          const studentObservations = []
-          this.currentStudentObservations.filter(studentObservation =>
-            studentObservation.student_id === this.current_student_id &&
-            studentObservation.subject_id === subject.id
-          ).forEach(studentObservation => {
-            const user = this.getUser(studentObservation.user_id)
+          this.currentObservationTopics.forEach(observationTopic => {
+            const studentObservations = []
+            this.currentStudentObservations.filter(studentObservation =>
+              studentObservation.student_id === this.current_student_id &&
+              studentObservation.subject_id === subject.id &&
+              studentObservation.observation_topic_id === observationTopic.id
+            ).forEach(studentObservation => {
+              const user = this.getUser(studentObservation.user_id)
 
-            studentObservations.push(user.name + ': ' + studentObservation.description)
+              studentObservations.push(user.name + ': ' + studentObservation.description)
+            })
+            line.push(studentObservations.join('\n'))
           })
-          line.push(studentObservations.join('\n'))
         }
         data.push(line)
       })
@@ -529,34 +556,28 @@ export default {
 
       const promises = []
 
+      const filterData = {
+        council_id: this.current_council_id,
+        grade_id: this.current_grade_id
+      }
+
+      if (this.current_subject_id) {
+        filterData.subject_id = this.current_subject_id
+      }
+
       const getEvaluationConfig = {
         name: 'evaluation',
-        data: {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id
-        }
+        data: filterData
       }
 
       const getStudentObservationConfig = {
         name: 'student_observation',
-        data: {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id
-        }
+        data: filterData
       }
 
       const getGradeObservationConfig = {
         name: 'grade_observation',
-        data: {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id
-        }
-      }
-
-      if (this.current_subject_id) {
-        getEvaluationConfig.data.subject_id = this.current_subject_id
-        getStudentObservationConfig.data.subject_id = this.current_subject_id
-        getGradeObservationConfig.data.subject_id = this.current_subject_id
+        data: filterData
       }
 
       if (this.show_topics) {
@@ -693,7 +714,9 @@ export default {
         'council_grades',
         'grades',
         'council_topics',
+        'council_observation_topics',
         'topics',
+        'observation_topics',
         'topic_options',
         'grade_observations',
         'student_observations',

@@ -67,16 +67,31 @@
               </div>
             </div><br>
             <div class="row">
+              <h5 class="col-12">Tópicos</h5>
               <div class="col-6 col-md-4" v-for="topic in orderedActiveTopics" :key="topic.id">
                 <label>
                   <input type="checkbox" name="council_topic[]" :value="topic.id"> {{ topic.name }}
                 </label>
               </div>
-            </div><br><a class="btn-danger" href="#">
-              <div class="material-icons">close</div>  Cancelar</a>
+            </div>
+            <br>
+            <div class="row">
+              <h5 class="col-12">Observações</h5>
+              <div class="col-6 col-md-4" v-for="observationTopic in orderedActiveObservationTopics" :key="observationTopic.id">
+                <label>
+                  <input type="checkbox" name="council_observation_topic[]" :value="observationTopic.id"> {{ observationTopic.name }}
+                </label>
+              </div>
+            </div>
+            <br>
+            <br>
+            <a class="btn-danger" href="#">
+              <div class="material-icons">close</div>  Cancelar
+            </a>
             <button class="btn-success pull-right" type="submit">
               <div class="material-icons">check</div>  Salvar
-            </button><br>
+            </button>
+            <br>
           </form>
         </div>
       </div>
@@ -109,10 +124,23 @@
               </div>
             </div><br>
             <div class="row">
+              <div class="col-12">
+                <h5>Tópicos</h5>
+              </div>
               <div class="col-6 col-md-4" v-for="topic in currentTopics" :key="topic.id">
                 <div class="material-icons">check</div> {{ topic.name }}
               </div>
             </div>
+            <br>
+            <div class="row">
+              <div class="col-12">
+                <h5>Observações</h5>
+              </div>
+              <div class="col-6 col-md-4" v-for="observationTopic in currentObservationTopics" :key="observationTopic.id">
+                <div class="material-icons">check</div> {{ observationTopic.name }}
+              </div>
+            </div>
+            <br>
             <br>
             <a class="btn-danger" href="#">
               <div class="material-icons">close</div>
@@ -145,6 +173,12 @@ export default {
       )
     },
 
+    orderedActiveObservationTopics () {
+      return this.$store.getters['observation_topics/getOrderedObservationTopics'].filter(observationTopic =>
+        observationTopic.active
+      )
+    },
+
     orderedCouncils () {
       return this.$store.getters['councils/getOrderedCouncils']
     },
@@ -170,6 +204,19 @@ export default {
         this.$store.getters['council_topics/getCouncilTopics'].find(councilTopic =>
           councilTopic.topic_id === topic.id &&
           councilTopic.council_id === this.current_council_id
+        )
+      )
+    },
+
+    currentObservationTopics () {
+      if (!this.current_council_id) {
+        return []
+      }
+
+      return this.$store.getters['observation_topics/getOrderedObservationTopics'].filter(observationTopic =>
+        this.$store.getters['council_observation_topics/getCouncilObservationTopics'].find(councilObservationTopic =>
+          councilObservationTopic.observation_topic_id === observationTopic.id &&
+          councilObservationTopic.council_id === this.current_council_id
         )
       )
     }
@@ -219,6 +266,9 @@ export default {
       const councilTopicInputs = form.querySelectorAll('[name="council_topic[]"]:checked')
       const councilTopicIds = [].map.call(councilTopicInputs, input => input.value)
 
+      const councilObservationTopicInputs = form.querySelectorAll('[name="council_observation_topic[]"]:checked')
+      const councilObservationTopicIds = [].map.call(councilObservationTopicInputs, input => input.value)
+
       const council = {
         name: form.querySelector('[name=name]').value,
         start_date: form.querySelector('[name=start_date]').value,
@@ -235,6 +285,17 @@ export default {
           }
 
           const promise = this.$store.dispatch('council_topics/create', councilTopic)
+
+          promises.push(promise)
+        })
+
+        councilObservationTopicIds.forEach(observationTopicId => {
+          const councilObservationTopic = {
+            observation_topic_id: observationTopicId,
+            council_id: council.id
+          }
+
+          const promise = this.$store.dispatch('council_observation_topics/create', councilObservationTopic)
 
           promises.push(promise)
         })
@@ -259,6 +320,9 @@ export default {
         form.querySelector('[name=start_date]').value = ''
         form.querySelector('[name=end_date]').value = ''
         councilTopicInputs.forEach(input => {
+          input.checked = false
+        })
+        councilObservationTopicInputs.forEach(input => {
           input.checked = false
         })
       }).catch(error => {
@@ -295,7 +359,9 @@ export default {
       const required = [
         'councils',
         'council_topics',
+        'council_observation_topics',
         'topics',
+        'observation_topics',
         'council_grades'
       ]
 

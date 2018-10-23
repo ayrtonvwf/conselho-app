@@ -35,7 +35,7 @@
                 <tr>
                   <th style="max-width: 33vw">Aluno</th>
                   <th v-for="topic in currentTopics" :key="topic.id">{{ topic.name }}</th>
-                  <th>Observações Gerais</th>
+                  <th v-for="observationTopic in currentObservationTopics" :key="observationTopic.id">{{ observationTopic.name }}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -43,8 +43,8 @@
                 <tr v-for="student in currentStudents" :key="student.id" :data-student_id="student.id" v-if="!hide_evaluated_students || !studentHasEvaluation(student.id)">
                   <template v-if="!hide_evaluated_students && !studentIsActive(student.id)">
                     <td class="text-striked">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
-                    <td v-for="topic in currentTopics" :key="topic.id">-</td>
-                    <td>-</td>
+                    <td v-for="topic in currentTopics" :key="'topic-' + topic.id">-</td>
+                    <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id">-</td>
                     <td>-</td>
                   </template>
                   <template v-else-if="studentIsActive(student.id)">
@@ -52,14 +52,14 @@
                       {{ studentGrade(student.id).number }} - {{ student.name }}
                       <span class="text-muted" v-if="!studentHasEvaluation(student.id)"> (não avaliado)</span>
                     </td>
-                    <td v-for="topic in currentTopics" :key="topic.id">
+                    <td v-for="topic in currentTopics" :key="'topic-' + topic.id">
                       <select required @change="setConfirmRedirect" :data-topic_id="topic.id" v-model="currentEvaluations.find(evaluation => evaluation.student_id === student.id && evaluation.topic_id === topic.id).topic_option_id">
                         <option v-for="topic_option in topicOptions(topic.id)" :key="topic_option.id" :value="topic_option.id">{{ topic_option.name }}</option>
                       </select>
                     </td>
-                    <td>
-                      <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-if="currentStudentObservations.find(student_observation => student_observation.student_id === student.id)" v-model="currentStudentObservations.find(student_observation => student_observation.student_id === student.id).description"></textarea>
-                      <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-else placeholder="Conteúdos não assimilados e ações efetivadas"></textarea>
+                    <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id">
+                      <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-if="currentStudentObservations.find(student_observation => student_observation.student_id === student.id && student_observation.observation_topic_id === observationTopic.id)" v-model="currentStudentObservations.find(student_observation => student_observation.student_id === student.id && student_observation.observation_topic_id === observationTopic.id).description" :placeholder="observationTopic.name"></textarea>
+                      <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-else :placeholder="observationTopic.name"></textarea>
                     </td>
                     <td>
                       <a class="btn-success btn-sm tooltip tooltip-end" type="button" title="Salvar avaliação do aluno" @click="studentEvaluationSave(student.id)">
@@ -119,10 +119,24 @@ export default {
       )
     },
 
+    currentCouncilObservationTopics () {
+      return this.$store.getters['council_observation_topics/getCouncilObservationTopics'].filter(councilObservationTopic =>
+        councilObservationTopic.council_id === this.current_council_id
+      )
+    },
+
     currentTopics () {
       return this.$store.getters['topics/getOrderedTopics'].filter(topic =>
         this.currentCouncilTopics.find(councilTopic =>
           councilTopic.topic_id === topic.id
+        )
+      )
+    },
+
+    currentObservationTopics () {
+      return this.$store.getters['observation_topics/getOrderedObservationTopics'].filter(observationTopic =>
+        this.currentCouncilObservationTopics.find(councilObservationTopic =>
+          councilObservationTopic.observation_topic_id === observationTopic.id
         )
       )
     },
@@ -315,10 +329,35 @@ export default {
         return []
       }
 
-      return this.currentUserStudentObservations.filter(studentObservation =>
+      const studentObservations = this.currentUserStudentObservations.filter(studentObservation =>
         studentObservation.grade_id === this.current_grade_id &&
         studentObservation.subject_id === this.current_subject_id
       )
+
+      this.currentStudents.forEach(student => {
+        this.currentObservationTopics.forEach(observationTopic => {
+          const studentObservation = studentObservations.find(studentObservation =>
+            studentObservation.student_id === student.id &&
+            studentObservation.observation_topic_id === observationTopic.id
+          )
+
+          if (studentObservation) {
+            return
+          }
+
+          studentObservations.push({
+            user_id: this.current_user_id,
+            council_id: this.current_council_id,
+            grade_id: this.current_grade_id,
+            subject_id: this.current_subject_id,
+            student_id: student.id,
+            observation_topic_id: observationTopic.id,
+            description: ''
+          })
+        })
+      })
+
+      return studentObservations
     },
 
     currentGradeObservation () {
@@ -395,27 +434,20 @@ export default {
 
       promises.push(this.$store.dispatch('evaluations/saveMany', currentStudentEvaluations))
 
-      const studentObservationDescription = document.querySelector('tr[data-student_id="' + studentId + '"] textarea').value
-
-      const previousObservation = this.currentStudentObservations.find(studentObservation =>
+      const currentStudentObservations = this.currentStudentObservations.filter(studentObservation =>
         studentObservation.student_id === studentId
       )
 
-      if (!studentObservationDescription && previousObservation) {
-        promises.push(this.$store.dispatch('student_observations/delete', previousObservation.id))
-      } else if (studentObservationDescription) {
-        const studentObservation = {
-          council_id: this.current_council_id,
-          grade_id: this.current_grade_id,
-          subject_id: this.current_subject_id,
-          user_id: this.current_user_id,
-          student_id: studentId,
-          description: studentObservationDescription,
-          id: previousObservation ? previousObservation.id : null
+      const saveStudentObservations = currentStudentObservations.filter(studentObservation => {
+        if (studentObservation.description.length < 3 && studentObservation.id) {
+          promises.push(this.$store.dispatch('student_observations/delete', studentObservation.id))
+          return false
         }
-        const action = studentObservation.id ? 'student_observations/update' : 'student_observations/create'
-        promises.push(this.$store.dispatch(action, studentObservation))
-      }
+
+        return studentObservation.description.length >= 3
+      })
+
+      promises.push(this.$store.dispatch('student_observations/saveMany', saveStudentObservations))
 
       return Promise.all(promises).then(() => {
         this.$emit('notify', 'Sucesso!', 'A avaliação do aluno foi salva com sucesso!', 'success')
@@ -433,38 +465,6 @@ export default {
       const form = event.target
 
       const promises = []
-
-      const studentRows = form.querySelectorAll('[data-student_id]')
-      studentRows.forEach(studentRow => {
-        const studentId = parseInt(studentRow.dataset.student_id)
-
-        const studentObservationTextarea = studentRow.querySelector('textarea')
-        if (!studentObservationTextarea) {
-          return
-        }
-
-        const studentObservationDescription = studentObservationTextarea.value
-
-        const previousObservation = this.currentStudentObservations.find(studentObservation =>
-          studentObservation.student_id === studentId
-        )
-
-        if (!studentObservationDescription && previousObservation) {
-          promises.push(this.$store.dispatch('student_observations/delete', previousObservation.id))
-        } else if (studentObservationDescription) {
-          const studentObservation = {
-            council_id: this.current_council_id,
-            grade_id: this.current_grade_id,
-            subject_id: this.current_subject_id,
-            user_id: this.current_user_id,
-            student_id: studentId,
-            description: studentObservationDescription,
-            id: previousObservation ? previousObservation.id : null
-          }
-          const action = studentObservation.id ? 'student_observations/update' : 'student_observations/create'
-          promises.push(this.$store.dispatch(action, studentObservation))
-        }
-      })
 
       const gradeObservationDescription = form.querySelector('[name=grade_observation]').value
 
@@ -485,6 +485,17 @@ export default {
 
       promises.push(this.$store.dispatch('evaluations/saveMany', this.currentEvaluations))
 
+      const saveStudentObservations = this.currentStudentObservations.filter(studentObservation => {
+        if (studentObservation.description.length < 3 && studentObservation.id) {
+          promises.push(this.$store.dispatch('student_observations/delete', studentObservation.id))
+          return false
+        }
+
+        return studentObservation.description.length >= 3
+      })
+
+      promises.push(this.$store.dispatch('student_observations/saveMany', saveStudentObservations))
+
       return Promise.all(promises).then(() => {
         this.$emit('notify', 'Sucesso!', 'Avaliação da turma salva com sucesso!', 'success')
         this.unsetConfirmRedirect()
@@ -500,7 +511,9 @@ export default {
       const required = [
         'councils',
         'council_topics',
+        'council_observation_topics',
         'topics',
+        'observation_topics',
         'topic_options',
         'council_grades',
         'teachers',
@@ -519,7 +532,25 @@ export default {
       )
 
       return Promise.all(promises)
+    },
+
+    resetContent () {
+      this.hide_evaluated_students = false
+      this.current_user_id = this.$store.state.token.user_id
+      this.current_council_id = parseInt(this.$route.params.id)
+      this.current_grade_id = ''
+      this.current_subject_id = ''
+
+      this.load().then(() => {
+        this.$emit('loaded')
+      })
     }
+  },
+
+  beforeRouteUpdate (to, from, next) {
+    next()
+    this.$emit('loading')
+    this.resetContent()
   },
 
   beforeCreate () {
@@ -527,15 +558,7 @@ export default {
   },
 
   created () {
-    this.hide_evaluated_students = false
-    this.current_user_id = this.$store.state.token.user_id
-    this.current_council_id = parseInt(this.$route.params.id)
-    this.current_grade_id = ''
-    this.current_subject_id = ''
-
-    this.load().then(() => {
-      this.$emit('loaded')
-    })
+    this.resetContent()
   }
 }
 </script>

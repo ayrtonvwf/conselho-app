@@ -20,6 +20,20 @@ export default {
       state.student_observations = payload
     },
 
+    setMany: (state, studentObservations) => {
+      studentObservations.map(studentObservation => {
+        const index = state.student_observations.findIndex(findStudentObservation =>
+          findStudentObservation.id === studentObservation.id
+        )
+
+        if (index === -1) {
+          state.student_observations.push(studentObservation)
+        } else {
+          Vue.set(state.student_observations, index, studentObservation)
+        }
+      })
+    },
+
     create: (state, payload) => {
       state.student_observations.push(payload)
     },
@@ -108,6 +122,24 @@ export default {
         db.student_observations.delete(studentObservationId)
       ).then(() => {
         context.commit('delete', studentObservationId)
+      })
+    },
+
+    saveMany: (context, studentObservations) => {
+      const db = context.rootState.db
+
+      const promises = studentObservations.map(studentObservation => {
+        if (studentObservation.id) {
+          return StudentObservationApi.updateStudentObservation(studentObservation)
+        }
+
+        return StudentObservationApi.createStudentObservation(studentObservation)
+      })
+
+      return Promise.all(promises).then(studentObservations =>
+        db.student_observations.bulkPut(studentObservations).then(() => studentObservations)
+      ).then(studentObservations => {
+        context.commit('setMany', studentObservations)
       })
     }
   }

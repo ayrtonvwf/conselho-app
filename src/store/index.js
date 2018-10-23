@@ -8,11 +8,13 @@ import {parseObjects} from '../assets/helpers'
 
 import CouncilGrades from './modules/CouncilGrades'
 import Councils from './modules/Councils'
-import CouncilTopics from './modules/CouncilTopic'
+import CouncilObservationTopics from './modules/CouncilObservationTopics'
+import CouncilTopics from './modules/CouncilTopics'
 import Evaluations from './modules/Evaluations'
 import GradeObservations from './modules/GradeObservations'
 import Grades from './modules/Grades'
 import GradeSubjects from './modules/GradeSubjects'
+import ObservationTopics from './modules/ObservationTopics'
 import Permissions from './modules/Permissions'
 import Roles from './modules/Roles'
 import RoleTypePermissions from './modules/RoleTypePermissions'
@@ -36,11 +38,13 @@ export default new Vuex.Store({
   modules: {
     council_grades: CouncilGrades,
     councils: Councils,
+    council_observation_topics: CouncilObservationTopics,
     council_topics: CouncilTopics,
     evaluations: Evaluations,
     grade_observations: GradeObservations,
     grades: Grades,
     grade_subjects: GradeSubjects,
+    observation_topics: ObservationTopics,
     permissions: Permissions,
     roles: Roles,
     role_type_permissions: RoleTypePermissions,

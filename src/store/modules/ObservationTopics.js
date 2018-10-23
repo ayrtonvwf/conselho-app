@@ -16,7 +16,7 @@ export default {
 
     getOrderedObservationTopics: state => {
       return state.observation_topics.sort((a, b) =>
-        a.name.localeCompare(b.name, 'pt-BR', {ignorePunctuation: true})
+        a.created_at.localeCompare(b.created_at, 'pt-BR', {ignorePunctuation: true})
       )
     }
   },

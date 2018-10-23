@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import db from '../assets/db'
 import axios from 'axios'
 import browserDetect from 'browser-detect'
+import Raven from 'raven-js'
 
 import {parseObjects} from '../assets/helpers'
 
@@ -133,8 +134,10 @@ export default new Vuex.Store({
       state.token = JSON.parse(localStorage.getItem('token'))
       state.logged_in = state.token && new Date(state.token.expires_at) > new Date()
       if (state.logged_in) {
+        Raven.setUserContext({ id: state.token.user_id })
         axios.defaults.headers.common['Token'] = state.token.value
       } else {
+        Raven.setUserContext({ id: undefined })
         axios.defaults.headers.common['Token'] = undefined
       }
     }

@@ -482,7 +482,7 @@ export default {
 
     load () {
       const required = [
-        'grade',
+        'grades',
         'student_grades',
         'students',
         'grade_subjects',

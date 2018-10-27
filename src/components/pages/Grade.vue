@@ -55,11 +55,11 @@
             <input type="hidden" name="active" value="1"><br>
             <div class="row">
               <div class="col-sm-8 input">
-                <input required placeholder="Ex.: 1° Ano A" name="name" minlength="3">
+                <input required placeholder="Ex.: 1° Ano A" name="name" minlength="3" autocomplete="off">
                 <label>Nome</label>
               </div>
               <div class="col-sm-4 input">
-                <input type="number" required min="1" placeholder="Ex. 1° ano: 1" name="level" step="1">
+                <input type="number" required min="1" placeholder="Ex. 1° ano: 1" name="level" step="1" autocomplete="off">
                 <label>
                   Nível
 
@@ -90,11 +90,11 @@
             <br>
             <div class="row">
               <div class="col-sm-8 input">
-                <input required :value="currentGrade.name" placeholder="Ex.: 1° Ano A" name="name" minlength="3">
+                <input required :value="currentGrade.name" placeholder="Ex.: 1° Ano A" name="name" minlength="3" autocomplete="off">
                 <label>Nome</label>
               </div>
               <div class="col-sm-4 input">
-                <input type="number" required :value="currentGrade.level" min="1" placeholder="Ex.: 1" name="level" step="1">
+                <input type="number" required :value="currentGrade.level" min="1" placeholder="Ex.: 1" name="level" step="1" autocomplete="off">
                 <label>
                   Nível
                   <span class="material-icons tooltip tooltip-left tooltip-start" data-tooltip="1° ano: nível 1;&#xa;2° ano: nível 2;&#xa;3° ano: nível 3;&#xa;etc">info</span>
@@ -124,11 +124,11 @@
             <br>
             <div class="row">
               <div class="col-sm-8 input">
-                <input required placeholder="Ex.: João da Silva" name="name" minlength="3">
+                <input required placeholder="Ex.: João da Silva" name="name" minlength="3" autocomplete="off">
                 <label>Nome</label>
               </div>
               <div class="col-sm-4 input">
-                <input type="number" required min="1" placeholder="Ex.: 5" name="number" step="1">
+                <input type="number" required min="1" placeholder="Ex.: 5" name="number" step="1" autocomplete="off">
                 <label>Número</label>
               </div>
             </div>
@@ -156,10 +156,10 @@
               </template>
               <template v-else>
                 <td>
-                  <input name="name" :value="student.name" minlength="3" required>
+                  <input name="name" :value="student.name" minlength="3" required autocomplete="off">
                 </td>
                 <td style="max-width: 75px">
-                  <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number" required>
+                  <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number" required autocomplete="off">
                 </td>
                 <td class="text-right no-wrap">
                   <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="studentUpdate(student.id)">

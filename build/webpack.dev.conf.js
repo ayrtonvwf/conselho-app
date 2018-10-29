@@ -76,7 +76,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       'style-src': '\'self\' \'unsafe-inline\'',
       'media-src': '*',
       'img-src': '\'self\' http://polyfill.io data: content:',
-      'connect-src': '\'self\' http://localhost ws:',
+      'connect-src': '\'self\' http://localhost https://council-api.infomec.net.br ws:',
 
       'object-src': '\'none\'',
       'base-uri': '\'self\'',

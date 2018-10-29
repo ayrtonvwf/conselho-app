@@ -18,7 +18,7 @@ if (process.env.NODE_ENV === 'production') {
     .install()
 }
 
-axios.defaults.baseURL = process.env.NODE_ENV !== 'production' ? 'http://localhost/conselho-server/' : 'https://conselho-api.infomec.net.br/'
+axios.defaults.baseURL = process.env.NODE_ENV !== 'production' ? 'https://council-api.infomec.net.br/' : 'https://conselho-api.infomec.net.br/'
 axios.defaults.headers.common['Token'] = undefined
 axios.defaults.headers.common['Accept'] = 'application/json; charset=UTF-8'
 axios.defaults.headers.common['Timezone'] = '-03:00'

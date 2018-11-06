@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import GradeObservationApi from '../../services/api/GradeObservation'
-import StudentObservationApi from '@/services/api/StudentObservation'
 
 export default {
   namespaced: true,
@@ -105,7 +104,7 @@ export default {
     delete: (context, gradeObservationId) => {
       const db = context.rootState.db
 
-      return StudentObservationApi.deleteStudentObservation(gradeObservationId).then(() =>
+      return GradeObservationApi.deleteGradeObservation(gradeObservationId).then(() =>
         db.grade_observations.delete(gradeObservationId)
       ).then(() => {
         context.commit('delete', gradeObservationId)

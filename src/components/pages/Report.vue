@@ -93,12 +93,15 @@
               </thead>
               <tbody>
                 <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id" v-if="mustShowStudent(student.id)">
-                  <td style="max-width: 33vw">
+                  <td style="max-width: 33vw" :class="!student.active ? 'text-striked' : ''">
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
-                  <td v-for="topic in currentTopics" :key="'topic-' + topic.id" v-if="show_topics">{{ reportStudentTopic(student.id, topic.id) }}</td>
+                  <td v-for="topic in currentTopics" :key="'topic-' + topic.id" v-if="show_topics">{{ student.active ? reportStudentTopic(student.id, topic.id) : '-' }}</td>
                   <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" v-if="show_student_observations">
-                    <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id && studentObservation.observation_topic_id === observationTopic.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+                    <template v-if="student.active">
+                      <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id && studentObservation.observation_topic_id === observationTopic.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
+                    </template>
+                    <template v-else> - </template>
                   </td>
                 </tr>
               </tbody>
@@ -355,6 +358,7 @@ export default {
 
         student.grade_id = studentGrade.grade_id
         student.number = studentGrade.number
+        student.active = new Date(studentGrade.end_date) > new Date()
         return student
       }).filter(student => student).sort((a, b) =>
         Math.sign(a.number - b.number)

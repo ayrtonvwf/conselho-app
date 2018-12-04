@@ -226,6 +226,7 @@ export default {
   watch: {
     current_grade_id () {
       this.eraseEvaluations()
+      this.current_subject_id = ''
     },
 
     current_subject_id () {
@@ -543,10 +544,7 @@ export default {
     },
 
     generateReport () {
-      this.loaded_evaluations = false
-      this.current_grade_evaluations = []
-      this.current_student_observations = []
-      this.current_grade_observations = []
+      this.eraseEvaluations()
 
       if (!this.current_grade_id) {
         return

@@ -249,7 +249,7 @@ export default new Vuex.Store({
         const remainingRequisitions = []
         for (let i = 1; i <= remainingPages; i++) {
           data.page = i + 1
-          const promise = axios.get(path, {params: data})
+          const promise = axios.get(path, {params: JSON.parse(JSON.stringify(data))})
           remainingRequisitions.push(promise)
         }
 

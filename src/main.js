@@ -2,7 +2,6 @@ import Vue from 'vue'
 import store from './store/index'
 import router from './router'
 import axios from 'axios'
-import VueCordova from 'vue-cordova'
 import Raven from 'raven-js'
 import RavenVue from 'raven-js/plugins/vue'
 
@@ -13,20 +12,18 @@ import Prompt from './components/Prompt'
 import SuperTable from './components/SuperTable'
 
 if (process.env.NODE_ENV === 'production') {
-  Raven.config('https://baa34bf451b14b72bf02d99406a1ea25@sentry.io/1268814')
+  Raven.config(process.env.VUE_APP_SENTRY_DSN)
     .addPlugin(RavenVue, Vue)
     .install()
 }
 
-axios.defaults.baseURL = process.env.NODE_ENV !== 'production' ? 'https://council-api.infomec.net.br/' : 'https://conselho-api.infomec.net.br/'
+axios.defaults.baseURL = process.env.VUE_APP_API_URL
 axios.defaults.headers.common['Token'] = undefined
 axios.defaults.headers.common['Accept'] = 'application/json; charset=UTF-8'
 axios.defaults.headers.common['Timezone'] = '-03:00'
 axios.defaults.headers.common['Content-Type'] = 'application/json; charset=UTF-8'
 
 Vue.config.productionTip = false
-
-Vue.use(VueCordova)
 
 Vue.component('modal', Modal)
 Vue.component('prompt', Prompt)

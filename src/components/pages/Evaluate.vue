@@ -414,7 +414,8 @@ export default {
     },
 
     studentIsActive (studentId) {
-      return this.studentGrade(studentId).end_date > new Date().toISOString().slice(0, 10)
+      const studentGrade = this.studentGrade(studentId)
+      return !studentGrade.end_date || studentGrade.end_date > new Date().toISOString().slice(0, 10)
     },
 
     topicOptions (topicId) {

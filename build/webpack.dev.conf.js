@@ -76,7 +76,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       'style-src': '\'self\' \'unsafe-inline\'',
       'media-src': '*',
       'img-src': '\'self\' http://polyfill.io data: content:',
-      'connect-src': '\'self\' ' + process.env.VUE_APP_API_URL + ' ws:',
+      'connect-src': '\'self\' http://localhost ws:',
 
       'object-src': '\'none\'',
       'base-uri': '\'self\'',

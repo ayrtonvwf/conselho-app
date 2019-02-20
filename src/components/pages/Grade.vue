@@ -145,7 +145,7 @@
             </thead>
             <tbody>
             <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id">
-              <template v-if="studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)">
+              <template v-if="studentGrade(student.id).end_date && studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)">
                 <td class="text-striked">{{ student.name }}</td>
                 <td style="max-width: 75px">{{ studentGrade(student.id).number }}</td>
                 <td class="text-right">
@@ -405,11 +405,13 @@ export default {
       this.$emit('loading')
 
       const studentGrade = this.studentGrade(studentId)
-      studentGrade.end_date = new Date(studentGrade.end_date) <= new Date() ? '2018-12-31' : new Date().toISOString().slice(0, 10)
+      const today = new Date().toISOString().slice(0, 10)
+      const isActive = !studentGrade.end_date || studentGrade.end_date > today
+      studentGrade.end_date = isActive ? today : null
 
-      return this.$store.dispatch('student_grades/update', studentGrade).then(studentGrade => {
+      return this.$store.dispatch('student_grades/update', studentGrade).then(() => {
         let message
-        if (studentGrade.end_date === '2018-12-31') {
+        if (isActive) {
           message = 'Estudante desativado com sucesso'
         } else {
           message = 'Estudante ativado com sucesso'
@@ -417,7 +419,7 @@ export default {
         this.$emit('notify', 'Sucesso!', message, 'success')
       }).catch(error => {
         let message
-        if (studentGrade.end_date === '2018-12-31') {
+        if (isActive) {
           message = 'Não foi possível desativar o estudante'
         } else {
           message = 'Não foi possível ativar o estudante'

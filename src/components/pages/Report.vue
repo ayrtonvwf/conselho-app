@@ -358,7 +358,7 @@ export default {
 
         student.grade_id = studentGrade.grade_id
         student.number = studentGrade.number
-        student.active = new Date(studentGrade.end_date) > new Date()
+        student.active = !studentGrade.end_date || new Date(studentGrade.end_date) > new Date()
         return student
       }).filter(student => student).sort((a, b) =>
         Math.sign(a.number - b.number)

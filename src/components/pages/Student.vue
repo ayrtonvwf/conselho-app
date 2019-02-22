@@ -441,11 +441,16 @@ export default {
       this.$emit('loading')
 
       const studentGrade = this.studentGrade(studentId)
-      const today = (new Date()).toISOString().slice(0, 10)
-      const isActive = !studentGrade.disabled_at || studentGrade.disabled_at > today
-      studentGrade.disabled_at = isActive ? today : null
+      const today = new Date().toISOString().slice(0, 10)
+      const now = new Date().toISOString().slice(0, 19) + '-03:00'
+      const disabledAt = studentGrade.disabled_at ? new Date(studentGrade.disabled_at).toISOString().slice(0, 10) : null
+      const isActive = !disabledAt || disabledAt > today
+      const studentGradeUpdate = {
+        ...studentGrade,
+        disabled_at: isActive ? now : null
+      }
 
-      return this.$store.dispatch('student_grades/update', studentGrade).then(() => {
+      return this.$store.dispatch('student_grades/update', studentGradeUpdate).then(() => {
         let message
         if (isActive) {
           message = 'Estudante desativado com sucesso'
@@ -481,9 +486,7 @@ export default {
       promises.push(this.$store.dispatch('students/update', student))
 
       const studentGrade = {
-        id: this.studentGrade(studentId).id,
-        student_id: studentId,
-        grade_id: this.current_grade_id,
+        ...this.studentGrade(studentId),
         number: tr.querySelector('[name=number]').value
       }
       promises.push(this.$store.dispatch('student_grades/update', studentGrade))

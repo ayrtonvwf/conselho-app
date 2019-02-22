@@ -207,7 +207,7 @@
               <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id">
                 <td class="text-center">
                   <input type="checkbox" v-model="student_grade_ids" :value="studentGrade(student.id).id" v-if="isLastGrade(student.id)">
-                  <span class="material-icons tooltip tooltip-right" title="Este estudante já está em outra turma." v-else>close</span>
+                  <span class="material-icons tooltip tooltip-right" :title="'Este estudante está na turma ' + lastGrade(student.id).name + ' (' + lastStudentGrade(student.id).start_date.slice(0, 4) + ')'" v-else>close</span>
                 </td>
                 <td :class="{ 'text-striked': !isStudentActive(student.id), 'text-muted': !isLastGrade(student.id) }">{{ student.name }}</td>
                 <td>{{ studentGrade(student.id).number }}</td>
@@ -364,14 +364,27 @@ export default {
       })
     },
 
-    isLastGrade (studentId) {
-      const studentStudentGrades = this.studentGradesOfCurrentStudents.filter(studentGrade =>
-        studentGrade.student_id === studentId
+    lastGrade (studentId) {
+      const lastStudentGrade = this.lastStudentGrade(studentId)
+      return this.orderedGrades.find(grade =>
+        grade.id === lastStudentGrade.grade_id
       )
+    },
 
+    lastStudentGrade (studentId) {
+      return this.studentGradesOfCurrentStudents.reduce((latest, current) =>
+        current.student_id === studentId && (
+          !latest ||
+          current.start_date > latest.start_date
+        ) ? current : latest
+      )
+    },
+
+    isLastGrade (studentId) {
       const currentStudentGrade = this.studentGrade(studentId)
 
-      return !studentStudentGrades.find(studentGrade =>
+      return !this.studentGradesOfCurrentStudents.find(studentGrade =>
+        studentGrade.student_id === studentId &&
         studentGrade.start_date > currentStudentGrade.start_date
       )
     },

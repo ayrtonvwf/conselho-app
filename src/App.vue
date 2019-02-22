@@ -108,6 +108,9 @@
         <router-link class="menu-link" :to="{ name: 'Grade' }" v-if="userHasPermission('grade')" active-class="menu-active">
           <i class="material-icons">people</i> Turmas
         </router-link>
+        <router-link class="menu-link" :to="{ name: 'Student' }" v-if="userHasPermission('student')" active-class="menu-active">
+          <i class="material-icons">person</i> Estudantes
+        </router-link>
         <router-link class="menu-link" :to="{ name: 'Council' }" v-if="userHasPermission('council')" active-class="menu-active">
           <i class="material-icons">edit</i> Conselhos de Classe
         </router-link>

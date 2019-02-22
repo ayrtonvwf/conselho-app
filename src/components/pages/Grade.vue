@@ -30,10 +30,6 @@
                   <div class="material-icons">edit</div>
                   <span class="d-none d-md-inline">Editar</span>
                 </a>
-                <a class="btn-primary btn-sm tooltip tooltip-end" href="#modal-students" title="Estudantes" @click="setCurrentGrade(grade.id)">
-                  <div class="material-icons">person</div>
-                  <span class="d-none d-md-inline">Estudantes</span>
-                </a>
                 <a class="btn-primary btn-sm tooltip tooltip-end" href="#modal-subjects" title="Disciplinas" @click="setCurrentGrade(grade.id)">
                   <div class="material-icons">book</div>
                   <span class="d-none d-md-inline">Disciplinas</span>
@@ -117,72 +113,6 @@
       </div>
     </modal>
 
-    <modal anchor="modal-students" :title="'Estudantes - '+(currentGrade ? currentGrade.name : '')" ref="modalStudents" @close="setCurrentGrade(undefined)">
-      <div class="row justify-content-center">
-        <div class="col-sm-11">
-          <form action="#" data-resource="grade" data-success="Estudante cadastrado com sucesso" data-error="Não foi possível cadastrar o estudante" @submit.prevent="studentSave">
-            <br>
-            <div class="row">
-              <div class="col-sm-8 input">
-                <input required placeholder="Ex.: João da Silva" name="name" minlength="3" autocomplete="off">
-                <label>Nome</label>
-              </div>
-              <div class="col-sm-4 input">
-                <input type="number" required min="1" placeholder="Ex.: 5" name="number" step="1" autocomplete="off">
-                <label>Número</label>
-              </div>
-            </div>
-            <button class="btn-success pull-right" type="submit">
-              <span class="material-icons">check</span>  Salvar
-            </button>
-          </form><br>
-          <table class="table" v-if="currentStudents.length">
-            <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Número</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id">
-              <template v-if="studentGrade(student.id).end_date && studentGrade(student.id).end_date <= new Date().toISOString().slice(0, 10)">
-                <td class="text-striked">{{ student.name }}</td>
-                <td style="max-width: 75px">{{ studentGrade(student.id).number }}</td>
-                <td class="text-right">
-                  <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="studentToggle(student.id)">
-                    <span class="material-icons">visibility_off</span><span class="d-none d-md-inline"> Ativar e Desativar</span>
-                  </button>
-                </td>
-              </template>
-              <template v-else>
-                <td>
-                  <input name="name" :value="student.name" minlength="3" required autocomplete="off">
-                </td>
-                <td style="max-width: 75px">
-                  <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number" required autocomplete="off">
-                </td>
-                <td class="text-right no-wrap">
-                  <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="studentUpdate(student.id)">
-                    <span class="material-icons">save</span><span class="d-none d-md-inline"> Salvar</span>
-                  </button>
-                  <button class="btn-primary btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="studentToggle(student.id)">
-                    <span class="material-icons">visibility_off</span><span class="d-none d-md-inline"> Ativar e Desativar</span>
-                  </button>
-                </td>
-              </template>
-            </tr>
-            </tbody>
-          </table>
-          <div class="text-center text-muted" v-else>
-            <br><br><br>
-            <div class="h4">Ainda não há nenhum estudante cadastrado</div>
-            <br><br>
-          </div>
-          <br><a class="btn-danger" href="#">
-          <div class="material-icons">close</div>  Fechar</a>
-        </div>
-      </div>
-    </modal>
     <modal anchor="modal-subjects" :title="'Disciplinas - '+(currentGrade ? currentGrade.name : '')" ref="modalSubjects">
       <div class="row justify-content-center">
         <div class="col-sm-11">
@@ -265,37 +195,9 @@ export default {
           gradeSubject.subject_id === subject.id
         )
       )
-    },
-
-    currentStudentGrades () {
-      if (!this.current_grade_id) {
-        return []
-      }
-
-      return this.$store.getters['student_grades/getStudentGrades'].filter(studentGrade =>
-        studentGrade.grade_id === this.current_grade_id
-      )
-    },
-
-    currentStudents () {
-      if (!this.current_grade_id) {
-        return []
-      }
-
-      return this.$store.getters['students/getStudents'].filter(student =>
-        this.studentGrade(student.id)
-      ).sort((a, b) =>
-        Math.sign(this.studentGrade(a.id).number - this.studentGrade(b.id).number)
-      )
     }
   },
   methods: {
-    studentGrade (studentId) {
-      return this.currentStudentGrades.find(studentGrade =>
-        studentGrade.student_id === studentId
-      )
-    },
-
     setCurrentGrade (gradeId) {
       this.current_grade_id = gradeId
     },
@@ -370,67 +272,6 @@ export default {
       })
     },
 
-    studentSave (event) {
-      this.$emit('loading')
-
-      const form = event.target
-
-      const student = {
-        name: form.querySelector('[name=name]').value,
-        active: true
-      }
-      return this.$store.dispatch('students/create', student).then(student => {
-        const studentGrade = {
-          grade_id: this.current_grade_id,
-          number: form.querySelector('[name=number]').value,
-          start_date: '2018-01-01',
-          end_date: '2018-12-31',
-          student_id: student.id
-        }
-        return this.$store.dispatch('student_grades/create', studentGrade)
-      }).then(() => {
-        this.$emit('notify', 'Sucesso!', 'Estudante cadastrado com sucesso!', 'success')
-        form.querySelector('[name=number]').value = ''
-        form.querySelector('[name=name]').value = ''
-        form.querySelector('[name=name]').focus()
-      }).catch(error => {
-        this.$emit('notify', 'Erro!', 'Não foi possível cadastrar o estudante.', 'danger')
-        console.log('Error:', error)
-      }).finally(() => {
-        this.$emit('loaded')
-      })
-    },
-
-    studentToggle (studentId) {
-      this.$emit('loading')
-
-      const studentGrade = this.studentGrade(studentId)
-      const today = new Date().toISOString().slice(0, 10)
-      const isActive = !studentGrade.end_date || studentGrade.end_date > today
-      studentGrade.end_date = isActive ? today : null
-
-      return this.$store.dispatch('student_grades/update', studentGrade).then(() => {
-        let message
-        if (isActive) {
-          message = 'Estudante desativado com sucesso'
-        } else {
-          message = 'Estudante ativado com sucesso'
-        }
-        this.$emit('notify', 'Sucesso!', message, 'success')
-      }).catch(error => {
-        let message
-        if (isActive) {
-          message = 'Não foi possível desativar o estudante'
-        } else {
-          message = 'Não foi possível ativar o estudante'
-        }
-        this.$emit('notify', 'Erro!', message, 'danger')
-        console.log('Error:', error)
-      }).finally(() => {
-        this.$emit('loaded')
-      })
-    },
-
     gradeSubjectSave (event) {
       this.$emit('loading')
 
@@ -451,42 +292,9 @@ export default {
       })
     },
 
-    studentUpdate (studentId) {
-      const tr = document.querySelector('[data-student_id="' + studentId + '"]')
-
-      this.$emit('loading')
-
-      const promises = []
-
-      let student = {
-        id: studentId,
-        name: tr.querySelector('[name=name]').value
-      }
-      promises.push(this.$store.dispatch('students/update', student))
-
-      const studentGrade = {
-        id: this.studentGrade(studentId).id,
-        student_id: studentId,
-        grade_id: this.current_grade_id,
-        number: tr.querySelector('[name=number]').value
-      }
-      promises.push(this.$store.dispatch('student_grades/update', studentGrade))
-
-      Promise.all(promises).then(() => {
-        this.$emit('notify', 'Sucesso!', 'Aluno editado com sucesso!', 'success')
-      }).catch(error => {
-        this.$emit('notify', 'Erro!', 'Não foi possível editar o aluno!', 'error')
-        console.log('Error:', error)
-      }).finally(() => {
-        this.$emit('loaded')
-      })
-    },
-
     load () {
       const required = [
         'grades',
-        'student_grades',
-        'students',
         'grade_subjects',
         'subjects'
       ]

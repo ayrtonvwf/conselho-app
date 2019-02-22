@@ -11,6 +11,7 @@ import Role from '@/components/pages/Role'
 import Teacher from '@/components/pages/Teacher'
 import User from '@/components/pages/User'
 import Report from '@/components/pages/Report'
+import Student from '@/components/pages/Student'
 import Evaluate from '@/components/pages/Evaluate'
 
 Vue.use(Router)
@@ -67,6 +68,11 @@ const router = new Router({
       name: 'Report',
       component: Report,
       meta: { title: 'Relatórios' }
+    }, {
+      path: '/student',
+      name: 'Student',
+      component: Student,
+      meta: { title: 'Estudantes' }
     }, {
       path: '/evaluate/:id',
       name: 'Evaluate',

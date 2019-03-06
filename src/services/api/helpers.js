@@ -45,9 +45,7 @@ export function saveResource (name, data) {
   return axios.post('/' + name, data).then(response => {
     return parseObject({
       ...data,
-      id: response.data.id,
-      created_at: response.data.created_at,
-      updated_at: response.data.created_at
+      ...response.data
     })
   })
 }
@@ -63,7 +61,7 @@ export function updateResource (name, data, appendId) {
   return axios.patch(path, data).then(response => {
     return parseObject({
       ...data,
-      updated_at: response.data.updated_at
+      ...response.data
     })
   })
 }

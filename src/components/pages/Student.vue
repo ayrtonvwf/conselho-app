@@ -58,16 +58,24 @@
                 <input required placeholder="Ex.: João da Silva" name="name" minlength="3" autocomplete="off">
                 <label>Nome</label>
               </div>
-              <div class="col-sm-2 input">
+              <div class="col-sm-5 input">
                 <input type="number" required min="1" placeholder="Ex.: 5" name="number" step="1" autocomplete="off">
                 <label>Número</label>
               </div>
-              <div class="col-sm-3 input">
+            </div>
+            <div class="row">
+              <div class="col-sm-7 input">
                 <select required name="grade_id" v-model="current_grade_id">
                   <option value="" disabled hidden>Turma...</option>
                   <option v-for="grade in orderedGrades" :key="grade.id" :value="grade.id">{{ grade.name }}</option>
                 </select>
                 <label>Turma</label>
+              </div>
+              <div class="col-sm-5 input">
+                <label for="student_upload_image">Imagem</label>
+                <label class="btn-primary">
+                  <input type="file" accept="image/jpg, image/jpeg, image/png" id="student_upload_image" hidden name="image"> Escolher imagem
+                </label>
               </div>
             </div>
             <button class="btn-success pull-right" type="submit">
@@ -78,6 +86,68 @@
           <a class="btn-danger" href="#">
             <div class="material-icons">close</div> Fechar
           </a>
+        </div>
+      </div>
+    </modal>
+
+    <modal anchor="modal-edit" title="Editar estudante" ref="modalEdit" @close="setCurrentStudent(undefined, undefined)">
+      <div class="row justify-content-center">
+        <div class="col-sm-11">
+          <a href="#modal-students" class="btn-warning btn-sm" @click="setCurrentStudent(undefined, current_grade_id)">
+            <span class="material-icons">reply</span> Todos os alunos
+          </a>
+          <form action="#" data-resource="grade" @submit.prevent="studentUpdate" v-if="current_student_id">
+            <br>
+            <div class="row">
+              <div class="col-sm-7 input">
+                <input required placeholder="Ex.: João da Silva" name="name" minlength="3" autocomplete="off" :value="currentStudent.name">
+                <label>Nome</label>
+              </div>
+              <div class="col-sm-5 input">
+                <input type="number" required min="1" placeholder="Ex.: 5" name="number" step="1" autocomplete="off" :value="studentGrade(current_student_id).number">
+                <label>Número</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-7 input">
+                <label for="student_upload_image">Imagem</label>
+                <label class="btn-primary">
+                  <input type="file" accept="image/jpg, image/jpeg, image/png" id="student_update_image" hidden name="image"> Escolher imagem
+                </label>
+              </div>
+              <div class="col-sm-5">
+                <label>Imagem atual</label>
+                <img style="max-width: 100%" :src="currentStudent.image" alt="Foto do estudante" v-if="currentStudent.image">
+                <p v-else>Imagem não cadastrada</p>
+              </div>
+            </div>
+            <button class="btn-success pull-right" type="submit">
+              <span class="material-icons">check</span>  Salvar
+            </button>
+          </form><br>
+          <hr>
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Turma</th>
+              <th>Ano</th>
+              <th>Número</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="studentGrade in currentStudentStudentGrades" :key="studentGrade.id" :class="studentGrade.disabled_at ? 'text-muted' : ''">
+              <td>
+                {{ grade(studentGrade.grade_id).name }}
+              </td>
+              <td>
+                {{ new Date(studentGrade.end_date).getFullYear() }}
+              </td>
+              <td>
+                {{ studentGrade.number }}
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </modal>
@@ -105,43 +175,28 @@
           <table class="table" v-if="currentStudents.length">
             <thead>
             <tr>
+              <th style="width: 100px; text-align: center">
+                <span class="material-icons">photo</span>
+              </th>
               <th>Nome</th>
-              <th>Número</th>
+              <th style="max-width: 75px">Número</th>
             </tr>
             </thead>
             <tbody>
-            <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id">
-              <template v-if="currentYearIsNow">
-                <template v-if="!isStudentActive(student.id)">
-                  <td class="text-striked">{{ student.name }}</td>
-                  <td style="max-width: 75px">{{ studentGrade(student.id).number }}</td>
-                  <td class="text-right">
-                    <button class="btn-warning btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="studentToggle(student.id)">
-                      <span class="material-icons">visibility_off</span><span class="d-none d-md-inline"> Ativar e Desativar</span>
-                    </button>
-                  </td>
-                </template>
-                <template v-else>
-                  <td>
-                    <input name="name" :value="student.name" minlength="3" required autocomplete="off">
-                  </td>
-                  <td style="max-width: 75px">
-                    <input type="number" min="1" step="1" name="number" :value="studentGrade(student.id).number" required autocomplete="off">
-                  </td>
-                  <td class="text-right no-wrap">
-                    <button class="btn-success btn-sm tooltip tooltip-end" title="Salvar" @click="studentUpdate(student.id)">
-                      <span class="material-icons">save</span><span class="d-none d-md-inline"> Salvar</span>
-                    </button>
-                    <button class="btn-warning btn-sm tooltip tooltip-end" title="Ativar e Desativar" @click="studentToggle(student.id)">
-                      <span class="material-icons">visibility_off</span><span class="d-none d-md-inline"> Ativar e Desativar</span>
-                    </button>
-                  </td>
-                </template>
-              </template>
-              <template v-else>
-                <td :class="{ 'text-striked': !isStudentActive(student.id) }">{{ student.name }}</td>
-                <td>{{ studentGrade(student.id).number }}</td>
-              </template>
+            <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id" :class="isStudentActive(student.id) ? '' : 'text-striked'">
+              <td v-if="student.image" class="text-center">
+                <img :src="student.image" alt="Foto do aluno" style="max-width: 100%">
+              </td>
+              <td v-else class="text-center">
+                <span class="material-icons">person</span>
+              </td>
+              <td>{{ student.name }}</td>
+              <td>{{ studentGrade(student.id).number }}</td>
+              <td class="text-right">
+                <a href="#modal-edit" class="btn-warning btn-sm tooltip tooltip-end" title="Editar" @click="setCurrentStudent(student.id, studentGrade(student.id).grade_id)">
+                  <span class="material-icons">edit</span><span class="d-none d-md-inline"> Editar</span>
+                </a>
+              </td>
             </tr>
             </tbody>
           </table>
@@ -230,6 +285,8 @@
 </template>
 
 <script>
+import Compressor from 'compressorjs'
+
 export default {
   name: 'Student',
   data () {
@@ -238,7 +295,8 @@ export default {
       destiny_grade_id: undefined,
       student_grade_ids: [],
       this_year: (new Date()).getFullYear(),
-      current_year: (new Date()).getFullYear()
+      current_year: (new Date()).getFullYear(),
+      current_student_id: undefined
     }
   },
   computed: {
@@ -308,6 +366,16 @@ export default {
       )
     },
 
+    currentStudentStudentGrades () {
+      if (!this.current_student_id) {
+        return []
+      }
+
+      return this.$store.getters['student_grades/getStudentGrades'].filter(studentGrade =>
+        studentGrade.student_id === this.current_student_id
+      )
+    },
+
     currentStudents () {
       if (!this.current_grade_id) {
         return []
@@ -317,6 +385,16 @@ export default {
         this.studentGrade(student.id)
       ).sort((a, b) =>
         Math.sign(this.studentGrade(a.id).number - this.studentGrade(b.id).number)
+      )
+    },
+
+    currentStudent () {
+      if (!this.current_student_id) {
+        return {}
+      }
+
+      return this.currentStudents.find(student =>
+        student.id === this.current_student_id
       )
     }
   },
@@ -404,6 +482,31 @@ export default {
       this.current_grade_id = gradeId
     },
 
+    setCurrentStudent (studentId, gradeId) {
+      this.setCurrentGrade(gradeId)
+      this.current_student_id = studentId
+    },
+
+    getImage (input) {
+      const file = input.files[0]
+
+      return new Promise((resolve, reject) => {
+        if (!file) {
+          return resolve()
+        }
+
+        return new Compressor(file, {
+          quality: 0.6,
+          success: blob => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result)
+            reader.readAsDataURL(blob)
+          },
+          error: error => reject(error)
+        })
+      })
+    },
+
     studentSave (event) {
       this.$emit('loading')
 
@@ -413,7 +516,11 @@ export default {
         name: form.querySelector('[name=name]').value,
         active: true
       }
-      return this.$store.dispatch('students/create', student).then(student => {
+
+      const imageInput = form.querySelector('[name=image]')
+      return this.getImage(imageInput).then(image =>
+        this.$store.dispatch('students/create', { ...student, image })
+      ).then(student => {
         const year = (new Date()).getFullYear()
 
         const studentGrade = {
@@ -435,6 +542,12 @@ export default {
       }).finally(() => {
         this.$emit('loaded')
       })
+    },
+
+    grade (gradeId) {
+      return this.orderedGrades.find(grade =>
+        grade.id === gradeId
+      )
     },
 
     studentToggle (studentId) {
@@ -472,29 +585,36 @@ export default {
       })
     },
 
-    studentUpdate (studentId) {
-      const tr = document.querySelector('[data-student_id="' + studentId + '"]')
-
+    studentUpdate (event) {
       this.$emit('loading')
 
-      const promises = []
+      const form = event.target
 
-      let student = {
-        id: studentId,
-        name: tr.querySelector('[name=name]').value
+      const student = {
+        ...this.currentStudent,
+        name: form.querySelector('[name=name]').value
       }
-      promises.push(this.$store.dispatch('students/update', student))
+
+      const currentStudentGrade = this.studentGrade(student.id)
 
       const studentGrade = {
-        ...this.studentGrade(studentId),
-        number: tr.querySelector('[name=number]').value
+        ...currentStudentGrade,
+        number: form.querySelector('[name=number]').value
       }
-      promises.push(this.$store.dispatch('student_grades/update', studentGrade))
 
-      Promise.all(promises).then(() => {
-        this.$emit('notify', 'Sucesso!', 'Aluno editado com sucesso!', 'success')
+      const imageInput = form.querySelector('[name=image]')
+      return this.getImage(imageInput).then(image =>
+        student.name !== this.currentStudent.name || image
+          ? this.$store.dispatch('students/update', { ...student, image })
+          : null
+      ).then(() =>
+        studentGrade.number !== currentStudentGrade.number
+          ? this.$store.dispatch('student_grades/update', studentGrade)
+          : null
+      ).then(() => {
+        this.$emit('notify', 'Sucesso!', 'Estudante cadastrado com sucesso!', 'success')
       }).catch(error => {
-        this.$emit('notify', 'Erro!', 'Não foi possível editar o aluno!', 'error')
+        this.$emit('notify', 'Erro!', 'Não foi possível cadastrar o estudante.', 'danger')
         console.log('Error:', error)
       }).finally(() => {
         this.$emit('loaded')

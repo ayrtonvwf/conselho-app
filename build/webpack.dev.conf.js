@@ -75,7 +75,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       'default-src': '\'self\' https://cdn.polyfill.io data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
       'style-src': '\'self\' \'unsafe-inline\'',
       'media-src': '*',
-      'img-src': '\'self\' http://polyfill.io data: content:',
+      'img-src': '\'self\' http://polyfill.io data: content: blob: http://localhost',
       'connect-src': '\'self\' http://localhost ws:',
 
       'object-src': '\'none\'',

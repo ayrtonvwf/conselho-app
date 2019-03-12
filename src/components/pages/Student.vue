@@ -497,6 +497,8 @@ export default {
 
         return new Compressor(file, {
           quality: 0.6,
+          maxWidth: 300,
+          maxHeight: 300,
           success: blob => {
             const reader = new FileReader()
             reader.onloadend = () => resolve(reader.result)

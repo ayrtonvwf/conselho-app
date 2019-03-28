@@ -193,6 +193,14 @@
               <td>{{ student.name }}</td>
               <td>{{ studentGrade(student.id).number }}</td>
               <td class="text-right">
+                <template v-if="currentYearIsNow">
+                  <button type="button" @click="studentToggle(student.id)" class="btn-success" v-if="isStudentActive(student.id)">
+                    Desabilitar
+                  </button>
+                  <button type="button" @click="studentToggle(student.id)" class="btn-danger" v-else>
+                    Habilitar
+                  </button>
+                </template>
                 <a href="#modal-edit" class="btn-warning btn-sm tooltip tooltip-end" title="Editar" @click="setCurrentStudent(student.id, studentGrade(student.id).grade_id)">
                   <span class="material-icons">edit</span><span class="d-none d-md-inline"> Editar</span>
                 </a>

@@ -86,14 +86,15 @@
             <super-table v-if="show_topics || show_student_observations">
               <thead>
                 <tr>
-                  <th style="max-width: 33vw">Aluno</th>
+                  <th style="max-width: 33vw" class="text-center">Aluno</th>
                   <th v-for="topic in currentTopics" style="min-width: 150px" :key="'topic-' + topic.id" v-if="show_topics">{{ topic.name }}</th>
                   <th v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" class="no-wrap" v-if="show_student_observations">{{ observationTopic.name }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="student in currentStudents" :data-student_id="student.id" :key="student.id" v-if="mustShowStudent(student.id)">
-                  <td style="max-width: 33vw" :class="!student.active ? 'text-striked' : ''">
+                  <td style="max-width: 33vw" :class="!student.active ? 'text-striked' : ''" class="text-center">
+                    <img :src="student.image" alt="Foto do aluno" style="max-width: 100%" v-if="student.image">
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
                   <td v-for="topic in currentTopics" :key="'topic-' + topic.id" v-if="show_topics">{{ student.active ? reportStudentTopic(student.id, topic.id) : '-' }}</td>

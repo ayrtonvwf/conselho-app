@@ -33,7 +33,7 @@
             <super-table>
               <thead>
                 <tr>
-                  <th style="max-width: 33vw">Aluno</th>
+                  <th style="max-width: 33vw" class="text-center">Aluno</th>
                   <th v-for="topic in currentTopics" :key="topic.id">{{ topic.name }}</th>
                   <th v-for="observationTopic in currentObservationTopics" :key="observationTopic.id">{{ observationTopic.name }}</th>
                   <th></th>
@@ -42,13 +42,17 @@
               <tbody v-if="currentEvaluations.length">
                 <tr v-for="student in currentStudents" :key="student.id" :data-student_id="student.id" v-if="!hide_evaluated_students || !studentHasEvaluation(student.id)">
                   <template v-if="!hide_evaluated_students && !studentIsActive(student.id)">
-                    <td class="text-striked">{{ studentGrade(student.id).number }} - {{ student.name }}</td>
+                    <td class="text-striked text-center">
+                      <img :src="student.image" alt="Foto do aluno" style="max-width: 100%" v-if="student.image">
+                      {{ studentGrade(student.id).number }} - {{ student.name }}
+                    </td>
                     <td v-for="topic in currentTopics" :key="'topic-' + topic.id">-</td>
                     <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id">-</td>
                     <td>-</td>
                   </template>
                   <template v-else-if="studentIsActive(student.id)">
-                    <td>
+                    <td class="text-center">
+                      <img :src="student.image" alt="Foto do aluno" style="max-width: 100%" v-if="student.image">
                       {{ studentGrade(student.id).number }} - {{ student.name }}
                       <span class="text-muted" v-if="!studentHasEvaluation(student.id)"> (não avaliado)</span>
                     </td>

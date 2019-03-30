@@ -194,10 +194,10 @@
               <td>{{ studentGrade(student.id).number }}</td>
               <td class="text-right">
                 <template v-if="currentYearIsNow">
-                  <button type="button" @click="studentToggle(student.id)" class="btn-success" v-if="isStudentActive(student.id)">
+                  <button type="button" @click="studentToggle(student.id)" class="btn-success btn-sm" v-if="isStudentActive(student.id)">
                     Desabilitar
                   </button>
-                  <button type="button" @click="studentToggle(student.id)" class="btn-danger" v-else>
+                  <button type="button" @click="studentToggle(student.id)" class="btn-danger btn-sm" v-else>
                     Habilitar
                   </button>
                 </template>

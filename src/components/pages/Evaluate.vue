@@ -105,7 +105,8 @@ export default {
       current_user_id: undefined,
       current_council_id: undefined,
       current_grade_id: '',
-      current_subject_id: ''
+      current_subject_id: '',
+      current_year: (new Date()).getFullYear()
     }
   },
   computed: {
@@ -177,7 +178,12 @@ export default {
     },
 
     currentUserStudentGrades () {
+      const minStartDate = this.current_year + '-01-01'
+      const maxEndDate = this.current_year + '-12-31'
+
       return this.$store.getters['student_grades/getStudentGrades'].filter(studentGrade =>
+        studentGrade.start_date >= minStartDate &&
+        studentGrade.end_date <= maxEndDate &&
         this.currentGrades.find(grade =>
           grade.id === studentGrade.grade_id
         )

@@ -65,3 +65,16 @@ export function updateResource (name, data, appendId) {
     })
   })
 }
+
+export function putResources (name, data) {
+  data = parseObject(data)
+
+  return axios.put('/' + name, data).then(response => {
+    return response.data.map((obj, i) => {
+      return {
+        ...data[i],
+        ...obj
+      }
+    })
+  })
+}

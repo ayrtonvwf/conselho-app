@@ -110,17 +110,9 @@ export default {
     saveMany: (context, evaluations) => {
       const db = context.rootState.db
 
-      const promises = evaluations.map(evaluation => {
-        if (evaluation.id) {
-          return EvaluationApi.updateEvaluation(evaluation)
-        }
-
-        return EvaluationApi.createEvaluation(evaluation)
-      })
-
-      return Promise.all(promises).then(evaluations =>
-        db.evaluations.bulkPut(evaluations).then(() => evaluations)
-      ).then(evaluations => {
+      return EvaluationApi.putEvaluations(evaluations).then(evaluations => {
+        return db.evaluations.bulkPut(evaluations).then(() => evaluations)
+      }).then(evaluations => {
         context.commit('setMany', evaluations)
       })
     }

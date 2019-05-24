@@ -1,4 +1,4 @@
-import {getResource, saveResource, updateResource} from './helpers'
+import {getResource, putResources, saveResource, updateResource} from './helpers'
 
 export default {
   getEvaluations () {
@@ -11,5 +11,9 @@ export default {
 
   updateEvaluation (evaluation) {
     return updateResource('evaluation', evaluation)
+  },
+
+  putEvaluations (evaluations) {
+    return putResources('evaluation', evaluations)
   }
 }

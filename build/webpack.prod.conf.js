@@ -7,7 +7,6 @@ const merge = require('webpack-merge')
 const baseWebpackConfig = require('./webpack.base.conf')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CSPWebpackPlugin = require('csp-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
@@ -79,18 +78,6 @@ const webpackConfig = merge(baseWebpackConfig, {
       },
       // necessary to consistently work with multiple chunks via CommonsChunkPlugin
       chunksSortMode: 'dependency'
-    }),
-    new CSPWebpackPlugin({
-      '"default-src': '\'self\' https://cdn.polyfill.io data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
-      'style-src': '\'self\' \'unsafe-inline\'',
-      'media-src': '*',
-      'img-src': '\'self\' http://polyfill.io data: content: blob: https://conselho-api.infomec.net.br/',
-      'connect-src': '\'self\' https://conselho-api.infomec.net.br/ https://sentry.io ws:',
-
-      'object-src': '\'none\'',
-      'base-uri': '\'self\'',
-      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com', 'https://cdn.polyfill.io', 'https://ajax.cloudflare.com'],
-      'worker-src': ['\'self\'','blob:"']
     }),
     // keep module.id stable when vendor modules does not change
     new webpack.HashedModuleIdsPlugin(),

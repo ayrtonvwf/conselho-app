@@ -7,7 +7,6 @@ const path = require('path')
 const baseWebpackConfig = require('./webpack.base.conf')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CSPWebpackPlugin = require('csp-webpack-plugin')
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 const portfinder = require('portfinder')
 const WebappWebpackPlugin = require('webapp-webpack-plugin')
@@ -69,19 +68,6 @@ const devWebpackConfig = merge(baseWebpackConfig, {
         lang: 'pt-BR',
         start_url: 'https://mondrone.infomec.net.br'
       }
-    }),
-
-    new CSPWebpackPlugin({
-      'default-src': '\'self\' https://cdn.polyfill.io data: gap: https://ssl.gstatic.com \'unsafe-eval\'',
-      'style-src': '\'self\' \'unsafe-inline\'',
-      'media-src': '*',
-      'img-src': '\'self\' http://polyfill.io data: content: blob: http://localhost',
-      'connect-src': '\'self\' http://localhost ws:',
-
-      'object-src': '\'none\'',
-      'base-uri': '\'self\'',
-      'script-src': ['\'unsafe-inline\'', '\'self\'', '\'unsafe-eval\'','http://ajax.googleapis.com', 'https://cdn.polyfill.io', 'https://ajax.cloudflare.com'],
-      'worker-src': ['\'self\'','blob:']
     }),
     // copy custom static assets
     new CopyWebpackPlugin([

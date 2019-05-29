@@ -7,6 +7,7 @@ import RavenVue from 'raven-js/plugins/vue'
 
 import App from './App'
 
+import EvaluateRow from './components/pages/EvaluateRow'
 import Modal from './components/Modal'
 import Prompt from './components/Prompt'
 import SuperTable from './components/SuperTable'
@@ -27,6 +28,7 @@ axios.defaults.headers.common['Content-Type'] = 'application/json; charset=UTF-8
 
 Vue.config.productionTip = false
 
+Vue.component('evaluate-row', EvaluateRow)
 Vue.component('modal', Modal)
 Vue.component('prompt', Prompt)
 Vue.component('super-table', SuperTable)

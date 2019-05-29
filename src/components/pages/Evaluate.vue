@@ -40,38 +40,11 @@
                 </tr>
               </thead>
               <tbody v-if="currentEvaluations.length">
-                <tr v-for="student in currentStudents" :key="student.id" :data-student_id="student.id" v-if="!hide_evaluated_students || !studentHasEvaluation(student.id)">
-                  <template v-if="!hide_evaluated_students && !studentIsActive(student.id)">
-                    <td class="text-striked text-center">
-                      <img :src="student.image" alt="Foto do aluno" style="max-width: 100%" v-if="student.image">
-                      {{ studentGrade(student.id).number }} - {{ student.name }}
-                    </td>
-                    <td v-for="topic in currentTopics" :key="'topic-' + topic.id">-</td>
-                    <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id">-</td>
-                    <td>-</td>
-                  </template>
-                  <template v-else-if="studentIsActive(student.id)">
-                    <td class="text-center">
-                      <img :src="student.image" alt="Foto do aluno" style="max-width: 100%" v-if="student.image">
-                      {{ studentGrade(student.id).number }} - {{ student.name }}
-                      <span class="text-muted" v-if="!studentHasEvaluation(student.id)"> (não avaliado)</span>
-                    </td>
-                    <td v-for="topic in currentTopics" :key="'topic-' + topic.id">
-                      <select required @change="setConfirmRedirect" :data-topic_id="topic.id" v-model="currentEvaluations.find(evaluation => evaluation.student_id === student.id && evaluation.topic_id === topic.id).topic_option_id">
-                        <option v-for="topic_option in topicOptions(topic.id)" :key="topic_option.id" :value="topic_option.id">{{ topic_option.name }}</option>
-                      </select>
-                    </td>
-                    <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id">
-                      <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-if="currentStudentObservations.find(student_observation => student_observation.student_id === student.id && student_observation.observation_topic_id === observationTopic.id)" v-model="currentStudentObservations.find(student_observation => student_observation.student_id === student.id && student_observation.observation_topic_id === observationTopic.id).description" :placeholder="observationTopic.name"></textarea>
-                      <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-else :placeholder="observationTopic.name"></textarea>
-                    </td>
-                    <td>
-                      <a class="btn-success btn-sm tooltip tooltip-end" type="button" title="Salvar avaliação do aluno" @click="studentEvaluationSave(student.id)">
-                        <div class="material-icons">check</div>
-                      </a>
-                    </td>
-                  </template>
-                </tr>
+                <evaluate-row v-for="student in currentStudents" :key="student.id" v-bind:student="student"
+                  v-bind:hide-evaluated-students="hide_evaluated_students" v-bind:evaluations="studentEvaluations(student.id)"
+                  v-bind:topics="currentTopics" v-bind:observation-topics="currentObservationTopics"
+                  v-bind:student-observations="studentObservations(student.id)" @dirty="setDirty(student.id)"
+                  @clean="setClean(student.id)" @saving="setSaving" @saved="setSaved" @error="setError"/>
               </tbody>
             </super-table>
             <br>
@@ -135,7 +108,12 @@ export default {
         this.currentCouncilTopics.find(councilTopic =>
           councilTopic.topic_id === topic.id
         )
-      )
+      ).map(topic => {
+        topic.options = this.$store.getters['topic_options/getOrderedTopicOptions'].filter(topicOption =>
+          topicOption.topic_id === topic.id
+        )
+        return topic
+      })
     },
 
     currentObservationTopics () {
@@ -200,6 +178,7 @@ export default {
           studentGrade.student_id === student.id
         )
 
+        student.active = studentGrade.end_date || studentGrade.end_date > new Date().toISOString().slice(0, 10)
         student.grade_id = studentGrade.grade_id
         student.number = studentGrade.number
 
@@ -394,7 +373,45 @@ export default {
   },
 
   methods: {
-    setConfirmRedirect () {
+    setSaving () {
+      this.$emit('loading')
+    },
+
+    setSaved () {
+      this.$emit('loaded')
+      this.$emit('notify', 'Sucesso!', 'Avaliação do estudante salva com sucesso!', 'success')
+    },
+
+    setError () {
+      this.$emit('loaded')
+      this.$emit('notify', 'Erro!', 'Não foi possível salvar a avaliação do estudante. Tente novamente!', 'error')
+    },
+
+    setDirty (studentId) {
+      this.$options.dirtyStudents.push(studentId)
+      this.enableConfirmRedirect()
+    },
+
+    setClean (studentId) {
+      this.$options.dirtyStudents = this.$options.dirtyStudents.filter(id => id !== studentId)
+      if (!this.$options.dirtyStudents.length) {
+        this.disableConfirmRedirect()
+      }
+    },
+
+    studentEvaluations (studentId) {
+      return this.currentEvaluations.filter(evaluation =>
+        evaluation.student_id === studentId
+      )
+    },
+
+    studentObservations (studentId) {
+      return this.currentStudentObservations.filter(studentObservation =>
+        studentObservation.student_id === studentId
+      )
+    },
+
+    enableConfirmRedirect () {
       window.onbeforeunload = event => {
         const dialogText = 'Tem certeza que deseja sair da página? Você perderá o que não foi salvo'
         event.returnValue = dialogText
@@ -402,72 +419,13 @@ export default {
       }
     },
 
-    unsetConfirmRedirect () {
+    disableConfirmRedirect () {
       window.onbeforeunload = event => {
         const dialogText = undefined
         event.returnValue = dialogText
         return dialogText
       }
-    },
-
-    studentGrade (studentId) {
-      return this.currentStudentGrades.find(studentGrade =>
-        studentGrade.student_id === studentId
-      )
-    },
-
-    studentHasEvaluation (studentId) {
-      return !!this.currentEvaluations.find(evaluation =>
-        evaluation.id &&
-        evaluation.student_id === studentId
-      )
-    },
-
-    studentIsActive (studentId) {
-      const studentGrade = this.studentGrade(studentId)
-      return !studentGrade.end_date || studentGrade.end_date > new Date().toISOString().slice(0, 10)
-    },
-
-    topicOptions (topicId) {
-      return this.currentTopicOptions.filter(topicOption =>
-        topicOption.topic_id === topicId
-      )
-    },
-
-    studentEvaluationSave (studentId) {
-      this.$emit('loading')
-
-      const promises = []
-
-      const currentStudentEvaluations = this.currentEvaluations.filter(evaluation =>
-        evaluation.student_id === studentId
-      )
-
-      promises.push(this.$store.dispatch('evaluations/saveMany', currentStudentEvaluations))
-
-      const currentStudentObservations = this.currentStudentObservations.filter(studentObservation =>
-        studentObservation.student_id === studentId
-      )
-
-      const saveStudentObservations = currentStudentObservations.filter(studentObservation => {
-        if (studentObservation.description.length < 3 && studentObservation.id) {
-          promises.push(this.$store.dispatch('student_observations/delete', studentObservation.id))
-          return false
-        }
-
-        return studentObservation.description.length >= 3
-      })
-
-      promises.push(this.$store.dispatch('student_observations/saveMany', saveStudentObservations))
-
-      return Promise.all(promises).then(() => {
-        this.$emit('notify', 'Sucesso!', 'A avaliação do aluno foi salva com sucesso!', 'success')
-      }).catch(error => {
-        this.$emit('notify', 'Erro!', 'Não foi possível salvar a avaliação do aluno.', 'danger')
-        console.log('Error:', error)
-      }).finally(() => {
-        this.$emit('loaded')
-      })
+      window.onbeforeunload = undefined
     },
 
     evaluationSave (event) {
@@ -509,7 +467,6 @@ export default {
 
       return Promise.all(promises).then(() => {
         this.$emit('notify', 'Sucesso!', 'Avaliação da turma salva com sucesso!', 'success')
-        this.unsetConfirmRedirect()
       }).catch(error => {
         this.$emit('notify', 'Erro!', 'Não foi possível salvar a avaliação da turma.', 'danger')
         console.log('Error:', error)
@@ -570,6 +527,8 @@ export default {
 
   created () {
     this.resetContent()
-  }
+  },
+
+  dirtyStudents: []
 }
 </script>

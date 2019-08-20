@@ -2,8 +2,8 @@ import {getResource, saveResource, updateResource} from './helpers'
 import axios from 'axios'
 
 export default {
-  getStudentObservations () {
-    return getResource('student_observations')
+  getStudentObservations (filter) {
+    return getResource('student_observation', filter)
   },
 
   createStudentObservation (studentObservation) {

@@ -5,8 +5,7 @@ export default {
   namespaced: true,
 
   state: {
-    student_observations: [],
-    loaded: false
+    student_observations: []
   },
 
   getters: {
@@ -52,95 +51,60 @@ export default {
       )
 
       Vue.delete(state.student_observations, index)
-    },
-
-    setLoaded: (state, status) => {
-      if (status === undefined) {
-        status = true
-      }
-      state.loaded = status
-    },
-
-    unload: state => {
-      state.loaded = false
-      state.student_observations = []
     }
   },
 
   actions: {
-    getAllFromDb: context => {
-      const db = context.rootState.db
-
-      return db.student_observations.toArray()
-    },
-
-    getAllFromAPI: () => {
-      return StudentObservationApi.getStudentObservations()
-    },
-
-    loadFromDb: (context, force) => {
-      if (!force && context.state.loaded) {
-        return
-      }
-
-      context.commit('setLoaded', false)
-
-      return context.dispatch('getAllFromDb').then(studentObservations => {
-        context.commit('setAll', studentObservations)
-        context.commit('setLoaded')
-      })
-    },
-
     create: (context, studentObservation) => {
-      const db = context.rootState.db
-
       studentObservation.school_id = context.rootState.school_id
 
-      return StudentObservationApi.createStudentObservation(studentObservation).then(studentObservation =>
-        db.student_observations.put(studentObservation).then(() => studentObservation)
-      ).then(studentObservation => {
+      return StudentObservationApi.createStudentObservation(studentObservation).then(studentObservation => {
         context.commit('create', studentObservation)
         return studentObservation
       })
     },
 
     update: (context, studentObservation) => {
-      const db = context.rootState.db
-
-      return StudentObservationApi.updateStudentObservation(studentObservation).then(studentObservation =>
-        db.student_observations.put(studentObservation).then(() => studentObservation)
-      ).then(studentObservation => {
+      return StudentObservationApi.updateStudentObservation(studentObservation).then(studentObservation => {
         context.commit('update', studentObservation)
         return studentObservation
       })
     },
 
     delete: (context, studentObservationId) => {
-      const db = context.rootState.db
-
-      return StudentObservationApi.deleteStudentObservation(studentObservationId).then(() =>
-        db.student_observations.delete(studentObservationId)
-      ).then(() => {
+      return StudentObservationApi.deleteStudentObservation(studentObservationId).then(() => {
         context.commit('delete', studentObservationId)
       })
     },
 
     saveMany: (context, studentObservations) => {
-      const db = context.rootState.db
-
       const promises = studentObservations.map(studentObservation => {
-        if (studentObservation.id) {
-          return StudentObservationApi.updateStudentObservation(studentObservation)
-        }
+        studentObservation.school_id = context.rootState.school_id
 
-        return StudentObservationApi.createStudentObservation(studentObservation)
+        return studentObservation.id
+          ? StudentObservationApi.updateStudentObservation(studentObservation).then(studentObservation => {
+            context.commit('update', studentObservation)
+            return studentObservation
+          })
+          : StudentObservationApi.createStudentObservation(studentObservation).then(studentObservation => {
+            context.commit('create', studentObservation)
+            return studentObservation
+          })
       })
 
-      return Promise.all(promises).then(studentObservations =>
-        db.student_observations.bulkPut(studentObservations).then(() => studentObservations)
-      ).then(studentObservations => {
-        context.commit('setMany', studentObservations)
+      return Promise.all(promises)
+    },
+
+    load: (context, filter) => {
+      context.commit('setAll', [])
+
+      return StudentObservationApi.getStudentObservations(filter).then(evaluations => {
+        context.commit('setAll', evaluations)
       })
+    },
+
+    unload: context => {
+      context.commit('setAll', [])
     }
   }
 }

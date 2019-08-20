@@ -40,11 +40,13 @@
                 </tr>
               </thead>
               <tbody v-if="currentEvaluations.length">
-                <evaluate-row v-for="student in currentStudents" :key="student.id" v-bind:student="student"
-                  v-bind:hide-evaluated-students="hide_evaluated_students" v-bind:evaluations="studentEvaluations(student.id)"
-                  v-bind:topics="currentTopics" v-bind:observation-topics="currentObservationTopics"
-                  v-bind:student-observations="studentObservations(student.id)" @dirty="setDirty(student.id)"
-                  @clean="setClean(student.id)" @saving="setSaving" @saved="setSaved" @error="setError"/>
+                <evaluate-row v-for="student in currentStudents" :key="student.id" :student="student"
+                  :hide-evaluated-students="hide_evaluated_students" :evaluations="studentEvaluations(student.id)"
+                  :topics="currentTopics" :observation-topics="currentObservationTopics"
+                  :student-observations="studentObservations(student.id)" :user-id="current_user_id"
+                  :council-id="current_council_id" :grade-id="current_grade_id" :subject-id="current_subject_id"
+                  @dirty="setDirty(student.id)" @clean="setClean(student.id)" @saving="setSaving" @saved="setSaved"
+                  @error="setError"/>
               </tbody>
             </super-table>
             <br>
@@ -204,34 +206,6 @@ export default {
       )
     },
 
-    currentUserEvaluations () {
-      return this.$store.getters['evaluations/getEvaluations'].filter(evaluation =>
-        evaluation.council_id === this.current_council_id &&
-        evaluation.user_id === this.current_user_id
-      ).map(evaluation => {
-        const topicOption = this.currentTopicOptions.find(topicOption =>
-          topicOption.id === evaluation.topic_option_id
-        )
-        evaluation.value = topicOption.value
-        evaluation.topic_id = topicOption.topic_id
-        return evaluation
-      })
-    },
-
-    currentUserStudentObservations () {
-      return this.$store.getters['student_observations/getStudentObservations'].filter(studentObservation =>
-        studentObservation.council_id === this.current_council_id &&
-        studentObservation.user_id === this.current_user_id
-      )
-    },
-
-    currentUserGradeObservations () {
-      return this.$store.getters['grade_observations/getGradeObservations'].filter(gradeObservation =>
-        gradeObservation.council_id === this.current_council_id &&
-        gradeObservation.user_id === this.current_user_id
-      )
-    },
-
     currentGrade () {
       if (!this.current_grade_id) {
         return {}
@@ -278,14 +252,19 @@ export default {
     },
 
     currentEvaluations () {
-      if (!this.current_grade_id || !this.current_subject_id) {
+      if (!this.current_grade_id || !this.current_subject_id || !this.currentTopicOptions.length ||
+        !this.currentStudents.length || !this.currentTopics.length) {
         return []
       }
 
-      const evaluations = this.currentUserEvaluations.filter(evaluation =>
-        evaluation.grade_id === this.current_grade_id &&
-        evaluation.subject_id === this.current_subject_id
-      )
+      const evaluations = this.$store.getters['evaluations/getEvaluations'].map(evaluation => {
+        const topicOption = this.currentTopicOptions.find(topicOption =>
+          topicOption.id === evaluation.topic_option_id
+        )
+        evaluation.value = topicOption.value
+        evaluation.topic_id = topicOption.topic_id
+        return evaluation
+      })
 
       this.currentStudents.forEach(student => {
         this.currentTopics.forEach(topic => {
@@ -318,35 +297,7 @@ export default {
         return []
       }
 
-      const studentObservations = this.currentUserStudentObservations.filter(studentObservation =>
-        studentObservation.grade_id === this.current_grade_id &&
-        studentObservation.subject_id === this.current_subject_id
-      )
-
-      this.currentStudents.forEach(student => {
-        this.currentObservationTopics.forEach(observationTopic => {
-          const studentObservation = studentObservations.find(studentObservation =>
-            studentObservation.student_id === student.id &&
-            studentObservation.observation_topic_id === observationTopic.id
-          )
-
-          if (studentObservation) {
-            return
-          }
-
-          studentObservations.push({
-            user_id: this.current_user_id,
-            council_id: this.current_council_id,
-            grade_id: this.current_grade_id,
-            subject_id: this.current_subject_id,
-            student_id: student.id,
-            observation_topic_id: observationTopic.id,
-            description: ''
-          })
-        })
-      })
-
-      return studentObservations
+      return this.$store.getters['student_observations/getStudentObservations']
     },
 
     currentGradeObservation () {
@@ -354,10 +305,9 @@ export default {
         return {}
       }
 
-      return this.currentUserGradeObservations.find(gradeObservation =>
-        gradeObservation.grade_id === this.current_grade_id &&
-        gradeObservation.subject_id === this.current_subject_id
-      )
+      const gradeObservations = this.$store.getters['grade_observations/getGradeObservations']
+
+      return gradeObservations.length ? gradeObservations[0] : {}
     }
   },
 
@@ -369,6 +319,29 @@ export default {
       }
 
       this.current_subject_id = this.currentSubjects[0].id
+    },
+
+    current_subject_id () {
+      if (this.current_subject_id === '') {
+        return Promise.all([
+          this.$store.dispatch('evaluations/unload'),
+          this.$store.dispatch('student_observations/unload'),
+          this.$store.dispatch('grade_observations/unload')
+        ])
+      }
+
+      const filter = {
+        user_id: this.current_user_id,
+        council_id: this.current_council_id,
+        grade_id: this.current_grade_id,
+        subject_id: this.current_subject_id
+      }
+
+      return Promise.all([
+        this.$store.dispatch('evaluations/load', filter),
+        this.$store.dispatch('student_observations/load', filter),
+        this.$store.dispatch('grade_observations/load', filter)
+      ])
     }
   },
 
@@ -384,7 +357,7 @@ export default {
 
     setError () {
       this.$emit('loaded')
-      this.$emit('notify', 'Erro!', 'Não foi possível salvar a avaliação do estudante. Tente novamente!', 'error')
+      this.$emit('notify', 'Erro!', 'Não foi possível salvar a avaliação do estudante. Tente novamente!', 'danger')
     },
 
     setDirty (studentId) {
@@ -489,10 +462,7 @@ export default {
         'student_grades',
         'students',
         'grade_subjects',
-        'subjects',
-        'evaluations',
-        'student_observations',
-        'grade_observations'
+        'subjects'
       ]
 
       const promises = required.map(module =>

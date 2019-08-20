@@ -21,8 +21,11 @@
         </select>
       </td>
       <td v-for="observationTopic in observationTopics" :key="'observation_topic-' + observationTopic.id">
-        <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-if="studentObservations.find(student_observation => student_observation.observation_topic_id === observationTopic.id)" v-model="studentObservations.find(student_observation => student_observation.observation_topic_id === observationTopic.id).description" :placeholder="observationTopic.name"></textarea>
-        <textarea class="resize-v" style="min-width: 250px; min-height: 70px" v-else :placeholder="observationTopic.name"></textarea>
+        <textarea class="resize-v" style="min-width: 250px; min-height: 70px" :placeholder="observationTopic.name"
+          v-model="currentStudentObservations.find(currentStudentObservation =>
+            currentStudentObservation.observation_topic_id === observationTopic.id
+          ).description"
+        ></textarea>
       </td>
       <td>
         <a class="btn-success btn-sm tooltip tooltip-end" type="button" title="Salvar avaliação do aluno" @click="save()">
@@ -43,7 +46,32 @@ export default {
     evaluations: Array,
     topics: Array,
     observationTopics: Array,
-    studentObservations: Array
+    studentObservations: Array,
+    baseObservation: Object,
+    userId: Number,
+    councilId: Number,
+    gradeId: Number,
+    subjectId: Number
+  },
+
+  data: () => {
+    return {
+      currentStudentObservations: {}
+    }
+  },
+
+  watch: {
+    studentObservations (newStudentObservations) {
+      const self = this
+      newStudentObservations.forEach(newStudentObservation => {
+        const studentObservation = self.currentStudentObservations.find(findStudentObservation => {
+          return findStudentObservation.observation_topic_id === newStudentObservation.observation_topic_id
+        })
+
+        studentObservation.id = newStudentObservation.id
+        studentObservation.description = newStudentObservation.description
+      })
+    }
   },
 
   methods: {
@@ -68,7 +96,7 @@ export default {
 
       promises.push(this.$store.dispatch('evaluations/saveMany', this.evaluations))
 
-      const saveStudentObservations = this.studentObservations.filter(studentObservation => {
+      const saveStudentObservations = this.currentStudentObservations.filter(studentObservation => {
         if (studentObservation.description.length < 3 && studentObservation.id) {
           promises.push(this.$store.dispatch('student_observations/delete', studentObservation.id))
           return false
@@ -87,6 +115,28 @@ export default {
         this.$emit('error')
       })
     }
+  },
+
+  created: function () {
+    this.currentStudentObservations = this.observationTopics.map(observationTopic => {
+      const studentObservation = this.studentObservations.find(studentObservation =>
+        studentObservation.observation_topic_id === observationTopic.id
+      )
+
+      if (studentObservation) {
+        return studentObservation
+      }
+
+      return {
+        user_id: this.userId,
+        council_id: this.councilId,
+        grade_id: this.gradeId,
+        subject_id: this.subjectId,
+        student_id: this.student.id,
+        observation_topic_id: observationTopic.id,
+        description: ''
+      }
+    })
   },
 
   isDirty: false

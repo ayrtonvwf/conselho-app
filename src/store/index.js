@@ -186,43 +186,6 @@ export default new Vuex.Store({
           context.dispatch('permissions/loadFromDb')
         ]
         return Promise.all(promises)
-      }).then(() => {
-        const currentRole = context.getters['roles/getRoles'].find(role =>
-          role.user_id === context.state.token.user_id
-        )
-
-        const currentRoleType = context.getters['role_types/getRoleTypes'].find(roleType =>
-          roleType.id === currentRole.role_type_id
-        )
-
-        const currentRoleTypePermissions = context.getters['role_type_permissions/getRoleTypePermissions'].filter(roleTypePermission =>
-          roleTypePermission.role_type_id === currentRoleType.id
-        )
-
-        const currentPermissions = context.getters['permissions/getPermissions'].filter(permission =>
-          currentRoleTypePermissions.find(roleTypePermission =>
-            roleTypePermission.permission_id === permission.id
-          )
-        )
-
-        const canSeeReport = currentPermissions.find(permission =>
-          permission.reference === 'council_report'
-        )
-
-        if (canSeeReport) {
-          return
-        }
-
-        const promises = ignoreTables.map(tableName => {
-          const resource = tableName.slice(0, -1)
-          return context.dispatch('getResource', resource).then(data => {
-            return db[tableName].clear().then(() => {
-              return db[tableName].bulkPut(parseObjects(data))
-            })
-          })
-        })
-
-        return Promise.all(promises)
       })
     },
 

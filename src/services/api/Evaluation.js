@@ -1,8 +1,8 @@
 import {getResource, putResources, saveResource, updateResource} from './helpers'
 
 export default {
-  getEvaluations () {
-    return getResource('evaluations')
+  getEvaluations (filter) {
+    return getResource('evaluation', filter)
   },
 
   createEvaluation (evaluation) {

@@ -5,8 +5,7 @@ export default {
   namespaced: true,
 
   state: {
-    evaluations: [],
-    loaded: false
+    evaluations: []
   },
 
   getters: {
@@ -44,77 +43,42 @@ export default {
           Vue.set(state.evaluations, index, evaluation)
         }
       })
-    },
-
-    setLoaded: (state, status) => {
-      if (status === undefined) {
-        status = true
-      }
-      state.loaded = status
-    },
-
-    unload: state => {
-      state.loaded = false
-      state.evaluations = []
     }
   },
 
   actions: {
-    getAllFromDb: context => {
-      const db = context.rootState.db
-
-      return db.evaluations.toArray()
-    },
-
-    getAllFromAPI: () => {
-      return EvaluationApi.getEvaluations()
-    },
-
-    loadFromDb: (context, force) => {
-      if (!force && context.state.loaded) {
-        return
-      }
-
-      context.commit('setLoaded', false)
-
-      return context.dispatch('getAllFromDb').then(evaluations => {
-        context.commit('setAll', evaluations)
-        context.commit('setLoaded')
-      })
-    },
-
     create: (context, evaluation) => {
-      const db = context.rootState.db
-
       evaluation.school_id = context.rootState.school_id
 
-      return EvaluationApi.createEvaluation(evaluation).then(evaluation =>
-        db.evaluations.put(evaluation).then(() => evaluation)
-      ).then(evaluation => {
+      return EvaluationApi.createEvaluation(evaluation).then(evaluation => {
         context.commit('create', evaluation)
         return evaluation
       })
     },
 
     update: (context, evaluation) => {
-      const db = context.rootState.db
-
-      return EvaluationApi.updateEvaluation(evaluation).then(evaluation =>
-        db.evaluations.put(evaluation).then(() => evaluation)
-      ).then(evaluation => {
+      return EvaluationApi.updateEvaluation(evaluation).then(evaluation => {
         context.commit('update', evaluation)
         return evaluation
       })
     },
 
     saveMany: (context, evaluations) => {
-      const db = context.rootState.db
-
       return EvaluationApi.putEvaluations(evaluations).then(evaluations => {
-        return db.evaluations.bulkPut(evaluations).then(() => evaluations)
-      }).then(evaluations => {
         context.commit('setMany', evaluations)
       })
+    },
+
+    load: (context, filter) => {
+      context.commit('setAll', [])
+
+      return EvaluationApi.getEvaluations(filter).then(evaluations => {
+        context.commit('setAll', evaluations)
+      })
+    },
+
+    unload: (context) => {
+      return context.commit('setAll', [])
     }
   }
 }

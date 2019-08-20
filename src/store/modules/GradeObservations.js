@@ -5,8 +5,7 @@ export default {
   namespaced: true,
 
   state: {
-    grade_observations: [],
-    loaded: false
+    grade_observations: []
   },
 
   getters: {
@@ -38,77 +37,42 @@ export default {
       )
 
       Vue.delete(state.grade_observations, index)
-    },
-
-    setLoaded: (state, status) => {
-      if (status === undefined) {
-        status = true
-      }
-      state.loaded = status
-    },
-
-    unload: state => {
-      state.loaded = false
-      state.grade_observations = []
     }
   },
 
   actions: {
-    getAllFromDb: context => {
-      const db = context.rootState.db
-
-      return db.grade_observations.toArray()
-    },
-
-    getAllFromAPI: () => {
-      return GradeObservationApi.getGradeObservations()
-    },
-
-    loadFromDb: (context, force) => {
-      if (!force && context.state.loaded) {
-        return
-      }
-
-      context.commit('setLoaded', false)
-
-      return context.dispatch('getAllFromDb').then(gradeObservations => {
-        context.commit('setAll', gradeObservations)
-        context.commit('setLoaded')
-      })
-    },
-
     create: (context, gradeObservation) => {
-      const db = context.rootState.db
-
       gradeObservation.school_id = context.rootState.school_id
 
-      return GradeObservationApi.createGradeObservation(gradeObservation).then(gradeObservation =>
-        db.grade_observations.put(gradeObservation).then(() => gradeObservation)
-      ).then(gradeObservation => {
+      return GradeObservationApi.createGradeObservation(gradeObservation).then(gradeObservation => {
         context.commit('create', gradeObservation)
         return gradeObservation
       })
     },
 
     update: (context, gradeObservation) => {
-      const db = context.rootState.db
-
-      return GradeObservationApi.updateGradeObservation(gradeObservation).then(gradeObservation =>
-        db.grade_observations.put(gradeObservation).then(() => gradeObservation)
-      ).then(gradeObservation => {
+      return GradeObservationApi.updateGradeObservation(gradeObservation).then(gradeObservation => {
         context.commit('update', gradeObservation)
         return gradeObservation
       })
     },
 
     delete: (context, gradeObservationId) => {
-      const db = context.rootState.db
-
-      return GradeObservationApi.deleteGradeObservation(gradeObservationId).then(() =>
-        db.grade_observations.delete(gradeObservationId)
-      ).then(() => {
+      return GradeObservationApi.deleteGradeObservation(gradeObservationId).then(() => {
         context.commit('delete', gradeObservationId)
       })
+    },
+
+    load: (context, filter) => {
+      context.commit('setAll', [])
+
+      return GradeObservationApi.getGradeObservations(filter).then(evaluations => {
+        context.commit('setAll', evaluations)
+      })
+    },
+
+    unload: (context) => {
+      return context.commit('setAll', [])
     }
   }
 }

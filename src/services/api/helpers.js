@@ -1,8 +1,8 @@
 import axios from 'axios'
 import {parseObject, parseObjects} from '../../assets/helpers'
 
-export function getResource (name) {
-  return axios.get('/' + name).then(response => {
+export function getResource (name, filter) {
+  return axios.get('/' + name, { params: filter }).then(response => {
     const responseData = response.data
 
     let returnData = responseData.results
@@ -13,7 +13,7 @@ export function getResource (name) {
     const remainingPages = Math.floor(total / max)
 
     if (total === max || !remainingPages) {
-      return returnData
+      return parseObjects(returnData)
     }
 
     const remainingRequisitions = []
@@ -40,7 +40,7 @@ export function getResource (name) {
 }
 
 export function saveResource (name, data) {
-  data = parseObject(data)
+  data = parseObject({...data})
 
   return axios.post('/' + name, data).then(response => {
     return parseObject({
@@ -55,7 +55,7 @@ export function updateResource (name, data, appendId) {
     appendId = true
   }
 
-  data = parseObject(data)
+  data = parseObject({...data})
   const path = '/' + name + (appendId ? '/' + data.id : '')
 
   return axios.patch(path, data).then(response => {
@@ -67,7 +67,7 @@ export function updateResource (name, data, appendId) {
 }
 
 export function putResources (name, data) {
-  data = parseObject(data)
+  data = parseObject({...data})
 
   return axios.put('/' + name, data).then(response => {
     return response.data.map((obj, i) => {

@@ -2,8 +2,8 @@ import {getResource, saveResource, updateResource} from './helpers'
 import axios from 'axios'
 
 export default {
-  getGradeObservations () {
-    return getResource('grade_observations')
+  getGradeObservations (filter) {
+    return getResource('grade_observation', filter)
   },
 
   createGradeObservation (gradeObservation) {

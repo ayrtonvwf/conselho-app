@@ -5,12 +5,21 @@ export default {
   namespaced: true,
 
   state: {
-    student_observations: []
+    student_observations: [],
+    loaded_at: undefined
   },
 
   getters: {
     getStudentObservations: state => {
       return state.student_observations
+    },
+
+    getByStudent: state => studentId => {
+      return state.student_observations.filter(studentObservation => studentObservation.student_id === studentId)
+    },
+
+    getLoadedAt: state => {
+      return state.loaded_at
     }
   },
 
@@ -51,6 +60,10 @@ export default {
       )
 
       Vue.delete(state.student_observations, index)
+    },
+
+    renewLoadedAt: (state) => {
+      state.loaded_at = Date.now()
     }
   },
 
@@ -92,7 +105,9 @@ export default {
           })
       })
 
-      return Promise.all(promises)
+      return Promise.all(promises).then(() => {
+        context.commit('renewLoadedAt')
+      })
     },
 
     load: (context, filter) => {
@@ -100,11 +115,13 @@ export default {
 
       return StudentObservationApi.getStudentObservations(filter).then(evaluations => {
         context.commit('setAll', evaluations)
+        context.commit('renewLoadedAt')
       })
     },
 
     unload: context => {
       context.commit('setAll', [])
+      context.commit('renewLoadedAt')
     }
   }
 }

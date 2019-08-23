@@ -39,14 +39,13 @@
                   <th></th>
                 </tr>
               </thead>
-              <tbody v-if="currentEvaluations.length">
+              <tbody v-if="currentTopics.length && currentTopicOptions.length" :key="loaded_at">
                 <evaluate-row v-for="student in currentStudents" :key="student.id" :student="student"
-                  :hide-evaluated-students="hide_evaluated_students" :evaluations="studentEvaluations(student.id)"
-                  :topics="currentTopics" :observation-topics="currentObservationTopics"
-                  :student-observations="studentObservations(student.id)" :user-id="current_user_id"
+                  :hide-evaluated-students="hide_evaluated_students" :topic-options="currentTopicOptions"
+                  :topics="currentTopics" :observation-topics="currentObservationTopics" :user-id="current_user_id"
                   :council-id="current_council_id" :grade-id="current_grade_id" :subject-id="current_subject_id"
                   @dirty="setDirty(student.id)" @clean="setClean(student.id)" @saving="setSaving" @saved="setSaved"
-                  @error="setError"/>
+                  @error="setError" :disabled="dirty_student_id && dirty_student_id !== student.id" />
               </tbody>
             </super-table>
             <br>
@@ -81,10 +80,16 @@ export default {
       current_council_id: undefined,
       current_grade_id: '',
       current_subject_id: '',
-      current_year: (new Date()).getFullYear()
+      current_year: (new Date()).getFullYear(),
+      dirty_student_id: undefined,
+      loaded_at: undefined
     }
   },
   computed: {
+    // loadedAt () {
+    //   return this.$store.getters['student_observations/getLoadedAt'] + this.$store.getters['evaluations/getLoadedAt']
+    // },
+
     currentCouncil () {
       const council = this.$store.getters['councils/getCouncils'].find(council =>
         council.id === this.current_council_id
@@ -251,55 +256,6 @@ export default {
       )
     },
 
-    currentEvaluations () {
-      if (!this.current_grade_id || !this.current_subject_id || !this.currentTopicOptions.length ||
-        !this.currentStudents.length || !this.currentTopics.length) {
-        return []
-      }
-
-      const evaluations = this.$store.getters['evaluations/getEvaluations'].map(evaluation => {
-        const topicOption = this.currentTopicOptions.find(topicOption =>
-          topicOption.id === evaluation.topic_option_id
-        )
-        evaluation.value = topicOption.value
-        evaluation.topic_id = topicOption.topic_id
-        return evaluation
-      })
-
-      this.currentStudents.forEach(student => {
-        this.currentTopics.forEach(topic => {
-          const evaluation = evaluations.find(evaluation =>
-            evaluation.student_id === student.id &&
-            evaluation.topic_id === topic.id
-          )
-
-          if (evaluation) {
-            return
-          }
-
-          evaluations.push({
-            user_id: this.current_user_id,
-            council_id: this.current_council_id,
-            grade_id: this.current_grade_id,
-            subject_id: this.current_subject_id,
-            student_id: student.id,
-            topic_id: topic.id,
-            topic_option_id: topic.topic_option_id
-          })
-        })
-      })
-
-      return evaluations
-    },
-
-    currentStudentObservations () {
-      if (!this.current_grade_id || !this.current_subject_id) {
-        return []
-      }
-
-      return this.$store.getters['student_observations/getStudentObservations']
-    },
-
     currentGradeObservation () {
       if (!this.current_grade_id || !this.current_subject_id) {
         return {}
@@ -341,7 +297,9 @@ export default {
         this.$store.dispatch('evaluations/load', filter),
         this.$store.dispatch('student_observations/load', filter),
         this.$store.dispatch('grade_observations/load', filter)
-      ])
+      ]).then(() => {
+        this.loaded_at = Date.now()
+      })
     }
   },
 
@@ -351,8 +309,11 @@ export default {
     },
 
     setSaved () {
-      this.$emit('loaded')
-      this.$emit('notify', 'Sucesso!', 'Avaliação do estudante salva com sucesso!', 'success')
+      this.$store.dispatch('evaluations/reload').then(() => {
+        this.$emit('loaded')
+        this.$emit('notify', 'Sucesso!', 'Avaliação do estudante salva com sucesso!', 'success')
+        this.loaded_at = Date.now()
+      })
     },
 
     setError () {
@@ -361,27 +322,13 @@ export default {
     },
 
     setDirty (studentId) {
-      this.$options.dirtyStudents.push(studentId)
+      this.dirty_student_id = studentId
       this.enableConfirmRedirect()
     },
 
-    setClean (studentId) {
-      this.$options.dirtyStudents = this.$options.dirtyStudents.filter(id => id !== studentId)
-      if (!this.$options.dirtyStudents.length) {
-        this.disableConfirmRedirect()
-      }
-    },
-
-    studentEvaluations (studentId) {
-      return this.currentEvaluations.filter(evaluation =>
-        evaluation.student_id === studentId
-      )
-    },
-
-    studentObservations (studentId) {
-      return this.currentStudentObservations.filter(studentObservation =>
-        studentObservation.student_id === studentId
-      )
+    setClean () {
+      this.dirty_student_id = undefined
+      this.disableConfirmRedirect()
     },
 
     enableConfirmRedirect () {
@@ -424,19 +371,6 @@ export default {
         const action = gradeObservation.id ? 'grade_observations/update' : 'grade_observations/create'
         promises.push(this.$store.dispatch(action, gradeObservation))
       }
-
-      promises.push(this.$store.dispatch('evaluations/saveMany', this.currentEvaluations))
-
-      const saveStudentObservations = this.currentStudentObservations.filter(studentObservation => {
-        if (studentObservation.description.length < 3 && studentObservation.id) {
-          promises.push(this.$store.dispatch('student_observations/delete', studentObservation.id))
-          return false
-        }
-
-        return studentObservation.description.length >= 3
-      })
-
-      promises.push(this.$store.dispatch('student_observations/saveMany', saveStudentObservations))
 
       return Promise.all(promises).then(() => {
         this.$emit('notify', 'Sucesso!', 'Avaliação da turma salva com sucesso!', 'success')
@@ -497,8 +431,6 @@ export default {
 
   created () {
     this.resetContent()
-  },
-
-  dirtyStudents: []
+  }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <tr v-if="!hideEvaluatedStudents || !evaluations.length">
+  <tr v-if="loaded && !hideEvaluatedStudents" :style="disabled ? 'opacity: 0.7' : ''">
     <template v-if="!hideEvaluatedStudents && !student.active">
       <td class="text-striked text-center">
         <img :src="student.image" alt="Foto do aluno" style="max-width: 100%" v-if="student.image">
@@ -16,19 +16,20 @@
         <span class="text-muted" v-if="!evaluations.length"> (não avaliado)</span>
       </td>
       <td v-for="topic in topics" :key="'topic-' + topic.id">
-        <select required @change="notifyDirty" :data-topic_id="topic.id" v-model="evaluations.find(evaluation => evaluation.topic_id === topic.id).topic_option_id">
+        <select required @change="notifyDirty" :data-topic_id="topic.id" v-model="currentEvaluations.find(evaluation => evaluation.topic_id === topic.id).topic_option_id" :disabled="disabled">
           <option v-for="topic_option in topic.options" :key="topic_option.id" :value="topic_option.id">{{ topic_option.name }}</option>
         </select>
       </td>
       <td v-for="observationTopic in observationTopics" :key="'observation_topic-' + observationTopic.id">
-        <textarea class="resize-v" style="min-width: 250px; min-height: 70px" :placeholder="observationTopic.name"
+        <textarea class="resize-v" style="min-width: 250px; min-height: 70px" :placeholder="disabled ? 'Há outro aluno sendo avaliado' : observationTopic.name"
+          @change="notifyDirty" :disabled="disabled"
           v-model="currentStudentObservations.find(currentStudentObservation =>
             currentStudentObservation.observation_topic_id === observationTopic.id
           ).description"
         ></textarea>
       </td>
       <td>
-        <a class="btn-success btn-sm tooltip tooltip-end" type="button" title="Salvar avaliação do aluno" @click="save()">
+        <a class="btn-success btn-sm tooltip tooltip-end" type="button" :title="disabled ? 'Salve a avaliação do aluno anterior antes de começar a avaliar este' : 'Salvar avaliação do aluno'" @click="save()" :disabled="disabled">
           <div class="material-icons">check</div>
         </a>
       </td>
@@ -43,33 +44,41 @@ export default {
   props: {
     student: Object,
     hideEvaluatedStudents: Boolean,
-    evaluations: Array,
     topics: Array,
+    topicOptions: Array,
     observationTopics: Array,
-    studentObservations: Array,
     baseObservation: Object,
     userId: Number,
     councilId: Number,
     gradeId: Number,
-    subjectId: Number
+    subjectId: Number,
+    disabled: Boolean
   },
 
   data: () => {
     return {
-      currentStudentObservations: {}
+      loaded: false,
+      currentStudentObservations: [],
+      currentEvaluations: []
     }
   },
 
-  watch: {
-    studentObservations (newStudentObservations) {
-      const self = this
-      newStudentObservations.forEach(newStudentObservation => {
-        const studentObservation = self.currentStudentObservations.find(findStudentObservation => {
-          return findStudentObservation.observation_topic_id === newStudentObservation.observation_topic_id
-        })
+  computed: {
+    studentObservations: function () {
+      return this.$store.getters['student_observations/getByStudent'](this.student.id)
+    },
 
-        studentObservation.id = newStudentObservation.id
-        studentObservation.description = newStudentObservation.description
+    evaluations: function () {
+      return this.$store.getters['evaluations/getByStudent'](this.student.id).map(evaluation => {
+        const topicOption = this.topicOptions.find(topicOption =>
+          topicOption.id === evaluation.topic_option_id
+        )
+
+        return {
+          ...evaluation,
+          value: topicOption.value,
+          topic_id: topicOption.topic_id
+        }
       })
     }
   },
@@ -94,7 +103,7 @@ export default {
 
       const promises = []
 
-      promises.push(this.$store.dispatch('evaluations/saveMany', this.evaluations))
+      promises.push(this.$store.dispatch('evaluations/saveMany', this.currentEvaluations))
 
       const saveStudentObservations = this.currentStudentObservations.filter(studentObservation => {
         if (studentObservation.description.length < 3 && studentObservation.id) {
@@ -108,35 +117,54 @@ export default {
       promises.push(this.$store.dispatch('student_observations/saveMany', saveStudentObservations))
 
       return Promise.all(promises).then(() => {
+        this.load()
         this.notifyClean()
         this.$emit('saved')
       }).catch(error => {
         console.log('Error:', error)
         this.$emit('error')
       })
+    },
+
+    load () {
+      this.currentStudentObservations = this.observationTopics.map(observationTopic => {
+        const studentObservation = this.studentObservations.find(studentObservation =>
+          studentObservation.observation_topic_id === observationTopic.id
+        )
+
+        return studentObservation || {
+          user_id: this.userId,
+          council_id: this.councilId,
+          grade_id: this.gradeId,
+          subject_id: this.subjectId,
+          student_id: this.student.id,
+          observation_topic_id: observationTopic.id,
+          description: ''
+        }
+      })
+
+      this.currentEvaluations = this.topics.map(topic => {
+        const evaluation = this.evaluations.find(evaluation =>
+          evaluation.topic_id === topic.id
+        )
+
+        return evaluation || {
+          user_id: this.userId,
+          council_id: this.councilId,
+          grade_id: this.gradeId,
+          subject_id: this.subjectId,
+          student_id: this.student.id,
+          topic_id: topic.id,
+          topic_option_id: topic.topic_option_id
+        }
+      })
+
+      this.loaded = true
     }
   },
 
-  created: function () {
-    this.currentStudentObservations = this.observationTopics.map(observationTopic => {
-      const studentObservation = this.studentObservations.find(studentObservation =>
-        studentObservation.observation_topic_id === observationTopic.id
-      )
-
-      if (studentObservation) {
-        return studentObservation
-      }
-
-      return {
-        user_id: this.userId,
-        council_id: this.councilId,
-        grade_id: this.gradeId,
-        subject_id: this.subjectId,
-        student_id: this.student.id,
-        observation_topic_id: observationTopic.id,
-        description: ''
-      }
-    })
+  created () {
+    this.load()
   },
 
   isDirty: false

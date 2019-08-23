@@ -5,12 +5,22 @@ export default {
   namespaced: true,
 
   state: {
-    evaluations: []
+    evaluations: [],
+    filter: {},
+    loaded_at: undefined
   },
 
   getters: {
     getEvaluations: state => {
       return state.evaluations
+    },
+
+    getByStudent: state => studentId => {
+      return state.evaluations.filter(evaluation => evaluation.student_id === studentId)
+    },
+
+    getLoadedAt: state => {
+      return state.loaded_at
     }
   },
 
@@ -43,6 +53,14 @@ export default {
           Vue.set(state.evaluations, index, evaluation)
         }
       })
+    },
+
+    renewLoadedAt: (state) => {
+      state.loaded_at = Date.now()
+    },
+
+    setFilter: (state, filter) => {
+      state.filter = filter
     }
   },
 
@@ -65,20 +83,34 @@ export default {
 
     saveMany: (context, evaluations) => {
       return EvaluationApi.putEvaluations(evaluations).then(evaluations => {
-        context.commit('setMany', evaluations)
+        evaluations.forEach(evaluation => {
+          if (evaluation.updated_at) {
+            context.commit('update', evaluation)
+          } else {
+            context.commit('create', evaluation)
+          }
+        })
+        context.commit('renewLoadedAt')
       })
     },
 
     load: (context, filter) => {
       context.commit('setAll', [])
+      context.commit('setFilter', filter)
 
       return EvaluationApi.getEvaluations(filter).then(evaluations => {
         context.commit('setAll', evaluations)
+        context.commit('renewLoadedAt')
       })
     },
 
     unload: (context) => {
-      return context.commit('setAll', [])
+      context.commit('setAll', [])
+      context.commit('renewLoadedAt')
+    },
+
+    reload: (context) => {
+      return context.dispatch('load', context.state.filter)
     }
   }
 }

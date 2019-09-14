@@ -26,31 +26,38 @@
                 </label>
               </div>
             </div>
-            <div class="row" v-if="show_advanced_options">
-              <div class="input col-12 col-sm-6 col-lg-3">
-                <input id="min_evaluation" v-model="min_evaluation" type="number" min="0" max="100" step="1">
-                <label for="min_evaluation">Avaliação Mínima</label>
+            <template v-if="show_advanced_options">
+              <div class="row">
+                <div class="input col-12 col-sm-6 col-lg-3">
+                  <input id="min_evaluation" v-model="min_evaluation" type="number" min="0" max="100" step="1">
+                  <label for="min_evaluation">Avaliação Mínima</label>
+                </div>
+                <div class="input col-12 col-sm-6 col-lg-3">
+                  <input id="max_evaluation" v-model="max_evaluation" type="number" min="0" max="100" step="1">
+                  <label for="max_evaluation">Avaliação Máxima</label>
+                </div>
+                <div class="input col-12 col-sm-3 col-lg-3 text-center">
+                  <label><br>
+                    <input type="checkbox" v-model="show_topics"> Tópicos<br><br>
+                  </label>
+                </div>
+                <div class="input col-12 col-sm-4 col-lg-3 text-center">
+                  <label><br>
+                    <input type="checkbox" v-model="show_grade_observations"> Observações da Turma<br><br>
+                  </label>
+                </div>
               </div>
-              <div class="input col-12 col-sm-6 col-lg-3">
-                <input id="max_evaluation" v-model="max_evaluation" type="number" min="0" max="100" step="1">
-                <label for="max_evaluation">Avaliação Máxima</label>
-              </div>
-              <div class="input col-12 col-sm-3 col-lg-2 text-center">
-                <label><br>
-                  <input type="checkbox" v-model="show_topics"> Tópicos<br><br>
-                </label>
-              </div>
-              <div class="input col-12 col-sm-5 col-lg-2 text-center">
-                <label><br>
-                  <input type="checkbox" v-model="show_student_observations"> Observações dos Estudantes<br><br>
-                </label>
-              </div>
-              <div class="input col-12 col-sm-4 col-lg-2 text-center">
-                <label><br>
-                  <input type="checkbox" v-model="show_grade_observations"> Observações da Turma<br><br>
-                </label>
-              </div>
-            </div>
+              <fieldset>
+                <legend>Observações do aluno</legend>
+                <div class="row">
+                  <div class="input col-12 col-sm-5 col-lg-3 text-center" v-for="observationTopic in currentObservationTopics" :key="observationTopic.id">
+                    <label><br>
+                      <input type="checkbox" v-model="show_student_observations" :value="observationTopic.id"> {{ observationTopic.name }}<br><br>
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+            </template>
             <div class="row">
               <div class="col-12 text-right">
                 <template v-if="loaded_evaluations">
@@ -83,12 +90,12 @@
         </div>
         <div v-else>
           <template v-if="!current_student_id">
-            <super-table v-if="show_topics || show_student_observations">
+            <super-table v-if="show_topics || show_student_observations.length">
               <thead>
                 <tr>
                   <th style="max-width: 33vw" class="text-center">Aluno</th>
                   <th v-for="topic in currentTopics" style="min-width: 150px" :key="'topic-' + topic.id" v-if="show_topics">{{ topic.name }}</th>
-                  <th v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" class="no-wrap" v-if="show_student_observations">{{ observationTopic.name }}</th>
+                  <th v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" class="no-wrap" v-if="show_student_observations.includes(observationTopic.id)">{{ observationTopic.name }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,7 +105,7 @@
                     <a href="#" @click.prevent="current_student_id = student.id">{{ studentGrade(student.id).number }} - {{ student.name }}</a>
                   </td>
                   <td v-for="topic in currentTopics" :key="'topic-' + topic.id" v-if="show_topics">{{ student.active ? reportStudentTopic(student.id, topic.id) : '-' }}</td>
-                  <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" v-if="show_student_observations">
+                  <td v-for="observationTopic in currentObservationTopics" :key="'observation_topic-' + observationTopic.id" v-if="show_student_observations.includes(observationTopic.id)">
                     <template v-if="student.active">
                       <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === student.id && studentObservation.observation_topic_id === observationTopic.id)" style="min-width: 250px" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
                     </template>
@@ -147,7 +154,7 @@
               </tr>
               </tbody>
             </super-table>
-            <div v-for="observationTopic in currentObservationTopics" :key="observationTopic.id" v-if="show_student_observations">
+            <div v-for="observationTopic in currentObservationTopics" :key="observationTopic.id" v-if="show_student_observations.includes(observationTopic.id)">
               <h4>{{ observationTopic.name }}</h4>
               <p v-for="student_observation in currentStudentObservations.filter(studentObservation => studentObservation.student_id === current_student_id && studentObservation.observation_topic_id === observationTopic.id)" :key="student_observation.id"><b>{{ getUser(student_observation.user_id).name }}{{ !current_subject_id ? ' - '+getSubject(student_observation.subject_id).name : '' }}:</b> {{ student_observation.description }}</p>
             </div>
@@ -223,8 +230,8 @@ export default {
       min_evaluation: 0,
       max_evaluation: 100,
       show_topics: true,
-      show_student_observations: true,
-      show_grade_observations: true
+      show_grade_observations: true,
+      show_student_observations: []
     }
   },
   watch: {
@@ -242,8 +249,10 @@ export default {
       this.min_evaluation = 0
       this.max_evaluation = 100
       this.show_topics = true
-      this.show_student_observations = true
       this.show_grade_observations = true
+      this.show_student_observations = this.currentObservationTopics.map(observationTopic =>
+        observationTopic.id
+      )
     },
 
     min_evaluation () {
@@ -264,6 +273,12 @@ export default {
 
     show_grade_observations () {
       this.eraseEvaluations()
+    },
+
+    currentObservationTopics () {
+      this.show_student_observations = this.currentObservationTopics.map(observationTopic =>
+        observationTopic.id
+      )
     }
   },
   computed: {
@@ -427,11 +442,11 @@ export default {
         })
       }
 
-      if (this.show_student_observations) {
-        this.currentObservationTopics.forEach(observationTopic => {
-          line.push(observationTopic.name)
-        })
-      }
+      this.currentObservationTopics.filter(observationTopic =>
+        this.show_student_observations.includes(observationTopic.id)
+      ).forEach(observationTopic => {
+        line.push(observationTopic.name)
+      })
 
       data.push(line)
 
@@ -446,21 +461,21 @@ export default {
           })
         }
 
-        if (this.show_student_observations) {
-          this.currentObservationTopics.forEach(observationTopic => {
-            const studentObservations = []
-            this.currentStudentObservations.filter(studentObservation =>
-              studentObservation.student_id === student.id &&
-              studentObservation.observation_topic_id === observationTopic.id
-            ).forEach(studentObservation => {
-              const user = this.getUser(studentObservation.user_id)
-              const subject = this.getSubject(studentObservation.subject_id)
+        this.currentObservationTopics.filter(observationTopic =>
+          this.show_student_observations.includes(observationTopic.id)
+        ).forEach(observationTopic => {
+          const studentObservations = []
+          this.currentStudentObservations.filter(studentObservation =>
+            studentObservation.student_id === student.id &&
+            studentObservation.observation_topic_id === observationTopic.id
+          ).forEach(studentObservation => {
+            const user = this.getUser(studentObservation.user_id)
+            const subject = this.getSubject(studentObservation.subject_id)
 
-              studentObservations.push(user.name + ' - ' + subject.name + ': ' + studentObservation.description)
-            })
-            line.push(studentObservations.join('\n'))
+            studentObservations.push(user.name + ' - ' + subject.name + ': ' + studentObservation.description)
           })
-        }
+          line.push(studentObservations.join('\n'))
+        })
         data.push(line)
       })
 
@@ -480,11 +495,11 @@ export default {
         })
       }
 
-      if (this.show_student_observations) {
-        this.currentObservationTopics.forEach(observationTopic => {
-          line.push(observationTopic.name)
-        })
-      }
+      this.currentObservationTopics.filter(observationTopic =>
+        this.show_student_observations.includes(observationTopic.id)
+      ).forEach(observationTopic => {
+        line.push(observationTopic.name)
+      })
 
       data.push(line)
 
@@ -498,21 +513,21 @@ export default {
           })
         }
 
-        if (this.show_student_observations) {
-          this.currentObservationTopics.forEach(observationTopic => {
-            const studentObservations = []
-            this.currentStudentObservations.filter(studentObservation =>
-              studentObservation.student_id === this.current_student_id &&
-              studentObservation.subject_id === subject.id &&
-              studentObservation.observation_topic_id === observationTopic.id
-            ).forEach(studentObservation => {
-              const user = this.getUser(studentObservation.user_id)
+        this.currentObservationTopics.filter(observationTopic =>
+          this.show_student_observations.includes(observationTopic.id)
+        ).forEach(observationTopic => {
+          const studentObservations = []
+          this.currentStudentObservations.filter(studentObservation =>
+            studentObservation.student_id === this.current_student_id &&
+            studentObservation.subject_id === subject.id &&
+            studentObservation.observation_topic_id === observationTopic.id
+          ).forEach(studentObservation => {
+            const user = this.getUser(studentObservation.user_id)
 
-              studentObservations.push(user.name + ': ' + studentObservation.description)
-            })
-            line.push(studentObservations.join('\n'))
+            studentObservations.push(user.name + ': ' + studentObservation.description)
           })
-        }
+          line.push(studentObservations.join('\n'))
+        })
         data.push(line)
       })
 
@@ -598,7 +613,7 @@ export default {
         }))
       }
 
-      if (this.show_student_observations) {
+      if (this.show_student_observations.length) {
         promises.push(this.$store.dispatch('getResource', getStudentObservationConfig).then(studentObservations => {
           this.current_student_observations = studentObservations
         }))
@@ -752,7 +767,7 @@ export default {
     this.min_evaluation = 0
     this.max_evaluation = 100
     this.show_topics = true
-    this.show_student_observations = true
+    this.show_student_observations = []
     this.show_grade_observations = true
 
     this.load().then(() => {

@@ -736,8 +736,6 @@ export default {
         'topics',
         'observation_topics',
         'topic_options',
-        'grade_observations',
-        'student_observations',
         'student_grades',
         'students',
         'grade_subjects',

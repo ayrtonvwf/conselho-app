@@ -278,12 +278,16 @@ export default {
     },
 
     current_subject_id () {
+      this.$emit('loading')
+
       if (this.current_subject_id === '') {
         return Promise.all([
           this.$store.dispatch('evaluations/unload'),
           this.$store.dispatch('student_observations/unload'),
           this.$store.dispatch('grade_observations/unload')
-        ])
+        ]).then(() => {
+          this.$emit('loaded')
+        })
       }
 
       const filter = {
@@ -299,6 +303,11 @@ export default {
         this.$store.dispatch('grade_observations/load', filter)
       ]).then(() => {
         this.loaded_at = Date.now()
+      }).catch(() => {
+        this.$emit('notify', 'Erro ao carregar as avaliações', 'Tente novamente', 'danger')
+        this.current_subject_id = ''
+      }).finally(() => {
+        this.$emit('loaded')
       })
     }
   },

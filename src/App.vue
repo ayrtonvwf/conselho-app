@@ -146,6 +146,7 @@
     </div>
     <div id="loading" :class="loading ? 'show' : ''">
       <div class="material-icons">sync</div>
+      <button class="btn-default btn-sm" type="button" @click="logout" style="position: absolute; right: 20px; bottom: 20px">Sair</button>
     </div>
   </div>
 </template>
